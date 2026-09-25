@@ -2359,6 +2359,13 @@
       const val = input.value.trim();
       if (!val) return;
 
+      const mod = moderateTextContent(val);
+      if (!mod.safe) {
+        showToast(`⚠️ Message blocked by Safety Filter (Prohibited keyword: ${mod.word})`, 'error');
+        SoundFx.alert();
+        return;
+      }
+
       if (!meshRoom) {
         showToast('Not connected to a room. Open Room Hub.', 'error');
         return;
