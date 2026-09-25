@@ -1,0 +1,2114 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>GHOST FREQUENCY // Zero-Server Mesh Chat</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            obsidian: {
+              980: '#030406',
+              950: '#07080d',
+              900: '#0b0d14',
+              850: '#10131d',
+              800: '#161a27',
+              750: '#1c2233',
+              700: '#252d43',
+              600: '#343f5e'
+            },
+            stealth: {
+              emerald: '#10b981',
+              cyan: '#06b6d4',
+              amber: '#f59e0b',
+              crimson: '#f43f5e',
+              purple: '#8b5cf6',
+              silver: '#94a3b8'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+            mono: ['JetBrains Mono', 'SF Mono', 'ui-monospace', 'Menlo', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- QR Code & Optical Scanner CDNs -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+    * {
+      box-sizing: border-box;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      -webkit-touch-callout: none;
+    }
+
+    :root {
+      --sage-bg: #e9eeea;
+      --sage-card: #ffffff;
+      --sage-border: #d0d0ce;
+      --sage-hover: #dededd;
+      --neon-lime: #f0ff7a;
+      --text-dark: #111827;
+      --text-muted: #6b7280;
+    }
+
+    html, body {
+      background-color: #e9eeea !important;
+      color: #111827 !important;
+      font-family: 'Inter', sans-serif;
+      height: 100vh;
+      max-height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Minimalist Custom Scrollbars */
+    .custom-scroll::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #d0d0ce;
+      border-radius: 4px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb:hover {
+      background: #9ca3af;
+    }
+
+    /* Incognito Privacy Screen Blurring */
+    .ghost-shielded {
+      filter: blur(14px) brightness(0.35);
+      transition: filter 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+      user-select: none;
+    }
+    .ghost-shielded:hover {
+      filter: blur(0px) brightness(1);
+      user-select: text;
+    }
+
+    /* Message Bubble Entry Micro-Animations */
+    @keyframes msgBubbleIn {
+      0% {
+        opacity: 0;
+        transform: translateY(14px) scale(0.95);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+    .animate-msg-in {
+      animation: msgBubbleIn 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Optical Scanner Reticle Animation */
+    @keyframes laserSweep {
+      0% { top: 6%; }
+      50% { top: 92%; }
+      100% { top: 6%; }
+    }
+    .animate-laser-sweep {
+      animation: laserSweep 2s ease-in-out infinite;
+    }
+
+    /* Tripwire Warning Pulse */
+    @keyframes tripwireRadar {
+      0% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.6); }
+      70% { box-shadow: 0 0 0 16px rgba(244, 63, 94, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0); }
+    }
+    .animate-tripwire-pulse {
+      animation: tripwireRadar 1.6s infinite;
+    }
+
+    /* juyi_2230 Selector Pill System */
+    .date-selector {
+      background-color: #ffffff;
+      border-radius: 9999px;
+      padding: 0.5rem 0.95rem;
+      cursor: pointer;
+      border: 1px solid #d0d0ce;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      display: inline-flex;
+      align-items: center;
+      transition: all 0.2s ease;
+      color: #111827;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      font-weight: 600;
+      white-space: nowrap;
+      user-select: none;
+    }
+    .date-selector:hover {
+      background-color: #dededd;
+      transform: translateY(-1px);
+    }
+    .date-selector:active {
+      transform: scale(0.97);
+    }
+
+    /* Side Navigation Drawer Overlay System */
+    .mobile-side-drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 320px;
+      max-width: 86vw;
+      background-color: #ffffff;
+      border-left: 1px solid #d0d0ce;
+      box-shadow: -10px 0 35px rgba(0, 0, 0, 0.18);
+      z-index: 100;
+      transform: translateX(100%);
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+    }
+    .mobile-side-drawer.open {
+      transform: translateX(0);
+    }
+    .mobile-drawer-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(4px);
+      z-index: 99;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+    .mobile-drawer-backdrop.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* 3D Mechanical Keycaps (20essentials System) */
+    .keycap {
+      position: relative;
+      display: inline-block;
+      width: 46px;
+      height: 46px;
+      border-radius: 8px;
+      background: linear-gradient(180deg, #282828, #202020);
+      box-shadow:
+        inset -6px 0 6px rgba(0, 0, 0, 0.15),
+        inset 0 -6px 6px rgba(0, 0, 0, 0.25),
+        0 0 0 2px rgba(0, 0, 0, 0.75),
+        6px 12px 18px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+      transition: transform 0.1s ease-in-out, box-shadow 0.1s ease-in;
+      user-select: none;
+      cursor: pointer;
+    }
+    .keycap .letter {
+      position: absolute;
+      left: 8px;
+      top: 6px;
+      color: #e9e9e9;
+      font-size: 11px;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      z-index: 2;
+    }
+    .keycap::before {
+      content: "";
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      bottom: 10px;
+      right: 8px;
+      background: linear-gradient(90deg, #232323, #4a4a4a);
+      border-radius: 6px;
+      box-shadow: -6px -6px 6px rgba(255, 255, 255, 0.18), 6px 3px 6px rgba(0, 0, 0, 0.15);
+      z-index: 1;
+    }
+    .keycap:hover::before {
+      background: linear-gradient(90deg, #2e2e2e, #555555);
+    }
+    .keycap:active, .keycap.keycap-pressed {
+      transform: translateY(2px);
+      box-shadow: inset -3px 0 3px rgba(0, 0, 0, 0.1), inset 0 -3px 3px rgba(0, 0, 0, 0.15), 0 0 0 2px rgba(0, 0, 0, 0.5);
+    }
+    .keycap:active::before, .keycap.keycap-pressed::before {
+      top: 4px;
+      left: 4px;
+      bottom: 7px;
+      right: 7px;
+    }
+
+    /* vinodjangid07 Tactile Sliding Arrow Action Button */
+    .button {
+      height: 40px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 8px;
+      padding: 0px 14px;
+      background-color: #111827;
+      border-radius: 9999px;
+      color: #ffffff;
+      border: 1px solid #000000;
+      position: relative;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      user-select: none;
+      white-space: nowrap;
+    }
+    .bell {
+      width: 14px;
+      height: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .arrow {
+      position: absolute;
+      right: 0;
+      width: 28px;
+      height: 100%;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #f0ff7a;
+    }
+    .button:hover {
+      background-color: #000000;
+      transform: translateY(-1px);
+    }
+    .button:hover .arrow {
+      animation: slide-right .5s ease-out both;
+    }
+    @keyframes slide-right {
+      0% { transform: translateX(-6px); opacity: 0; }
+      100% { transform: translateX(0); opacity: 1; }
+    }
+
+    /* Priyanshu02020 Heart Reaction Toggle */
+    #heart { display: none; }
+    .like-button {
+      position: relative;
+      cursor: pointer;
+      display: inline-flex;
+      height: 34px;
+      width: 100px;
+      border-radius: 9999px;
+      border: 1px solid #d0d0ce;
+      background-color: #ffffff;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      user-select: none;
+    }
+    .like {
+      width: 65%;
+      height: 100%;
+      display: flex;
+      cursor: pointer;
+      align-items: center;
+      justify-content: space-evenly;
+      padding: 0 4px;
+    }
+    .like-icon {
+      fill: #64748b;
+      height: 15px;
+      width: 15px;
+      transition: all 0.2s ease-out;
+    }
+    .like-text {
+      color: #111827;
+      font-size: 11px;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+    }
+    .like-count {
+      position: absolute;
+      right: 0;
+      width: 35%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #64748b;
+      font-size: 11px;
+      font-family: 'JetBrains Mono', monospace;
+      border-left: 1px solid #e5e7eb;
+      transition: all 0.4s ease-out;
+    }
+    .like-count.two { transform: translateY(36px); }
+    .on:checked ~ .like .like-icon { fill: #f43f5e; animation: enlargeHeart 0.25s ease-out 1; }
+    .on:checked ~ .like-count.two { transform: translateY(0); color: #f43f5e; font-weight: bold; }
+    .on:checked ~ .like-count.one { transform: translateY(-36px); }
+    @keyframes enlargeHeart {
+      0% { transform: scale(0.6); }
+      50% { transform: scale(1.3); }
+      100% { transform: scale(1); }
+    }
+
+    /* Ghost Image Expiry Timer Selector Pill Buttons */
+    .ghost-timer-pill {
+      background: #ffffff;
+      color: #4b5563;
+      border: 1px solid #d0d0ce;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.15s ease;
+      border-radius: 9999px;
+    }
+    .ghost-timer-pill:hover { background: #dededd; color: #111827; }
+    .ghost-timer-pill.active {
+      background: #f0ff7a !important;
+      color: #000000 !important;
+      border-color: #000000 !important;
+      font-weight: 700 !important;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+  </style>
+</head>
+
+<body class="h-screen max-h-screen w-screen flex flex-col justify-between bg-[#e9eeea] text-[#111827] text-sm select-none relative overflow-hidden">
+  
+  <!-- =========================================================================
+       SIDE NAVIGATION DRAWER (Houses all buttons, Room Hub, Shield, Manual, Purge)
+       ========================================================================= -->
+  <div id="mobileDrawerBackdrop" onclick="toggleMobileSideNav(false)" class="mobile-drawer-backdrop"></div>
+  
+  <div id="mobileSideDrawer" class="mobile-side-drawer">
+    
+    <!-- Drawer Header -->
+    <div class="p-4 border-b border-[#d0d0ce] bg-[#e9eeea] flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-xl bg-[#ffffff] border border-[#d0d0ce] flex items-center justify-center text-[#111827] font-bold text-xs shadow-sm">
+          G
+        </div>
+        <div class="flex flex-col">
+          <span class="font-mono text-xs font-bold uppercase tracking-tight text-[#111827]">SYSTEM NAVIGATION</span>
+          <span class="text-[10px] font-mono text-[#6b7280]">Ghost Protocol Mesh v2.5</span>
+        </div>
+      </div>
+      <button onclick="toggleMobileSideNav(false)" class="w-8 h-8 rounded-full border border-[#d0d0ce] bg-[#ffffff] hover:bg-[#dededd] text-[#111827] flex items-center justify-center font-bold text-sm transition">
+        &times;
+      </button>
+    </div>
+
+    <!-- Drawer Content Scroll -->
+    <div class="p-4 flex-1 overflow-y-auto space-y-4 font-sans text-xs custom-scroll">
+      
+      <!-- Group 1: Primary Controls -->
+      <div class="space-y-2">
+        <div class="text-[10px] font-mono font-bold text-[#6b7280] uppercase tracking-wider">Primary Controls</div>
+        
+        <!-- Room Hub Pill -->
+        <button onclick="openModal('roomModal'); toggleMobileSideNav(false);" class="w-full date-selector justify-center" style="background-color: #f0ff7a; color: #000000; border-color: #000000; font-weight: 700; padding: 0.65rem;">
+          <span>ROOM FREQUENCY HUB</span>
+          <svg class="w-4 h-4 ml-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+        </button>
+        
+        <!-- Privacy Shield (H) -->
+        <button onclick="toggleGhostShield(); toggleMobileSideNav(false);" class="w-full date-selector justify-start" style="padding: 0.65rem;">
+          <svg class="w-4 h-4 mr-2 text-[#111827]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+          <span>Privacy Shield [Press H]</span>
+        </button>
+
+        <!-- System Manual (M) -->
+        <button onclick="openModal('systemManualModal'); toggleMobileSideNav(false);" class="w-full date-selector justify-start" style="padding: 0.65rem;">
+          <svg class="w-4 h-4 mr-2 text-[#111827]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <span>System Manual & Tripwires [Press M]</span>
+        </button>
+
+        <!-- Emergency RAM Purge (P) -->
+        <button onclick="executeEmergencyPurge(); toggleMobileSideNav(false);" class="w-full date-selector justify-start" style="background-color: #fee2e2; border-color: #fca5a5; color: #991b1b; padding: 0.65rem;">
+          <svg class="w-4 h-4 mr-2 text-[#991b1b]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+          <span>Emergency RAM Purge [Press P]</span>
+        </button>
+      </div>
+
+      <!-- Group 2: Display View Switcher -->
+      <div class="space-y-2 pt-3 border-t border-[#d0d0ce]">
+        <div class="text-[10px] font-mono font-bold text-[#6b7280] uppercase tracking-wider">Switch Display View</div>
+        <button onclick="switchTab('chat'); toggleMobileSideNav(false);" class="w-full date-selector justify-start" style="padding: 0.6rem;">
+          <svg class="w-4 h-4 mr-2 text-[#111827]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+          <span>Mesh Chat Stream [Key 1]</span>
+        </button>
+        <button onclick="switchTab('roster'); toggleMobileSideNav(false);" class="w-full date-selector justify-start" style="padding: 0.6rem;">
+          <svg class="w-4 h-4 mr-2 text-[#111827]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+          <span>Active Mesh Nodes Roster [Key 2]</span>
+        </button>
+        <button onclick="switchTab('vault'); toggleMobileSideNav(false);" class="w-full date-selector justify-start" style="padding: 0.6rem;">
+          <svg class="w-4 h-4 mr-2 text-[#111827]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+          <span>RAM Vault Stream [Key 3]</span>
+        </button>
+      </div>
+
+      <!-- Group 3: Identity & Room Sharing -->
+      <div class="space-y-2 pt-3 border-t border-[#d0d0ce]">
+        <div class="text-[10px] font-mono font-bold text-[#6b7280] uppercase tracking-wider">Identity & Sharing</div>
+        <div class="flex items-center justify-between bg-[#e9eeea] p-2.5 rounded-xl border border-[#d0d0ce] text-xs font-mono">
+          <span class="text-[#6b7280] font-bold">CODENAME:</span>
+          <span id="drawerPersonaDisplay" class="text-[#111827] font-bold">SPECTRE-00</span>
+          <button onclick="regenerateIdentity()" class="text-[#6b7280] hover:text-[#111827]">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          </button>
+        </div>
+        <button onclick="copy1ClickRoomUrl(); toggleMobileSideNav(false);" class="w-full date-selector justify-center" style="padding: 0.6rem;">
+          <span>Copy Room Invite Link</span>
+        </button>
+        <button onclick="renderQrViewForCurrentRoom(); toggleMobileSideNav(false);" class="w-full date-selector justify-center" style="padding: 0.6rem;">
+          <span>Display Room QR Code</span>
+        </button>
+      </div>
+
+      <!-- Group 4: 3D Mechanical Keycaps Deck Matrix -->
+      <div class="space-y-2 pt-3 border-t border-[#d0d0ce]">
+        <div class="text-[10px] font-mono font-bold text-[#6b7280] uppercase tracking-wider">3D Tactile Keycaps</div>
+        <div class="grid grid-cols-5 gap-2 justify-items-center pt-1">
+          <div class="keycap" data-key="H" onclick="toggleGhostShield(); toggleMobileSideNav(false);" title="Shield [H]"><div class="letter">H</div></div>
+          <div class="keycap" data-key="M" onclick="openModal('systemManualModal'); toggleMobileSideNav(false);" title="Manual [M]"><div class="letter">M</div></div>
+          <div class="keycap" data-key="P" onclick="executeEmergencyPurge(); toggleMobileSideNav(false);" title="Purge [P]"><div class="letter" style="color:#f43f5e;">P</div></div>
+          <div class="keycap" data-key="Q" onclick="renderQrViewForCurrentRoom(); toggleMobileSideNav(false);" title="QR [Q]"><div class="letter">Q</div></div>
+          <div class="keycap" data-key="C" onclick="copy1ClickRoomUrl(); toggleMobileSideNav(false);" title="Link [C]"><div class="letter">C</div></div>
+          <div class="keycap" data-key="R" onclick="openModal('roomModal'); toggleMobileSideNav(false);" title="Room [R]"><div class="letter" style="color:#f0ff7a;">R</div></div>
+          <div class="keycap" data-key="G" onclick="triggerUpload(true); toggleMobileSideNav(false);" title="Ghost [G]"><div class="letter" style="color:#e11d48;">G</div></div>
+          <div class="keycap" data-key="1" onclick="switchTab('chat'); toggleMobileSideNav(false);" title="Chat [1]"><div class="letter">1</div></div>
+          <div class="keycap" data-key="2" onclick="switchTab('roster'); toggleMobileSideNav(false);" title="Nodes [2]"><div class="letter">2</div></div>
+          <div class="keycap" data-key="3" onclick="switchTab('vault'); toggleMobileSideNav(false);" title="Vault [3]"><div class="letter">3</div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- =========================================================================
+       MINIMALIST TOP APP BAR (Single-line Status Bar on Mobile & PC)
+       ========================================================================= -->
+  <header class="h-12 border-b border-[#d0d0ce] bg-[#ffffff] px-3 sm:px-5 flex items-center justify-between gap-2 shadow-sm z-30 select-none">
+    
+    <!-- Left Status Indicator -->
+    <div class="flex items-center gap-2">
+      <div class="w-7 h-7 rounded-xl bg-[#e9eeea] border border-[#d0d0ce] flex items-center justify-center text-[#111827] shadow-sm font-bold text-xs">
+        ⚡
+      </div>
+      <div class="flex items-center gap-2">
+        <span id="activeRoomCodeLabel" class="font-mono text-xs font-bold text-[#111827] tracking-wide">ROOM: NOT CONNECTED</span>
+        <span class="hidden sm:inline text-[#d0d0ce]">&bull;</span>
+        <span id="meshPeersCountLabel" class="hidden sm:inline text-[11px] font-mono text-[#6b7280]">0 Peers in Mesh</span>
+        <span class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded-full bg-[#f0ff7a] text-[#000000] border border-[#000000]">
+          ZERO-TRACE
+        </span>
+      </div>
+    </div>
+
+    <!-- Right Controls: Reaction Pulse & Navigation 3-Dots Drawer Trigger -->
+    <div class="flex items-center gap-2">
+      
+      <!-- Heart Pulse Reaction Button -->
+      <div title="Room-Wide Realtime Heart Sync">
+        <input class="on" id="heart" type="checkbox" onchange="toggleMeshHeart(this)" />
+        <label class="like-button" for="heart">
+          <div class="like">
+            <svg class="like-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="m12 21.35-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path>
+            </svg>
+            <span class="like-text">Pulse</span>
+          </div>
+          <span class="like-count one" id="likeCounterOne">0</span>
+          <span class="like-count two" id="likeCounterTwo">1</span>
+        </label>
+      </div>
+
+      <!-- ROOM HUB Quick Pill Button -->
+      <button onclick="openModal('roomModal')" class="date-selector" style="background-color: #f0ff7a; color: #000000; border-color: #000000; font-weight: 700; height: 34px; padding: 0 10px;">
+        <span>ROOM HUB</span>
+      </button>
+
+      <!-- 3-DOTS NAVIGATION TRIGGER BUTTON (Opens Side Drawer) -->
+      <button 
+        type="button" 
+        onclick="toggleMobileSideNav()" 
+        class="w-9 h-9 rounded-full border border-[#d0d0ce] bg-[#ffffff] hover:bg-[#e9eeea] text-[#111827] flex items-center justify-center font-bold text-lg shadow-sm transition"
+        title="Open Navigation Side Drawer"
+      >
+        <svg class="w-5 h-5 text-[#111827]" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+        </svg>
+      </button>
+
+    </div>
+  </header>
+
+
+  <!-- =========================================================================
+       MAIN 100% VIEWPORT CHAT CANVAS (Zero On-Screen Clutter)
+       ========================================================================= -->
+  <main class="relative z-10 flex-1 w-full mx-auto flex flex-col overflow-hidden h-full">
+    
+    <!-- FULL CANVAS DISPLAY -->
+    <div class="flex-1 relative bg-[#ffffff] flex flex-col h-full overflow-hidden">
+      
+      <!-- VIEW 1: ANONYMOUS MULTI-PEER CHAT STREAM -->
+      <div id="view-chat" class="relative z-10 flex-1 flex flex-col h-full overflow-hidden">
+        
+        <!-- Stream Feed Area -->
+        <div id="messagesContainer" class="flex-1 overflow-y-auto p-3 sm:p-6 space-y-3 custom-scroll select-text h-full">
+          
+          <!-- Empty State Solid Sage Card -->
+          <div id="emptyNotice" class="w-full max-w-md mx-auto my-8 sm:my-16 border border-[#d0d0ce] bg-[#e9eeea] p-6 rounded-2xl sm:rounded-[2rem] text-center space-y-3 select-none shadow-sm">
+            <div class="w-12 h-12 mx-auto rounded-full bg-[#ffffff] border border-[#d0d0ce] flex items-center justify-center text-[#111827] shadow-sm">
+              <svg class="w-6 h-6 text-[#111827]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+            </div>
+            <div>
+              <h3 class="text-sm font-mono font-bold tracking-tight uppercase text-[#111827]">Frequency Channel Open</h3>
+              <p class="text-xs text-[#4b5563] mt-1 leading-relaxed font-sans">Zero relay servers. Multi-peer WebRTC mesh protocol. Transmit text messages, standard files, or classified Ghost Ephemeral photos.</p>
+            </div>
+            <div class="flex justify-center gap-2 pt-1">
+              <button onclick="openModal('roomModal')" class="date-selector" style="background-color: #f0ff7a; color: #000; border-color: #000; font-weight: 700;">
+                Set Room Frequency
+              </button>
+              <button onclick="toggleMobileSideNav(true)" class="date-selector">
+                Navigation Drawer
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Live Typing Activity Indicator -->
+        <div id="peerKeystrokeNotice" class="px-4 py-1 text-[10px] font-mono text-stealth-cyan flex items-center gap-1.5 hidden border-t border-slate-100">
+          <span class="w-1.5 h-1.5 rounded-full bg-stealth-cyan animate-pulse"></span>
+          <span id="typingPeersList">Nodes transmitting data...</span>
+        </div>
+
+        <!-- Image & File Staging Bar -->
+        <div id="stagingBar" class="hidden px-3 py-2 bg-[#f8faf9] border-t border-[#d0d0ce] flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center gap-2.5">
+            <img id="stagingImgPreview" src="" class="w-9 h-9 object-cover rounded border border-[#d0d0ce] bg-black" />
+            <div class="flex flex-col">
+              <div class="flex items-center gap-1.5">
+                <span id="stagingFileName" class="text-xs font-mono text-[#111827] truncate max-w-xs">image.png</span>
+                <span id="classifiedStagingBadge" class="hidden text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-rose-500/20 text-rose-700 border border-rose-500/30">
+                  CLASSIFIED EPHEMERAL
+                </span>
+              </div>
+              <span id="stagingFileSize" class="text-[10px] font-mono text-[#6b7280]">0 KB</span>
+            </div>
+          </div>
+
+          <!-- Ghost Ephemeral Photo Expiry Timer Selector Pill Strip -->
+          <div id="ghostTimerSelector" class="hidden flex items-center gap-1 bg-[#ffffff] border border-[#d0d0ce] px-2 py-1 rounded-full">
+            <span class="text-[10px] font-mono text-rose-600 font-bold uppercase tracking-wider pr-1">⏱️ TIMER:</span>
+            <button type="button" onclick="setStagedGhostTimer(0)" id="timerBtn-0" class="ghost-timer-pill px-2 py-0.5 rounded-full text-[10px] font-mono font-bold transition">TRIPWIRE ONLY</button>
+            <button type="button" onclick="setStagedGhostTimer(5)" id="timerBtn-5" class="ghost-timer-pill px-2 py-0.5 rounded-full text-[10px] font-mono font-bold transition">5s</button>
+            <button type="button" onclick="setStagedGhostTimer(10)" id="timerBtn-10" class="ghost-timer-pill active px-2 py-0.5 rounded-full text-[10px] font-mono font-bold transition">10s</button>
+            <button type="button" onclick="setStagedGhostTimer(30)" id="timerBtn-30" class="ghost-timer-pill px-2 py-0.5 rounded-full text-[10px] font-mono font-bold transition">30s</button>
+            <button type="button" onclick="setStagedGhostTimer(60)" id="timerBtn-60" class="ghost-timer-pill px-2 py-0.5 rounded-full text-[10px] font-mono font-bold transition">60s</button>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button onclick="cancelStagedFile()" class="date-selector" style="padding: 0.3rem 0.6rem;">Cancel</button>
+            
+            <button class="button" onclick="dispatchStagedFile()" style="height: 32px; padding: 0 10px; width: 130px;">
+              <span class="bell">
+                <svg viewBox="0 0 24 24" width="12" height="12"><path d="M12 2a4 4 0 0 0-4 4v7.17l-1.59 1.59A1 1 0 0 0 7 16h10a1 1 0 0 0 .71-1.71L16.12 13V6a4 4 0 0 0-4-4z"></path></svg>
+              </span>
+              <span id="stagedTransmitBtnText">BROADCAST</span>
+              <div class="arrow">&gt;</div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Bottom Chat Input Controls Dock -->
+        <div class="p-2 sm:p-3 bg-[#f8faf9] border-t border-[#d0d0ce] flex items-center gap-1.5 sm:gap-2">
+          
+          <!-- Standard Attachment Trigger -->
+          <input type="file" id="directFileInput" class="hidden" onchange="handleDirectFileSelect(event, false)">
+          <button 
+            type="button" 
+            onclick="triggerUpload(false)"
+            class="h-10 w-10 min-w-[40px] rounded-full border border-[#d0d0ce] bg-[#ffffff] hover:bg-[#e9eeea] text-[#111827] flex items-center justify-center transition shadow-sm"
+            title="Upload standard file or photo (or paste with Ctrl+V)"
+          >
+            <svg class="w-4 h-4 text-[#111827]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
+            </svg>
+          </button>
+
+          <!-- DEDICATED CLASSIFIED EPHEMERAL PHOTO BUTTON -->
+          <input type="file" id="classifiedFileInput" accept="image/*" class="hidden" onchange="handleDirectFileSelect(event, true)">
+          <button 
+            type="button" 
+            id="classifiedImageBtn"
+            onclick="triggerUpload(true)"
+            class="h-10 px-3 rounded-full border border-[#000000] bg-[#f0ff7a] text-[#000000] hover:bg-[#dededd] flex items-center gap-1.5 transition select-none font-mono text-xs font-bold shadow-sm"
+            title="Send Classified Ephemeral Photo (Anti-Screenshot / Burn-on-Disturbance)"
+          >
+            <svg class="w-4 h-4 text-[#000000]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+            </svg>
+            <span class="hidden sm:inline">GHOST PIC</span>
+          </button>
+
+          <!-- Main Text Entry Form -->
+          <form id="chatForm" onsubmit="transmitTextMessage(event)" class="flex-1 flex items-center gap-1.5 sm:gap-2">
+            <input 
+              type="text" 
+              id="messageInput" 
+              placeholder="Broadcast to room mesh (Paste screenshots with Ctrl+V)..." 
+              autocomplete="off" 
+              oninput="handleInputActivity()"
+              class="flex-1 h-10 bg-[#ffffff] border border-[#d0d0ce] rounded-full px-3.5 text-xs text-[#111827] placeholder-[#9ca3af] focus:outline-none focus:border-[#000000] focus:ring-1 focus:ring-[#000000] font-sans shadow-inner"
+            />
+            
+            <!-- vinodjangid07 Tactile Sliding Arrow Action Button for SEND -->
+            <button class="button" type="submit" style="height: 40px; padding: 0 12px; width: 100px; border-radius: 9999px; background-color: #111827;">
+              <span class="bell">
+                <svg viewBox="0 0 24 24" width="13" height="13"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" fill="#f0ff7a"></path></svg>
+              </span>
+              <span style="color: #ffffff;">SEND</span>
+              <div class="arrow" style="color: #f0ff7a;">&gt;</div>
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- VIEW 2: CONNECTED PEERS ROSTER -->
+      <div id="view-roster" class="relative z-10 flex-1 flex flex-col h-full p-4 overflow-y-auto custom-scroll hidden space-y-3">
+        <div class="flex items-center justify-between border-b border-[#d0d0ce] pb-2 font-mono text-xs">
+          <span class="text-[#111827] uppercase tracking-wider font-semibold">Active Mesh Nodes</span>
+          <span class="text-[#6b7280] text-[11px]" id="rosterSubCount">1 Connected Node</span>
+        </div>
+        
+        <div id="peersRosterList" class="space-y-2">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+
+      <!-- VIEW 3: DIRECT RAM VAULT -->
+      <div id="view-vault" class="relative z-10 flex-1 flex flex-col h-full p-4 overflow-y-auto custom-scroll hidden space-y-4">
+        <div 
+          id="vaultDropTarget" 
+          onclick="triggerUpload(false)"
+          class="border border-dashed border-[#d0d0ce] hover:border-[#000000] bg-[#f8faf9] rounded-2xl p-6 flex flex-col items-center justify-center text-center cursor-pointer transition space-y-2 group shadow-sm"
+        >
+          <div class="w-10 h-10 rounded-full border border-[#d0d0ce] bg-[#ffffff] flex items-center justify-center text-[#111827] group-hover:bg-[#f0ff7a] transition">
+            <svg class="w-5 h-5 text-[#111827]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+          </div>
+          <div>
+            <div class="text-xs font-mono font-bold text-[#111827]">Direct RAM File Dispatch</div>
+            <div class="text-[10px] font-mono text-[#6b7280]">Drop standard files or click to stream</div>
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <div class="text-xs font-mono text-[#111827] font-semibold uppercase tracking-wider border-b border-[#d0d0ce] pb-1">
+            Streamed In-Memory Files (<span id="vaultCountLabel">0</span>)
+          </div>
+          <div id="vaultCatalog" class="space-y-2">
+            <div class="p-6 text-center text-xs font-mono text-[#6b7280] border border-[#d0d0ce] rounded-2xl bg-[#f8faf9]">
+              No files currently stored in volatile memory.
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+
+  <!-- =========================================================================
+       MODAL 1: ZERO-TOKEN DECENTRALIZED ROOM HUB
+       ========================================================================= -->
+  <div id="roomModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-center justify-center p-3 hidden select-none">
+    <div class="w-full max-w-sm bg-[#ffffff] border border-[#d0d0ce] rounded-[2rem] p-5 shadow-2xl space-y-4 text-[#111827]">
+      <div class="flex items-center justify-between border-b border-[#d0d0ce] pb-3">
+        <div class="flex items-center gap-2">
+          <svg class="w-5 h-5 text-[#111827]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z"/></svg>
+          <span class="font-mono text-xs font-bold uppercase tracking-wide text-[#111827]">ROOM FREQUENCY HUB</span>
+        </div>
+        <button onclick="closeModal('roomModal')" class="w-7 h-7 rounded-full border border-[#d0d0ce] bg-[#e9eeea] hover:bg-[#dededd] text-[#111827] flex items-center justify-center font-bold text-xs transition">
+          &times;
+        </button>
+      </div>
+
+      <div class="space-y-3">
+        <div class="flex flex-col space-y-1">
+          <label class="text-[10px] font-mono text-[#6b7280] uppercase">Frequency Room Identifier</label>
+          <div class="flex items-center gap-2">
+            <input 
+              type="text" 
+              id="roomIdentifierInput" 
+              placeholder="e.g. 749215"
+              maxlength="12"
+              class="flex-1 h-10 bg-[#e9eeea] border border-[#d0d0ce] rounded-xl px-3 font-mono text-sm text-[#111827] font-bold placeholder-[#9ca3af] focus:outline-none focus:border-[#000000]"
+            />
+            <button onclick="fillRandomRoomCode()" class="h-10 px-3 rounded-xl border border-[#d0d0ce] bg-[#ffffff] hover:bg-[#dededd] text-[#111827] font-mono text-xs font-bold transition">
+              Random
+            </button>
+          </div>
+        </div>
+
+        <!-- Tactile 3D Numpad Grid -->
+        <div class="p-3 bg-[#e9eeea] border border-[#d0d0ce] rounded-2xl space-y-2">
+          <div class="text-[10px] font-mono text-[#6b7280] uppercase text-center font-bold">Tactile Keycap Numpad</div>
+          <div class="grid grid-cols-3 gap-2 justify-items-center">
+            <div class="keycap" data-key="1" onclick="pressNumpadKey('1')"><div class="letter">1</div></div>
+            <div class="keycap" data-key="2" onclick="pressNumpadKey('2')"><div class="letter">2</div></div>
+            <div class="keycap" data-key="3" onclick="pressNumpadKey('3')"><div class="letter">3</div></div>
+            <div class="keycap" data-key="4" onclick="pressNumpadKey('4')"><div class="letter">4</div></div>
+            <div class="keycap" data-key="5" onclick="pressNumpadKey('5')"><div class="letter">5</div></div>
+            <div class="keycap" data-key="6" onclick="pressNumpadKey('6')"><div class="letter">6</div></div>
+            <div class="keycap" data-key="7" onclick="pressNumpadKey('7')"><div class="letter">7</div></div>
+            <div class="keycap" data-key="8" onclick="pressNumpadKey('8')"><div class="letter">8</div></div>
+            <div class="keycap" data-key="9" onclick="pressNumpadKey('9')"><div class="letter">9</div></div>
+            <div class="keycap" data-key="DEL" onclick="pressNumpadKey('DEL')"><div class="letter" style="font-size:9px; color:#f43f5e;">DEL</div></div>
+            <div class="keycap" data-key="0" onclick="pressNumpadKey('0')"><div class="letter">0</div></div>
+            <div class="keycap" data-key="CLR" onclick="pressNumpadKey('CLR')"><div class="letter" style="font-size:9px; color:#f59e0b;">CLR</div></div>
+          </div>
+        </div>
+
+        <div class="pt-1 flex flex-col gap-2">
+          <button onclick="connectToMeshRoom()" class="date-selector" style="background-color: #f0ff7a; color: #000; border-color: #000; font-weight: 700; height: 44px; justify-content: center; font-size: 0.95rem;">
+            JOIN FREQUENCY ROOM
+          </button>
+          <button onclick="activateCameraScanner()" class="date-selector" style="justify-content: center;">
+            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/></svg>
+            <span>Scan QR Code with Camera</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- =========================================================================
+       MODAL 2: SEARCHABLE FEATURE MANUAL & DOCUMENTATION
+       ========================================================================= -->
+  <div id="systemManualModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-center justify-center p-3 hidden">
+    <div class="w-full max-w-2xl bg-[#ffffff] border border-[#d0d0ce] rounded-[2rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh] text-[#111827]">
+      <div class="h-14 px-6 border-b border-[#d0d0ce] flex items-center justify-between bg-[#e9eeea]">
+        <div class="flex items-center gap-2">
+          <svg class="w-5 h-5 text-[#111827]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+          <span class="font-mono text-sm font-bold tracking-tight uppercase text-[#111827]">SYSTEM MANUAL // SECURITY SPECIFICATIONS</span>
+        </div>
+        <button onclick="closeModal('systemManualModal')" class="w-8 h-8 rounded-full border border-[#d0d0ce] bg-[#ffffff] hover:bg-[#dededd] text-[#111827] flex items-center justify-center transition">
+          &times;
+        </button>
+      </div>
+
+      <div class="p-4 border-b border-[#d0d0ce] bg-[#e9eeea]">
+        <input 
+          type="text" 
+          id="manualSearchInput" 
+          oninput="filterManualDocs()" 
+          placeholder="Filter features (e.g. classified, tripwire, mesh, storage, purge, timer)..." 
+          class="w-full h-10 bg-[#ffffff] border border-[#d0d0ce] rounded-full px-4 text-xs text-[#111827] placeholder-[#6b7280] font-mono focus:outline-none focus:border-[#000000]"
+        />
+      </div>
+
+      <div id="manualCardsList" class="p-5 overflow-y-auto custom-scroll space-y-3 select-text bg-[#ffffff]">
+        
+        <div class="manual-item p-4 border border-[#fca5a5] bg-[#fff1f2] rounded-2xl space-y-2">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-[#e11d48]"></span>
+            <h4 class="text-xs font-mono font-bold text-[#9f1239] uppercase">1. Classified Ephemeral Photo Tripwires & Expiry Timer</h4>
+          </div>
+          <p class="text-xs text-[#4c0519] leading-relaxed font-sans">
+            Tap <strong>GHOST PIC</strong> to stage an ephemeral photo. Choose an optional countdown timer duration (<span class="font-bold">5s, 10s, 30s, 60s</span>) or <span class="font-bold">Tripwire Only</span>.
+          </p>
+          <ul class="list-disc list-inside text-[11px] text-[#881337] space-y-1 pl-1 font-sans">
+            <li><strong>Live Countdown Ring:</strong> When opened, a dynamic HUD arc ticks down to 0s before auto-shredding.</li>
+            <li><strong>Movement & Anti-Screenshot Tripwire:</strong> Moving mouse, key presses, app switching or taking screenshots immediately shreds the photo.</li>
+            <li><strong>RAM Shredding:</strong> Zeroes out buffer memory upon destruction.</li>
+          </ul>
+        </div>
+
+        <div class="manual-item p-4 border border-[#d0d0ce] bg-[#f9fafb] rounded-2xl space-y-2">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-[#000000]"></span>
+            <h4 class="text-xs font-mono font-bold text-[#111827] uppercase">2. Zero-Token Effortless Multi-Peer Mesh</h4>
+          </div>
+          <p class="text-xs text-[#4b5563] leading-relaxed font-sans">
+            No copy-pasting cryptic tokens. Enter any 6-digit code or name (e.g., "749215"). Other peers typing the same code automatically discover each other via WebRTC.
+          </p>
+        </div>
+
+        <div class="manual-item p-4 border border-[#d0d0ce] bg-[#f9fafb] rounded-2xl space-y-2">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-[#dc2626]"></span>
+            <h4 class="text-xs font-mono font-bold text-[#111827] uppercase">3. Strict RAM-Only Volatile Architecture</h4>
+          </div>
+          <p class="text-xs text-[#4b5563] leading-relaxed font-sans">
+            Zero persistence. No database, no localStorage, no cookies. When you refresh or close your browser, all conversations and files evaporate. Tap "Purge" for an immediate hardware memory sweep.
+          </p>
+        </div>
+
+        <div class="manual-item p-4 border border-[#d0d0ce] bg-[#f9fafb] rounded-2xl space-y-2">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-[#d97706]"></span>
+            <h4 class="text-xs font-mono font-bold text-[#111827] uppercase">4. Ghost Shield</h4>
+          </div>
+          <p class="text-xs text-[#4b5563] leading-relaxed font-sans">
+            Press <span class="date-selector inline-flex px-2 py-0.5 text-[10px]" style="min-width:auto; height:auto;">H</span> keycap or click the Shield icon in the Side Drawer to blur all messages against shoulder surfing.
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+
+  <!-- =========================================================================
+       MODAL 3: CLASSIFIED EPHEMERAL TRIPWIRE VAULT CANVAS MODAL
+       ========================================================================= -->
+  <div id="tripwireModal" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-xl flex flex-col items-center justify-center p-2 hidden select-none border-4 border-rose-600/40">
+    <div class="w-full max-w-2xl flex items-center justify-between border-b border-rose-500/30 pb-2 mb-2 px-2">
+      <div class="flex items-center gap-2">
+        <span class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse"></span>
+        <span class="font-mono text-xs font-bold text-rose-400 uppercase tracking-widest">// CLASSIFIED TRIPWIRE ACTIVE</span>
+      </div>
+
+      <!-- Live Circular HUD Expiry Countdown Arc -->
+      <div id="ghostTimerDisplayCard" class="hidden items-center gap-2 bg-rose-950/80 border border-rose-500/40 px-3 py-1 rounded-full">
+        <div class="relative w-6 h-6 flex items-center justify-center">
+          <svg class="w-6 h-6 transform -rotate-90" viewBox="0 0 36 36">
+            <path class="text-rose-950" stroke-width="4" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+            <path id="ghostTimerArc" class="text-rose-500 transition-all duration-300" stroke-width="4" stroke-dasharray="100, 100" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+          </svg>
+          <span id="ghostTimerSecNum" class="absolute text-[10px] font-mono font-bold text-rose-200">10</span>
+        </div>
+        <span id="ghostTimerLabelText" class="font-mono text-xs font-bold text-rose-300">00:10</span>
+      </div>
+    </div>
+
+    <!-- Canvas Surface -->
+    <div class="relative max-w-2xl max-h-[75vh] border border-rose-500/40 rounded bg-black overflow-hidden flex items-center justify-center shadow-2xl">
+      <canvas id="tripwireCanvas" class="max-w-full max-h-[72vh] object-contain select-none pointer-events-none"></canvas>
+      <canvas id="disintegrationCanvas" class="absolute inset-0 w-full h-full pointer-events-none hidden z-20"></canvas>
+    </div>
+
+    <div class="mt-3 text-center space-y-1">
+      <div class="text-[11px] font-mono text-rose-300 font-bold uppercase tracking-wider animate-pulse">
+        ⚠️ DO NOT MOVE MOUSE, PRESS KEYS, OR TAKE SCREENSHOTS
+      </div>
+      <div class="text-[10px] font-mono text-slate-400">
+        Disturbance triggers permanent memory zeroing.
+      </div>
+    </div>
+  </div>
+
+
+  <!-- MODAL 4: CAMERA SCANNER MODAL -->
+  <div id="cameraScannerModal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-3 hidden">
+    <div class="w-full max-w-sm bg-[#0b0d14] border border-white/15 rounded-2xl p-4 flex flex-col items-center space-y-3">
+      <div class="text-xs font-mono text-stealth-cyan flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-stealth-cyan animate-ping"></span>
+        <span>Point at Peer's Room QR Code</span>
+      </div>
+      <div class="relative w-64 h-64 border border-white/20 rounded-xl overflow-hidden bg-black">
+        <video id="cameraVideo" class="w-full h-full object-cover"></video>
+        <canvas id="cameraAuxCanvas" class="hidden"></canvas>
+        <div class="absolute inset-x-2 h-0.5 bg-stealth-cyan shadow-[0_0_8px_#06b6d4] animate-laser-sweep"></div>
+      </div>
+      <button onclick="deactivateCameraScanner()" class="h-8 px-4 rounded-full border border-rose-500/30 bg-rose-500/10 text-rose-300 font-mono text-xs">
+        Cancel Scan
+      </button>
+    </div>
+  </div>
+
+  <!-- MODAL 5: QR CODE MODAL -->
+  <div id="qrCodeModal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 hidden">
+    <div class="w-full max-w-xs bg-[#0b0d14] border border-white/15 rounded-2xl p-5 flex flex-col items-center space-y-3 text-white">
+      <div class="text-xs font-mono text-slate-200 uppercase tracking-wider font-bold">Room QR Code</div>
+      <div id="qrCanvasBox" class="p-3 bg-white rounded-xl"></div>
+      <div id="qrCodeRoomText" class="text-[11px] font-mono text-stealth-cyan">ROOM #------</div>
+      <button onclick="closeModal('qrCodeModal')" class="h-8 px-4 rounded-full border border-white/10 bg-obsidian-800 text-slate-300 font-mono text-xs">
+        Close
+      </button>
+    </div>
+  </div>
+
+  <!-- Toast Notification Feedback -->
+  <div id="toastNotification" class="fixed bottom-4 right-4 z-50 transform translate-y-16 opacity-0 pointer-events-none transition-all duration-200 border border-[#d0d0ce] bg-[#ffffff] px-4 py-2.5 rounded-full shadow-2xl flex items-center gap-2 text-xs font-mono text-[#111827]">
+    <div id="toastDot" class="w-2 h-2 rounded-full bg-stealth-emerald"></div>
+    <span id="toastText" class="font-semibold">System Ready</span>
+  </div>
+
+
+  <!-- Application Core Script with WebRTC Mesh & Ephemeral Engine -->
+  <script type="module">
+    import { joinRoom } from 'https://esm.sh/trystero@0.20.0/nostr';
+
+    /* =========================================================================
+       ZERO PERSISTENT STORAGE ARCHITECTURE (STRICT RAM ONLY)
+       ========================================================================= */
+    function enforceZeroStorage() {
+      try {
+        localStorage.clear();
+        sessionStorage.clear();
+        if (window.indexedDB) {
+          indexedDB.databases().then(dbs => {
+            dbs.forEach(db => indexedDB.deleteDatabase(db.name));
+          }).catch(() => {});
+        }
+      } catch(e) {}
+    }
+
+    window.addEventListener('beforeunload', enforceZeroStorage);
+    window.addEventListener('load', enforceZeroStorage);
+
+    /* =========================================================================
+       TACTICAL PROCEDURAL WEB AUDIO SYNTHESIZER
+       ========================================================================= */
+    const SoundFx = {
+      ctx: null,
+      get() {
+        if (!this.ctx) {
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          if (AudioContextClass) this.ctx = new AudioContextClass();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+        return this.ctx;
+      },
+      tone(f, d, t = 'sine', g = 0.04) {
+        try {
+          const c = this.get();
+          if (!c) return;
+          const osc = c.createOscillator();
+          const gain = c.createGain();
+          osc.type = t;
+          osc.frequency.setValueAtTime(f, c.currentTime);
+          gain.gain.setValueAtTime(g, c.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + d);
+          osc.connect(gain);
+          gain.connect(c.destination);
+          osc.start();
+          osc.stop(c.currentTime + d);
+        } catch(e) {}
+      },
+      click() { this.tone(900, 0.03, 'square', 0.02); },
+      chime() {
+        try {
+          const c = this.get(); if (!c) return;
+          [523.25, 659.25, 783.99].forEach((freq, idx) => {
+            setTimeout(() => this.tone(freq, 0.1, 'sine', 0.03), idx * 60);
+          });
+        } catch(e) {}
+      },
+      ping() { this.tone(1400, 0.08, 'sine', 0.04); },
+      alert() { this.tone(280, 0.25, 'sawtooth', 0.08); },
+      heart() { this.tone(180, 0.15, 'sine', 0.06); },
+      sizzleShred() {
+        try {
+          const c = this.get(); if (!c) return;
+          const bufSize = c.sampleRate * 0.4;
+          const buffer = c.createBuffer(1, bufSize, c.sampleRate);
+          const data = buffer.getChannelData(0);
+          for (let i = 0; i < bufSize; i++) {
+            data[i] = Math.random() * 2 - 1;
+          }
+          const noise = c.createBufferSource();
+          noise.buffer = buffer;
+          const filter = c.createBiquadFilter();
+          filter.type = 'bandpass';
+          filter.frequency.value = 1000;
+          const gain = c.createGain();
+          gain.gain.setValueAtTime(0.08, c.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + 0.4);
+          noise.connect(filter);
+          filter.connect(gain);
+          gain.connect(c.destination);
+          noise.start();
+        } catch(e) {}
+      }
+    };
+
+    /* =========================================================================
+       DECENTRALIZED MESH ENGINE & PERSONA SYSTEM
+       ========================================================================= */
+    const CODENAME_PREFIXES = ['SPECTRE', 'CIPHER', 'PHANTOM', 'VORTEX', 'NEXUS', 'ONYX', 'AEGIS', 'SHADOW', 'TITAN', 'KRONOS'];
+    let myPersona = { name: 'SPECTRE-00', id: Math.random().toString(36).substr(2, 9) };
+    let currentRoomCode = null;
+    let meshRoom = null;
+    let activePeers = new Map();
+    let privacyActive = false;
+    let globalHeartCounter = 0;
+
+    let sendMsg = null, getMsg = null;
+    let sendFile = null, getFile = null;
+    let sendHeart = null, getHeart = null;
+    let sendTyping = null, getTyping = null;
+    let sendPresence = null, getPresence = null;
+
+    function generateStealthPersona() {
+      const prefix = CODENAME_PREFIXES[Math.floor(Math.random() * CODENAME_PREFIXES.length)];
+      const num = Math.floor(100 + Math.random() * 900);
+      myPersona.name = `${prefix}-${num}`;
+      if (document.getElementById('myPersonaDisplay')) document.getElementById('myPersonaDisplay').innerText = myPersona.name;
+      if (document.getElementById('drawerPersonaDisplay')) document.getElementById('drawerPersonaDisplay').innerText = myPersona.name;
+    }
+
+    window.regenerateIdentity = function() {
+      generateStealthPersona();
+      SoundFx.click();
+      showToast(`Identity set to ${myPersona.name}`, 'info');
+      if (meshRoom && sendPresence) {
+        sendPresence({ persona: myPersona });
+      }
+      renderPeersRoster();
+    };
+
+    window.fillRandomRoomCode = function() {
+      const randomCode = Math.floor(100000 + Math.random() * 900000).toString();
+      document.getElementById('roomIdentifierInput').value = randomCode;
+    };
+
+    window.connectToMeshRoom = function(targetCode = null) {
+      const codeInput = document.getElementById('roomIdentifierInput');
+      const code = (targetCode || codeInput.value).trim();
+
+      if (!code) {
+        showToast('Please enter a room frequency identifier code', 'error');
+        return;
+      }
+
+      if (meshRoom) {
+        try { meshRoom.leave(); } catch(e) {}
+        meshRoom = null;
+        activePeers.clear();
+      }
+
+      currentRoomCode = code;
+      document.getElementById('activeRoomCodeLabel').innerText = `ROOM: #${code}`;
+      document.getElementById('emptyNotice')?.classList.add('hidden');
+      closeModal('roomModal');
+      SoundFx.chime();
+      showToast(`Connecting to Mesh Room #${code}...`, 'info');
+
+      try {
+        const appId = 'ghost-freq-multi-mesh-v2';
+        meshRoom = joinRoom({ appId: appId }, code);
+
+        [sendMsg, getMsg] = meshRoom.makeAction('chat');
+        [sendFile, getFile] = meshRoom.makeAction('file');
+        [sendHeart, getHeart] = meshRoom.makeAction('heart');
+        [sendTyping, getTyping] = meshRoom.makeAction('typing');
+        [sendPresence, getPresence] = meshRoom.makeAction('presence');
+
+        meshRoom.onPeerJoin(peerId => {
+          SoundFx.chime();
+          showToast(`Node connected to mesh frequency`, 'success');
+          sendPresence({ persona: myPersona });
+          sendHeart({ count: globalHeartCounter });
+          renderSystemNotice(`A node joined frequency #${code}`);
+        });
+
+        meshRoom.onPeerLeave(peerId => {
+          const departing = activePeers.get(peerId);
+          const name = departing ? departing.persona.name : 'Unknown Node';
+          activePeers.delete(peerId);
+          updateMeshStatus();
+          renderSystemNotice(`${name} disconnected from frequency`);
+          SoundFx.alert();
+        });
+
+        getMsg((data, peerId) => {
+          renderMessageCard(data.text, data.persona, 'peer');
+          SoundFx.chime();
+        });
+
+        getFile((data, peerId) => {
+          if (data.isClassified) {
+            renderClassifiedCard(data, 'peer');
+          } else if (data.isImage) {
+            renderInlineImage(data.dataUri, data.name, data.persona, 'peer');
+          } else {
+            registerVaultCatalogItem(data, data.dataUri, false);
+            incrementVaultCount();
+            showToast(`Received ${data.name} from ${data.persona.name}`, 'success');
+          }
+          SoundFx.chime();
+        });
+
+        getHeart((data, peerId) => {
+          globalHeartCounter = Math.max(globalHeartCounter, data.count);
+          updateHeartUI(globalHeartCounter);
+          SoundFx.heart();
+        });
+
+        const typingTimeouts = new Map();
+        getTyping((data, peerId) => {
+          const notice = document.getElementById('peerKeystrokeNotice');
+          const lbl = document.getElementById('typingPeersList');
+          if (data.active) {
+            notice.classList.remove('hidden');
+            lbl.innerText = `${data.persona.name} is transmitting...`;
+            clearTimeout(typingTimeouts.get(peerId));
+            typingTimeouts.set(peerId, setTimeout(() => {
+              notice.classList.add('hidden');
+            }, 1800));
+          } else {
+            notice.classList.add('hidden');
+          }
+        });
+
+        getPresence((data, peerId) => {
+          activePeers.set(peerId, { persona: data.persona });
+          updateMeshStatus();
+          renderPeersRoster();
+        });
+
+        updateMeshStatus();
+        renderPeersRoster();
+
+      } catch(err) {
+        showToast('Mesh connection error: ' + err.message, 'error');
+      }
+    };
+
+    function updateMeshStatus() {
+      const count = activePeers.size;
+      document.getElementById('meshPeersCountLabel').innerText = `${count} Peer${count === 1 ? '' : 's'} in Mesh`;
+      document.getElementById('rosterSubCount').innerText = `${count + 1} Connected Node${count === 0 ? '' : 's'} (Including You)`;
+    }
+
+    function renderPeersRoster() {
+      const list = document.getElementById('peersRosterList');
+      list.innerHTML = '';
+
+      const selfItem = document.createElement('div');
+      selfItem.className = 'p-3 bg-[#f8faf9] border border-[#d0d0ce] rounded-2xl flex items-center justify-between shadow-sm';
+      selfItem.innerHTML = `
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-full bg-[#111827] text-white flex items-center justify-center font-bold font-mono text-xs">
+            ${myPersona.name.substring(0, 2)}
+          </div>
+          <div>
+            <div class="text-xs font-mono font-bold text-[#111827] flex items-center gap-1.5">
+              <span>${myPersona.name}</span>
+              <span class="text-[9px] px-1.5 py-0.2 rounded-full bg-[#f0ff7a] text-[#000000] font-bold">YOU</span>
+            </div>
+            <div class="text-[10px] font-mono text-[#6b7280]">Local Node &bull; Hardware Active</div>
+          </div>
+        </div>
+        <div class="flex items-center gap-1 text-[11px] font-mono text-[#10b981] font-bold">
+          <span class="w-2 h-2 rounded-full bg-[#10b981] animate-pulse"></span>
+          <span>Online</span>
+        </div>
+      `;
+      list.appendChild(selfItem);
+
+      activePeers.forEach((peer) => {
+        const item = document.createElement('div');
+        item.className = 'p-3 bg-[#ffffff] border border-[#d0d0ce] rounded-2xl flex items-center justify-between shadow-sm';
+        item.innerHTML = `
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-[#e9eeea] text-[#111827] border border-[#d0d0ce] flex items-center justify-center font-bold font-mono text-xs">
+              ${peer.persona.name.substring(0, 2)}
+            </div>
+            <div>
+              <div class="text-xs font-mono font-bold text-[#111827]">${peer.persona.name}</div>
+              <div class="text-[10px] font-mono text-[#6b7280]">P2P Mesh Node &bull; Direct Channel</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-1 text-[11px] font-mono text-[#06b6d4] font-bold">
+            <span class="w-2 h-2 rounded-full bg-[#06b6d4]"></span>
+            <span>Mesh Active</span>
+          </div>
+        `;
+        list.appendChild(item);
+      });
+    }
+
+    function renderSystemNotice(msg) {
+      const container = document.getElementById('messagesContainer');
+      const div = document.createElement('div');
+      div.className = 'w-full flex justify-center my-1.5 select-none animate-msg-in';
+      div.innerHTML = `
+        <span class="text-[10px] font-mono text-[#6b7280] bg-[#ffffff] border border-[#d0d0ce] px-3 py-1 rounded-full shadow-sm">
+          // SYSTEM: ${msg}
+        </span>
+      `;
+      container.appendChild(div);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    window.toggleMeshHeart = function(cb) {
+      if (!meshRoom) {
+        showToast('Connect to a room to broadcast reaction pulse', 'error');
+        cb.checked = false;
+        return;
+      }
+      globalHeartCounter++;
+      updateHeartUI(globalHeartCounter);
+      SoundFx.heart();
+      if (sendHeart) sendHeart({ count: globalHeartCounter });
+      showToast('Pulse broadcasted across mesh', 'info');
+    };
+
+    function updateHeartUI(count) {
+      document.getElementById('likeCounterOne').innerText = count;
+      document.getElementById('likeCounterTwo').innerText = count + 1;
+      const cb = document.getElementById('heart');
+      cb.checked = true;
+      setTimeout(() => cb.checked = false, 1200);
+    }
+
+    window.transmitTextMessage = function(e) {
+      e.preventDefault();
+      const input = document.getElementById('messageInput');
+      const val = input.value.trim();
+      if (!val) return;
+
+      if (!meshRoom) {
+        showToast('Not connected to a room. Open Room Hub.', 'error');
+        return;
+      }
+
+      const packet = { text: val, persona: myPersona, timestamp: Date.now() };
+      if (sendMsg) sendMsg(packet);
+      renderMessageCard(val, myPersona, 'me');
+      SoundFx.ping();
+      input.value = '';
+      if (sendTyping) sendTyping({ active: false, persona: myPersona });
+    };
+
+    function renderMessageCard(text, senderPersona, side) {
+      document.getElementById('emptyNotice')?.classList.add('hidden');
+      const container = document.getElementById('messagesContainer');
+      const isMe = side === 'me';
+
+      const wrapper = document.createElement('div');
+      wrapper.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'} space-y-1 animate-msg-in`;
+
+      const card = document.createElement('div');
+      card.className = `max-w-[88%] sm:max-w-md px-4 py-2.5 rounded-2xl border text-xs sm:text-sm font-sans break-words shadow-sm ${
+        isMe 
+          ? 'bg-[#111827] border-[#000000] text-[#ffffff]' 
+          : 'bg-[#e9eeea] border-[#d0d0ce] text-[#111827]'
+      } ${privacyActive ? 'ghost-shielded' : ''}`;
+
+      card.textContent = text;
+
+      const meta = document.createElement('div');
+      meta.className = 'text-[9px] font-mono text-[#6b7280] px-1 flex items-center gap-1.5';
+      meta.innerText = `${isMe ? 'YOU' : senderPersona.name} • ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+
+      wrapper.appendChild(card);
+      wrapper.appendChild(meta);
+      container.appendChild(wrapper);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    let keyTimer = null;
+    window.handleInputActivity = function() {
+      if (sendTyping) sendTyping({ active: true, persona: myPersona });
+      clearTimeout(keyTimer);
+      keyTimer = setTimeout(() => {
+        if (sendTyping) sendTyping({ active: false, persona: myPersona });
+      }, 1400);
+    };
+
+    /* =========================================================================
+       CLASSIFIED PHOTO & EXPIRY TIMER DISPATCH ENGINE
+       ========================================================================= */
+    let stagedFileData = null;
+    let vaultItemsCount = 0;
+    let stagedGhostTimerSeconds = 10;
+
+    window.setStagedGhostTimer = function(sec) {
+      stagedGhostTimerSeconds = sec;
+      document.querySelectorAll('.ghost-timer-pill').forEach(btn => btn.classList.remove('active'));
+      const targetBtn = document.getElementById(`timerBtn-${sec}`);
+      if (targetBtn) targetBtn.classList.add('active');
+      SoundFx.click();
+      showToast(`Ghost image timer set to ${sec === 0 ? 'Tripwire Only' : sec + ' seconds'}`, 'info');
+    };
+
+    function incrementVaultCount() {
+      vaultItemsCount++;
+      document.getElementById('vaultCountLabel').innerText = vaultItemsCount;
+    }
+
+    window.triggerUpload = function(isClassified) {
+      if (isClassified) {
+        document.getElementById('classifiedFileInput').click();
+      } else {
+        document.getElementById('directFileInput').click();
+      }
+    };
+
+    window.addEventListener('paste', (e) => {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf('image') !== -1) {
+          const file = items[i].getAsFile();
+          if (file) stageImageFile(file, false);
+          break;
+        }
+      }
+    });
+
+    window.handleDirectFileSelect = function(e, isClassified = false) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      if (file.type.startsWith('image/')) {
+        stageImageFile(file, isClassified);
+      } else {
+        readAndBroadcastGenericFile(file);
+      }
+      e.target.value = '';
+    };
+
+    function stageImageFile(file, isClassified) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        stagedFileData = {
+          name: file.name || `photo_${Date.now()}.png`,
+          size: file.size,
+          dataUri: e.target.result,
+          isImage: true,
+          isClassified: isClassified,
+          id: 'classified_' + Math.random().toString(36).substr(2, 9)
+        };
+        document.getElementById('stagingImgPreview').src = stagedFileData.dataUri;
+        document.getElementById('stagingFileName').innerText = stagedFileData.name;
+        document.getElementById('stagingFileSize').innerText = `${(stagedFileData.size / 1024).toFixed(1)} KB`;
+        
+        const badge = document.getElementById('classifiedStagingBadge');
+        const timerSelector = document.getElementById('ghostTimerSelector');
+        const btnText = document.getElementById('stagedTransmitBtnText');
+        if (isClassified) {
+          badge.classList.remove('hidden');
+          timerSelector.classList.remove('hidden');
+          timerSelector.classList.add('flex');
+          btnText.innerText = 'SHRED LINK';
+        } else {
+          badge.classList.add('hidden');
+          timerSelector.classList.add('hidden');
+          timerSelector.classList.remove('flex');
+          btnText.innerText = 'BROADCAST';
+        }
+
+        document.getElementById('stagingBar').classList.remove('hidden');
+        SoundFx.click();
+      };
+      reader.readAsDataURL(file);
+    }
+
+    window.cancelStagedFile = function() {
+      stagedFileData = null;
+      document.getElementById('stagingBar').classList.add('hidden');
+      SoundFx.click();
+    };
+
+    window.dispatchStagedFile = function() {
+      if (!stagedFileData) return;
+      if (!meshRoom) {
+        showToast('Connect to a room to broadcast files', 'error');
+        return;
+      }
+
+      const packet = {
+        id: stagedFileData.id,
+        name: stagedFileData.name,
+        size: stagedFileData.size,
+        dataUri: stagedFileData.dataUri,
+        isImage: true,
+        isClassified: stagedFileData.isClassified,
+        timerSeconds: stagedFileData.isClassified ? stagedGhostTimerSeconds : 0,
+        persona: myPersona
+      };
+
+      if (sendFile) sendFile(packet);
+
+      if (stagedFileData.isClassified) {
+        renderClassifiedCard(packet, 'me');
+        showToast(`Classified Ephemeral Photo dispatched (${stagedGhostTimerSeconds === 0 ? 'Tripwire Only' : stagedGhostTimerSeconds + 's Timer'})`, 'info');
+      } else {
+        renderInlineImage(stagedFileData.dataUri, stagedFileData.name, myPersona, 'me');
+      }
+
+      cancelStagedFile();
+      SoundFx.ping();
+    };
+
+    function readAndBroadcastGenericFile(file) {
+      if (!meshRoom) {
+        showToast('Connect to a room to broadcast files', 'error');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const packet = {
+          name: file.name,
+          size: file.size,
+          mime: file.type || 'application/octet-stream',
+          dataUri: e.target.result,
+          isImage: false,
+          isClassified: false,
+          persona: myPersona
+        };
+
+        if (sendFile) sendFile(packet);
+        registerVaultCatalogItem(packet, e.target.result, false);
+        incrementVaultCount();
+        SoundFx.chime();
+        showToast(`Dispatched ${file.name} to mesh`, 'success');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function renderInlineImage(dataUri, name, senderPersona, side) {
+      document.getElementById('emptyNotice')?.classList.add('hidden');
+      const container = document.getElementById('messagesContainer');
+      const isMe = side === 'me';
+
+      const wrapper = document.createElement('div');
+      wrapper.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'} space-y-1 animate-msg-in`;
+
+      const card = document.createElement('div');
+      card.className = `p-1.5 rounded-2xl border border-[#d0d0ce] bg-[#ffffff] shadow-sm ${privacyActive ? 'ghost-shielded' : ''}`;
+
+      const img = document.createElement('img');
+      img.src = dataUri;
+      img.className = 'max-w-xs max-h-56 object-cover rounded-xl cursor-pointer hover:opacity-90 transition';
+      img.onclick = () => openLightbox(dataUri, name);
+
+      card.appendChild(img);
+
+      const meta = document.createElement('div');
+      meta.className = 'text-[9px] font-mono text-[#6b7280] px-1 flex items-center gap-1.5';
+      meta.innerText = `${isMe ? 'YOU' : senderPersona.name} • PHOTO • ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+
+      wrapper.appendChild(card);
+      wrapper.appendChild(meta);
+      container.appendChild(wrapper);
+      container.scrollTop = container.scrollHeight;
+
+      incrementVaultCount();
+      registerVaultCatalogItem({ name: name, size: dataUri.length * 0.75 }, dataUri, true);
+    }
+
+    function registerVaultCatalogItem(meta, url, isDirectImg) {
+      const container = document.getElementById('vaultCatalog');
+      if (vaultItemsCount === 1) container.innerHTML = '';
+
+      const item = document.createElement('div');
+      item.className = 'p-3 bg-[#ffffff] border border-[#d0d0ce] rounded-2xl flex items-center justify-between shadow-sm';
+      item.innerHTML = `
+        <div class="flex items-center gap-3 truncate">
+          <div class="w-8 h-8 rounded-xl border border-[#d0d0ce] bg-[#e9eeea] flex items-center justify-center text-[#111827]">
+            <svg class="w-4 h-4 text-[#06b6d4]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          </div>
+          <div class="truncate">
+            <div class="text-xs font-mono font-bold text-[#111827] truncate">${meta.name}</div>
+            <div class="text-[10px] font-mono text-[#6b7280]">${(meta.size / 1024).toFixed(1)} KB • In-Memory Stream</div>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          ${isDirectImg ? `<button onclick="openLightbox('${url}', '${meta.name}')" class="date-selector" style="padding: 0.3rem 0.6rem;">View</button>` : ''}
+          <a href="${url}" download="${meta.name}" class="date-selector" style="background-color: #f0ff7a; color: #000; border-color: #000; padding: 0.3rem 0.6rem;">
+            Download
+          </a>
+        </div>
+      `;
+      container.prepend(item);
+    }
+
+    /* =========================================================================
+       CLASSIFIED TRIPWIRE VAULT ENGINE & PERMANENT RAM DESTROYER
+       ========================================================================= */
+    const ephemeralPhotoStore = new Map();
+
+    function renderClassifiedCard(data, side) {
+      document.getElementById('emptyNotice')?.classList.add('hidden');
+      const container = document.getElementById('messagesContainer');
+      const isMe = side === 'me';
+      const id = data.id || 'id_' + Math.random().toString(36).substr(2, 9);
+      const timerSec = data.timerSeconds || 0;
+
+      ephemeralPhotoStore.set(id, {
+        dataUri: data.dataUri,
+        burned: false,
+        name: data.name,
+        timerSeconds: timerSec
+      });
+
+      const wrapper = document.createElement('div');
+      wrapper.id = `wrapper_${id}`;
+      wrapper.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'} space-y-1 animate-msg-in`;
+
+      const card = document.createElement('div');
+      card.id = `card_${id}`;
+      card.className = 'w-72 sm:w-80 rounded-2xl border border-rose-500/40 bg-[#0b0d14] text-white p-3 shadow-lg relative overflow-hidden group';
+
+      const timerBadgeHtml = timerSec > 0
+        ? `<span class="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30 flex items-center gap-1">⏱️ ${timerSec}s TIMER</span>`
+        : `<span class="text-[9px] font-mono text-slate-400 uppercase">⚡ TRIPWIRE ONLY</span>`;
+
+      card.innerHTML = `
+        <div class="absolute -top-10 -right-10 w-24 h-24 bg-rose-500/10 rounded-full blur-xl pointer-events-none"></div>
+        <div class="flex items-center justify-between border-b border-rose-500/20 pb-2 mb-2">
+          <div class="flex items-center gap-1.5 text-rose-400 font-mono text-[10px] font-bold">
+            <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+            <span>CLASSIFIED EPHEMERAL</span>
+          </div>
+          ${timerBadgeHtml}
+        </div>
+
+        <div class="relative w-full h-36 rounded-xl border border-rose-500/20 bg-black overflow-hidden flex flex-col items-center justify-center p-3 text-center">
+          <img src="${data.dataUri}" class="absolute inset-0 w-full h-full object-cover filter blur-2xl opacity-40 scale-125 select-none pointer-events-none" />
+          <div class="relative z-10 flex flex-col items-center space-y-1.5">
+            <div class="w-10 h-10 rounded-full border border-rose-500/40 bg-rose-500/10 flex items-center justify-center text-rose-400 animate-tripwire-pulse shadow-inner">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+            </div>
+            <div class="text-[11px] font-mono font-bold text-slate-200 uppercase tracking-wider">RETINAL TRIPWIRE VAULT</div>
+            <div class="text-[9px] font-mono text-rose-300 flex items-center gap-1">
+              <span>ANTI-SCREENSHOT ACTIVE</span>
+              ${timerSec > 0 ? `<span>• ⏱️ ${timerSec}s</span>` : ''}
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-3">
+          <button 
+            type="button" 
+            onclick="openClassifiedTripwireModal('${id}')" 
+            class="w-full h-9 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/50 text-rose-200 font-mono text-xs font-bold flex items-center justify-center gap-2 transition active:scale-95 shadow-lg"
+          >
+            <svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/></svg>
+            <span>INITIATE DECRYPT (${timerSec > 0 ? timerSec + 's' : 'TRIPWIRE'})</span>
+          </button>
+        </div>
+      `;
+
+      const meta = document.createElement('div');
+      meta.className = 'text-[9px] font-mono text-[#6b7280] px-1 flex items-center gap-1.5';
+      meta.innerText = `${isMe ? 'YOU' : data.persona.name} • CLASSIFIED • ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+
+      wrapper.appendChild(card);
+      wrapper.appendChild(meta);
+      container.appendChild(wrapper);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    let activeTripwireId = null;
+    let initialPointerPos = null;
+    let tripwireArmed = false;
+    let armingTimeout = null;
+    let tripwireTimerInterval = null;
+
+    window.openClassifiedTripwireModal = function(id) {
+      const entry = ephemeralPhotoStore.get(id);
+      if (!entry || entry.burned) {
+        showToast('This image was permanently vaporized', 'error');
+        SoundFx.alert();
+        return;
+      }
+
+      activeTripwireId = id;
+      tripwireArmed = false;
+      initialPointerPos = null;
+      if (tripwireTimerInterval) clearInterval(tripwireTimerInterval);
+
+      const modal = document.getElementById('tripwireModal');
+      const canvas = document.getElementById('tripwireCanvas');
+      const ctx = canvas.getContext('2d');
+      const timerDisplay = document.getElementById('ghostTimerDisplayCard');
+
+      const timerSec = entry.timerSeconds || 0;
+
+      if (timerSec > 0) {
+        timerDisplay.classList.remove('hidden');
+        timerDisplay.classList.add('flex');
+        let remaining = timerSec;
+
+        const updateTimerHUD = () => {
+          document.getElementById('ghostTimerSecNum').innerText = remaining;
+          document.getElementById('ghostTimerLabelText').innerText = `00:${remaining < 10 ? '0' : ''}${remaining}`;
+          const pct = Math.max(0, (remaining / timerSec) * 100);
+          document.getElementById('ghostTimerArc').style.strokeDasharray = `${pct}, 100`;
+        };
+
+        updateTimerHUD();
+
+        tripwireTimerInterval = setInterval(() => {
+          remaining--;
+          updateTimerHUD();
+          SoundFx.ping();
+
+          if (remaining <= 0) {
+            clearInterval(tripwireTimerInterval);
+            triggerImmediateDestruction('Ghost Expiry Timer reached 0s');
+          }
+        }, 1000);
+      } else {
+        timerDisplay.classList.add('hidden');
+        timerDisplay.classList.remove('flex');
+      }
+
+      const img = new Image();
+      img.onload = () => {
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        ctx.drawImage(img, 0, 0);
+
+        modal.classList.remove('hidden');
+        SoundFx.chime();
+        showToast(`Retinal scan complete. ${timerSec > 0 ? timerSec + 's countdown active.' : 'Tripwire armed.'}`, 'info');
+
+        armingTimeout = setTimeout(() => {
+          tripwireArmed = true;
+          attachTripwireSensorListeners();
+        }, 350);
+      };
+      img.src = entry.dataUri;
+    };
+
+    function attachTripwireSensorListeners() {
+      window.addEventListener('mousemove', onTripwireMouseMove);
+      window.addEventListener('click', onTripwireClick, true);
+      window.addEventListener('keydown', onTripwireKeyboard, true);
+      window.addEventListener('keyup', onTripwireKeyboard, true);
+      document.addEventListener('visibilitychange', onTripwireVisibility);
+      window.addEventListener('blur', onTripwireVisibility);
+      window.addEventListener('touchstart', onTripwireTouch, { passive: false });
+      window.addEventListener('touchend', onTripwireTouchEnd, { passive: false });
+      window.addEventListener('contextmenu', preventCapture);
+    }
+
+    function detachTripwireSensorListeners() {
+      window.removeEventListener('mousemove', onTripwireMouseMove);
+      window.removeEventListener('click', onTripwireClick, true);
+      window.removeEventListener('keydown', onTripwireKeyboard, true);
+      window.removeEventListener('keyup', onTripwireKeyboard, true);
+      document.removeEventListener('visibilitychange', onTripwireVisibility);
+      window.removeEventListener('blur', onTripwireVisibility);
+      window.removeEventListener('touchstart', onTripwireTouch);
+      window.removeEventListener('touchend', onTripwireTouchEnd);
+      window.removeEventListener('contextmenu', preventCapture);
+    }
+
+    function preventCapture(e) {
+      e.preventDefault();
+      triggerImmediateDestruction('Restricted context menu detected');
+    }
+
+    function onTripwireMouseMove(e) {
+      if (!tripwireArmed) return;
+      if (!initialPointerPos) {
+        initialPointerPos = { x: e.clientX, y: e.clientY };
+        return;
+      }
+      const dx = Math.abs(e.clientX - initialPointerPos.x);
+      const dy = Math.abs(e.clientY - initialPointerPos.y);
+      if (dx > 14 || dy > 14) {
+        triggerImmediateDestruction('Kinetic mouse movement tripwire triggered');
+      }
+    }
+
+    function onTripwireClick(e) {
+      if (!tripwireArmed) return;
+      e.stopPropagation();
+      triggerImmediateDestruction('Input click tripwire triggered');
+    }
+
+    function onTripwireKeyboard(e) {
+      if (!tripwireArmed) return;
+      e.preventDefault();
+      e.stopPropagation();
+      triggerImmediateDestruction(`Key capture disturbance: ${e.key || 'MODIFIER'}`);
+    }
+
+    function onTripwireVisibility() {
+      if (!tripwireArmed) return;
+      triggerImmediateDestruction('App switch, screen capture, or notification pull detected');
+    }
+
+    function onTripwireTouch(e) {
+      if (!tripwireArmed) return;
+      if (e.touches.length > 1) {
+        e.preventDefault();
+        triggerImmediateDestruction('Multi-finger screen capture gesture detected');
+      }
+    }
+
+    function onTripwireTouchEnd(e) {
+      if (!tripwireArmed) return;
+      e.preventDefault();
+      triggerImmediateDestruction('Biometric contact released');
+    }
+
+    function triggerImmediateDestruction(reason) {
+      if (!activeTripwireId) return;
+      tripwireArmed = false;
+      clearTimeout(armingTimeout);
+      if (tripwireTimerInterval) {
+        clearInterval(tripwireTimerInterval);
+        tripwireTimerInterval = null;
+      }
+      detachTripwireSensorListeners();
+
+      const burnedId = activeTripwireId;
+      activeTripwireId = null;
+
+      SoundFx.sizzleShred();
+
+      const canvas = document.getElementById('tripwireCanvas');
+      const dCanvas = document.getElementById('disintegrationCanvas');
+      dCanvas.classList.remove('hidden');
+      dCanvas.width = canvas.width;
+      dCanvas.height = canvas.height;
+      const dCtx = dCanvas.getContext('2d');
+      const cCtx = canvas.getContext('2d');
+
+      try {
+        const imgData = cCtx.getImageData(0, 0, canvas.width, canvas.height);
+        for (let i = 0; i < imgData.data.length; i += 4) {
+          imgData.data[i] = Math.random() * 255;
+          imgData.data[i+1] = Math.random() * 40;
+          imgData.data[i+2] = Math.random() * 40;
+        }
+        cCtx.putImageData(imgData, 0, 0);
+      } catch(e) {}
+
+      const entry = ephemeralPhotoStore.get(burnedId);
+      if (entry) {
+        entry.burned = true;
+        entry.dataUri = null;
+      }
+
+      const card = document.getElementById(`card_${burnedId}`);
+      if (card) {
+        card.className = 'w-72 sm:w-80 rounded-2xl border border-white/10 bg-[#0b0d14] text-white p-3 relative opacity-60';
+        card.innerHTML = `
+          <div class="flex items-center justify-between pb-1.5 border-b border-white/[0.06] text-[10px] font-mono">
+            <span class="text-rose-400 font-bold uppercase tracking-wider">// EVAPORATED</span>
+            <span class="text-slate-400">TRIPWIRE DESTROYED</span>
+          </div>
+          <div class="py-5 flex flex-col items-center justify-center text-center space-y-1">
+            <div class="w-8 h-8 rounded-full border border-white/10 bg-black flex items-center justify-center text-slate-500">
+              <svg class="w-4 h-4 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+              </svg>
+            </div>
+            <div class="text-xs font-mono font-bold text-slate-400 uppercase tracking-widest mt-1">DATA SHREDDED</div>
+            <div class="text-[9px] font-mono text-slate-400">Memory zeroed out • Reopen disabled</div>
+          </div>
+        `;
+      }
+
+      let frame = 0;
+      function burnTick() {
+        frame++;
+        dCtx.fillStyle = 'rgba(3, 4, 6, 0.2)';
+        dCtx.fillRect(0, 0, dCanvas.width, dCanvas.height);
+        if (frame < 12) {
+          requestAnimationFrame(burnTick);
+        } else {
+          dCanvas.classList.add('hidden');
+          document.getElementById('tripwireModal').classList.add('hidden');
+          showToast(`Photo destroyed: ${reason}`, 'error');
+        }
+      }
+      burnTick();
+    }
+
+    /* =========================================================================
+       PRIVACY SHIELD & EMERGENCY PURGE
+       ========================================================================= */
+    window.toggleGhostShield = function() {
+      privacyActive = !privacyActive;
+      document.querySelectorAll('#messagesContainer .rounded-2xl').forEach(b => {
+        b.classList.toggle('ghost-shielded', privacyActive);
+      });
+      showToast(`Ghost Shield: ${privacyActive ? 'ENGAGED' : 'DISENGAGED'}`, 'info');
+      SoundFx.click();
+    };
+
+    window.executeEmergencyPurge = function() {
+      enforceZeroStorage();
+      if (meshRoom) {
+        try { meshRoom.leave(); } catch(e) {}
+        meshRoom = null;
+      }
+      activePeers.clear();
+      ephemeralPhotoStore.clear();
+
+      document.getElementById('messagesContainer').innerHTML = `
+        <div id="emptyNotice" class="w-full max-w-sm mx-auto my-10 border border-[#d0d0ce] bg-[#e9eeea] p-6 rounded-2xl text-center space-y-3">
+          <div class="text-rose-600 font-mono text-xs font-bold uppercase">// MEMORY PURGED //</div>
+          <p class="text-xs text-[#4b5563]">All session states, volatile images, and mesh keys liquidated.</p>
+        </div>
+      `;
+      document.getElementById('vaultCatalog').innerHTML = '<div class="p-6 text-center text-xs font-mono text-[#6b7280] border border-[#d0d0ce] rounded-2xl bg-[#f8faf9]">Catalog cleared.</div>';
+      document.getElementById('activeRoomCodeLabel').innerText = 'ROOM: DISCONNECTED';
+      document.getElementById('meshPeersCountLabel').innerText = '0 Peers in Mesh';
+      vaultItemsCount = 0;
+      document.getElementById('vaultCountLabel').innerText = '0';
+      generateStealthPersona();
+      SoundFx.sizzleShred();
+      showToast('Volatile RAM memory completely purged', 'error');
+    };
+
+    /* =========================================================================
+       OPTICAL CAMERA SCANNER, QR GENERATOR & INVITE
+       ========================================================================= */
+    let cameraStream = null;
+    let cameraScanLoop = null;
+
+    window.activateCameraScanner = function() {
+      const modal = document.getElementById('cameraScannerModal');
+      const video = document.getElementById('cameraVideo');
+      modal.classList.remove('hidden');
+
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+        .then(stream => {
+          cameraStream = stream;
+          video.srcObject = stream;
+          video.setAttribute('playsinline', true);
+          video.play();
+          cameraScanLoop = requestAnimationFrame(scanCameraFrameTick);
+          SoundFx.click();
+        })
+        .catch(err => {
+          showToast('Camera error: ' + err.message, 'error');
+          modal.classList.add('hidden');
+        });
+    };
+
+    function scanCameraFrameTick() {
+      const video = document.getElementById('cameraVideo');
+      const canvas = document.getElementById('cameraAuxCanvas');
+      if (video.readyState === video.HAVE_ENOUGH_DATA) {
+        canvas.height = video.videoHeight;
+        canvas.width = video.videoWidth;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const code = jsQR(img.data, img.width, img.height, { inversionAttempts: 'dontInvert' });
+
+        if (code && code.data) {
+          deactivateCameraScanner();
+          let target = code.data;
+          if (target.includes('?room=')) {
+            const url = new URL(target);
+            target = url.searchParams.get('room');
+          }
+          document.getElementById('roomIdentifierInput').value = target;
+          connectToMeshRoom(target);
+          return;
+        }
+      }
+      cameraScanLoop = requestAnimationFrame(scanCameraFrameTick);
+    }
+
+    window.deactivateCameraScanner = function() {
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(t => t.stop());
+        cameraStream = null;
+      }
+      if (cameraScanLoop) cancelAnimationFrame(cameraScanLoop);
+      document.getElementById('cameraScannerModal').classList.add('hidden');
+    };
+
+    window.copy1ClickRoomUrl = function() {
+      if (!currentRoomCode) {
+        showToast('Connect to a room first to generate invite link', 'error');
+        return;
+      }
+      const fullUrl = `${window.location.origin}${window.location.pathname}?room=${currentRoomCode}`;
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(fullUrl);
+      } else {
+        const t = document.createElement('textarea');
+        t.value = fullUrl;
+        document.body.appendChild(t);
+        t.select();
+        document.execCommand('copy');
+        document.body.removeChild(t);
+      }
+      SoundFx.click();
+      showToast(`1-Click link for Room #${currentRoomCode} copied!`, 'success');
+    };
+
+    window.renderQrViewForCurrentRoom = function() {
+      if (!currentRoomCode) {
+        showToast('Connect to a room first to display QR', 'error');
+        return;
+      }
+      const box = document.getElementById('qrCanvasBox');
+      box.innerHTML = '';
+      const fullUrl = `${window.location.origin}${window.location.pathname}?room=${currentRoomCode}`;
+      new QRCode(box, {
+        text: fullUrl,
+        width: 180,
+        height: 180,
+        correctLevel: QRCode.CorrectLevel.M
+      });
+      document.getElementById('qrCodeRoomText').innerText = `ROOM #${currentRoomCode}`;
+      openModal('qrCodeModal');
+    };
+
+    /* =========================================================================
+       UI SWITCHER, SIDE NAVIGATION & INITIALIZATION
+       ========================================================================= */
+    window.switchTab = function(t) {
+      ['chat', 'roster', 'vault'].forEach(tab => {
+        const v = document.getElementById(`view-${tab}`);
+        const active = tab === t;
+        if (v) v.classList.toggle('hidden', !active);
+      });
+      SoundFx.click();
+    };
+
+    window.toggleMobileSideNav = function(forceState) {
+      const drawer = document.getElementById('mobileSideDrawer');
+      const backdrop = document.getElementById('mobileDrawerBackdrop');
+      if (!drawer || !backdrop) return;
+      const isOpen = drawer.classList.contains('open');
+      const newState = forceState !== undefined ? forceState : !isOpen;
+      
+      if (newState) {
+        drawer.classList.add('open');
+        backdrop.classList.add('open');
+        SoundFx.click();
+      } else {
+        drawer.classList.remove('open');
+        backdrop.classList.remove('open');
+        SoundFx.click();
+      }
+    };
+
+    window.openModal = function(id) {
+      document.getElementById(id).classList.remove('hidden');
+      SoundFx.click();
+    };
+
+    window.closeModal = function(id) {
+      document.getElementById(id).classList.add('hidden');
+      SoundFx.click();
+    };
+
+    window.openLightbox = function(src, title) {
+      document.getElementById('lightboxImg').src = src;
+      document.getElementById('lightboxTitle').innerText = title || 'Image';
+      document.getElementById('lightboxDownloadBtn').href = src;
+      document.getElementById('lightboxDownloadBtn').setAttribute('download', title || 'image.jpg');
+      document.getElementById('lightboxModal').classList.remove('hidden');
+      SoundFx.click();
+    };
+
+    window.closeLightbox = function() {
+      document.getElementById('lightboxModal').classList.add('hidden');
+      SoundFx.click();
+    };
+
+    window.filterManualDocs = function() {
+      const query = document.getElementById('manualSearchInput').value.toLowerCase();
+      document.querySelectorAll('#manualCardsList .manual-item').forEach(item => {
+        item.style.display = item.innerText.toLowerCase().includes(query) ? 'block' : 'none';
+      });
+    };
+
+    window.showToast = function(msg, type = 'info') {
+      const toast = document.getElementById('toastNotification');
+      const text = document.getElementById('toastText');
+      const dot = document.getElementById('toastDot');
+
+      text.innerText = msg;
+      if (type === 'success') {
+        dot.className = 'w-2 h-2 rounded-full bg-[#10b981]';
+      } else if (type === 'error') {
+        dot.className = 'w-2 h-2 rounded-full bg-[#f43f5e]';
+      } else {
+        dot.className = 'w-2 h-2 rounded-full bg-[#06b6d4]';
+      }
+
+      toast.classList.remove('translate-y-16', 'opacity-0', 'pointer-events-none');
+      setTimeout(() => {
+        toast.classList.add('translate-y-16', 'opacity-0', 'pointer-events-none');
+      }, 3000);
+    };
+
+    window.pressNumpadKey = function(k) {
+      const input = document.getElementById('roomIdentifierInput');
+      SoundFx.click();
+      if (k === 'DEL') {
+        input.value = input.value.slice(0, -1);
+      } else if (k === 'CLR') {
+        input.value = '';
+      } else {
+        if (input.value.length < 12) {
+          input.value += k;
+        }
+      }
+    };
+
+    window.addEventListener('keydown', (e) => {
+      const isInput = ['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName);
+      const key = e.key.toUpperCase();
+
+      const keycapEl = document.querySelector(`.keycap[data-key="${key}"]`);
+      if (keycapEl) {
+        keycapEl.classList.add('keycap-pressed');
+        SoundFx.click();
+        setTimeout(() => keycapEl.classList.remove('keycap-pressed'), 180);
+      }
+
+      if (isInput) return;
+
+      if (key === 'H') { toggleGhostShield(); }
+      else if (key === 'M') { openModal('systemManualModal'); }
+      else if (key === 'P') { executeEmergencyPurge(); }
+      else if (key === 'Q') { renderQrViewForCurrentRoom(); }
+      else if (key === 'C') { copy1ClickRoomUrl(); }
+      else if (key === 'R') { openModal('roomModal'); }
+      else if (key === 'G') { triggerUpload(true); }
+      else if (key === '1') { switchTab('chat'); }
+      else if (key === '2') { switchTab('roster'); }
+      else if (key === '3') { switchTab('vault'); }
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      enforceZeroStorage();
+      generateStealthPersona();
+      fillRandomRoomCode();
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const roomParam = urlParams.get('room');
+      if (roomParam) {
+        document.getElementById('roomIdentifierInput').value = roomParam;
+        connectToMeshRoom(roomParam);
+      }
+    });
+  </script>
+</body>
+</html>
