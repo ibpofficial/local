@@ -537,18 +537,34 @@
         ⚡
       </div>
       <div class="flex items-center gap-1.5 min-w-0">
-        <span id="activeRoomCodeLabel" class="font-mono text-xs font-bold text-[#111827] tracking-wide truncate max-w-[130px] sm:max-w-none">ROOM: NOT CONNECTED</span>
+        <span id="activeRoomCodeLabel" class="font-mono text-xs font-bold text-[#111827] tracking-wide truncate max-w-[120px] sm:max-w-none">ROOM: NOT CONNECTED</span>
         <span class="hidden sm:inline text-[#d0d0ce]">&bull;</span>
-        <span id="meshPeersCountLabel" class="hidden sm:inline text-[11px] font-mono text-[#6b7280]">0 Peers in Mesh</span>
-        <span class="hidden xs:inline-block text-[9px] font-mono font-bold px-1.5 py-0.2 rounded-full bg-[#f0ff7a] text-[#000000] border border-[#000000] shrink-0">
-          ZERO-TRACE
+        
+        <!-- DYNAMIC ONLINE MEMBERS COUNTER BADGE -->
+        <span id="onlineMembersBadge" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1 shrink-0">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span id="onlineCountText">1 Member Online</span>
         </span>
+
+        <span id="meshPeersCountLabel" class="hidden md:inline text-[11px] font-mono text-[#6b7280]">0 Peers in Mesh</span>
       </div>
     </div>
 
     <!-- Right Controls: Reaction Pulse & Navigation 3-Dots Drawer Trigger -->
     <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
       
+      <!-- PIN / SAVE ROOM TOGGLE BUTTON -->
+      <button 
+        id="pinRoomHeaderBtn" 
+        onclick="togglePinCurrentRoom()" 
+        class="date-selector flex items-center gap-1" 
+        style="height: 34px; padding: 0 8px;" 
+        title="Pin/Save room to receive notifications even when app is closed"
+      >
+        <span id="pinRoomBtnIcon">⭐</span>
+        <span id="pinRoomBtnLabel" class="text-xs font-bold hidden xs:inline">PIN ROOM</span>
+      </button>
+
       <!-- Heart Pulse Reaction Button -->
       <div title="Room-Wide Realtime Heart Sync">
         <input class="on" id="heart" type="checkbox" onchange="toggleMeshHeart(this)" />
@@ -686,6 +702,59 @@
           </div>
         </div>
 
+        <!-- EMOJI & GIF INTERACTIVE POPUP PICKER PANEL -->
+        <div id="emojiGifPickerPanel" class="hidden bg-[#ffffff] border-t border-b border-[#d0d0ce] shadow-lg flex flex-col shrink-0 z-20 transition-all max-h-72">
+          <!-- Picker Header Tabs -->
+          <div class="px-3 py-2 bg-[#f8faf9] border-b border-[#d0d0ce] flex items-center justify-between font-mono text-xs select-none">
+            <div class="flex items-center gap-2">
+              <button id="pickerTabBtnEmoji" onclick="switchPickerTab('emoji')" class="px-3 py-1 rounded-full font-bold bg-[#111827] text-[#ffffff] transition">
+                😊 Emojis
+              </button>
+              <button id="pickerTabBtnGif" onclick="switchPickerTab('gif')" class="px-3 py-1 rounded-full font-semibold text-[#6b7280] hover:text-[#111827] hover:bg-[#dededd] transition">
+                👾 GIFs
+              </button>
+            </div>
+            <button onclick="toggleEmojiGifPicker(false)" class="w-6 h-6 rounded-full border border-[#d0d0ce] bg-[#ffffff] hover:bg-[#dededd] flex items-center justify-center font-bold text-xs">
+              &times;
+            </button>
+          </div>
+
+          <!-- EMOJI SUB-PANEL -->
+          <div id="pickerSubPanelEmoji" class="p-3 overflow-y-auto custom-scroll space-y-2 max-h-56">
+            <div class="flex items-center gap-1 overflow-x-auto pb-1 text-[11px] font-mono select-none">
+              <button onclick="filterEmojiCategory('all')" id="emCat-all" class="emoji-cat-pill px-2.5 py-0.5 rounded-full bg-[#f0ff7a] text-[#000000] border border-[#000000] font-bold shrink-0">ALL</button>
+              <button onclick="filterEmojiCategory('cyber')" id="emCat-cyber" class="emoji-cat-pill px-2.5 py-0.5 rounded-full bg-[#e9eeea] text-[#111827] border border-[#d0d0ce] font-bold shrink-0">⚡ CYBER</button>
+              <button onclick="filterEmojiCategory('smileys')" id="emCat-smileys" class="emoji-cat-pill px-2.5 py-0.5 rounded-full bg-[#e9eeea] text-[#111827] border border-[#d0d0ce] font-bold shrink-0">😊 SMILEYS</button>
+              <button onclick="filterEmojiCategory('hands')" id="emCat-hands" class="emoji-cat-pill px-2.5 py-0.5 rounded-full bg-[#e9eeea] text-[#111827] border border-[#d0d0ce] font-bold shrink-0">👍 HANDS</button>
+              <button onclick="filterEmojiCategory('animals')" id="emCat-animals" class="emoji-cat-pill px-2.5 py-0.5 rounded-full bg-[#e9eeea] text-[#111827] border border-[#d0d0ce] font-bold shrink-0">🐶 ANIMALS</button>
+              <button onclick="filterEmojiCategory('food')" id="emCat-food" class="emoji-cat-pill px-2.5 py-0.5 rounded-full bg-[#e9eeea] text-[#111827] border border-[#d0d0ce] font-bold shrink-0">🍕 FOOD</button>
+              <button onclick="filterEmojiCategory('symbols')" id="emCat-symbols" class="emoji-cat-pill px-2.5 py-0.5 rounded-full bg-[#e9eeea] text-[#111827] border border-[#d0d0ce] font-bold shrink-0">🔣 SYMBOLS</button>
+            </div>
+            <div id="emojiGrid" class="grid grid-cols-8 sm:grid-cols-12 gap-1.5 text-xl text-center select-none pt-1">
+              <!-- Dynamically populated emojis -->
+            </div>
+          </div>
+
+          <!-- GIF SUB-PANEL -->
+          <div id="pickerSubPanelGif" class="p-3 overflow-y-auto custom-scroll space-y-2 max-h-56 hidden">
+            <div class="flex items-center gap-2">
+              <input type="text" id="gifSearchInput" placeholder="Search animated GIFs (e.g. hack, matrix, cat)..." oninput="searchGifs(this.value)" class="flex-1 h-8 bg-[#e9eeea] border border-[#d0d0ce] rounded-full px-3 text-xs font-mono text-[#111827] placeholder-[#6b7280] focus:outline-none focus:border-[#000000]">
+            </div>
+            <div class="flex items-center gap-1 overflow-x-auto pb-1 text-[10px] font-mono select-none">
+              <button onclick="quickGifSearch('Matrix')" class="px-2 py-0.5 rounded-full bg-[#e9eeea] hover:bg-[#dededd] text-[#111827] font-bold shrink-0">Matrix</button>
+              <button onclick="quickGifSearch('Hacking')" class="px-2 py-0.5 rounded-full bg-[#e9eeea] hover:bg-[#dededd] text-[#111827] font-bold shrink-0">Hacking</button>
+              <button onclick="quickGifSearch('Cyberpunk')" class="px-2 py-0.5 rounded-full bg-[#e9eeea] hover:bg-[#dededd] text-[#111827] font-bold shrink-0">Cyberpunk</button>
+              <button onclick="quickGifSearch('Laughing')" class="px-2 py-0.5 rounded-full bg-[#e9eeea] hover:bg-[#dededd] text-[#111827] font-bold shrink-0">Laughing</button>
+              <button onclick="quickGifSearch('Mind Blown')" class="px-2 py-0.5 rounded-full bg-[#e9eeea] hover:bg-[#dededd] text-[#111827] font-bold shrink-0">Mind Blown</button>
+              <button onclick="quickGifSearch('Cat')" class="px-2 py-0.5 rounded-full bg-[#e9eeea] hover:bg-[#dededd] text-[#111827] font-bold shrink-0">Cat</button>
+              <button onclick="quickGifSearch('Fire')" class="px-2 py-0.5 rounded-full bg-[#e9eeea] hover:bg-[#dededd] text-[#111827] font-bold shrink-0">Fire</button>
+            </div>
+            <div id="gifGrid" class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
+              <!-- Dynamically populated GIFs -->
+            </div>
+          </div>
+        </div>
+
         <!-- Bottom Chat Input Controls Dock -->
         <div class="shrink-0 p-2 sm:p-3 bg-[#f8faf9] border-t border-[#d0d0ce] flex items-center gap-1.5 sm:gap-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))]">
           
@@ -715,6 +784,17 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
             </svg>
             <span class="hidden sm:inline">GHOST PIC</span>
+          </button>
+
+          <!-- EMOJI & GIF TOGGLE BUTTON -->
+          <button 
+            type="button" 
+            onclick="toggleEmojiGifPicker()"
+            class="h-10 px-2.5 shrink-0 rounded-full border border-[#d0d0ce] bg-[#ffffff] hover:bg-[#e9eeea] text-[#111827] flex items-center gap-1 transition select-none font-mono text-xs font-bold shadow-sm"
+            title="Open Emoji & GIF Picker"
+          >
+            <span>😊</span>
+            <span class="text-[10px] bg-[#e9eeea] px-1 py-0.5 rounded font-mono font-bold">GIF</span>
           </button>
 
           <!-- Main Text Entry Form -->
@@ -785,29 +865,43 @@
 
 
   <!-- =========================================================================
-       MODAL 1: ZERO-TOKEN DECENTRALIZED ROOM HUB
+       MODAL 1: ZERO-TOKEN DECENTRALIZED ROOM HUB & CUSTOM GROUPS MANAGER
        ========================================================================= -->
   <div id="roomModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-center justify-center p-3 hidden select-none">
-    <div class="w-full max-w-sm bg-[#ffffff] border border-[#d0d0ce] rounded-[2rem] p-5 shadow-2xl space-y-4 text-[#111827]">
+    <div class="w-full max-w-md bg-[#ffffff] border border-[#d0d0ce] rounded-[2rem] p-5 shadow-2xl space-y-4 text-[#111827] max-h-[90vh] overflow-y-auto custom-scroll">
       <div class="flex items-center justify-between border-b border-[#d0d0ce] pb-3">
         <div class="flex items-center gap-2">
           <svg class="w-5 h-5 text-[#111827]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z"/></svg>
-          <span class="font-mono text-xs font-bold uppercase tracking-wide text-[#111827]">ROOM FREQUENCY HUB</span>
+          <span class="font-mono text-xs font-bold uppercase tracking-wide text-[#111827]">ROOM & GROUP FREQUENCY HUB</span>
         </div>
         <button onclick="closeModal('roomModal')" class="w-7 h-7 rounded-full border border-[#d0d0ce] bg-[#e9eeea] hover:bg-[#dededd] text-[#111827] flex items-center justify-center font-bold text-xs transition">
           &times;
         </button>
       </div>
 
-      <div class="space-y-3">
+      <!-- Room Hub Sub-Navigation Pills -->
+      <div class="flex items-center gap-1 bg-[#e9eeea] p-1 rounded-xl font-mono text-[11px] font-bold">
+        <button id="roomTabBtnJoin" onclick="switchRoomModalTab('join')" class="flex-1 py-1.5 rounded-lg bg-[#111827] text-white shadow-sm text-center">
+          JOIN FREQUENCY
+        </button>
+        <button id="roomTabBtnCustom" onclick="switchRoomModalTab('custom')" class="flex-1 py-1.5 rounded-lg text-[#6b7280] hover:text-[#111827] text-center">
+          CREATE GROUP
+        </button>
+        <button id="roomTabBtnSaved" onclick="switchRoomModalTab('saved')" class="flex-1 py-1.5 rounded-lg text-[#6b7280] hover:text-[#111827] text-center">
+          PINNED GROUPS
+        </button>
+      </div>
+
+      <!-- TAB 1: JOIN FREQUENCY -->
+      <div id="roomSubTabJoin" class="space-y-3">
         <div class="flex flex-col space-y-1">
-          <label class="text-[10px] font-mono text-[#6b7280] uppercase">Frequency Room Identifier</label>
+          <label class="text-[10px] font-mono text-[#6b7280] uppercase font-bold">Frequency Room Identifier</label>
           <div class="flex items-center gap-2">
             <input 
               type="text" 
               id="roomIdentifierInput" 
-              placeholder="e.g. 749215"
-              maxlength="12"
+              placeholder="e.g. 749215 or cyber-squad"
+              maxlength="32"
               class="flex-1 h-10 bg-[#e9eeea] border border-[#d0d0ce] rounded-xl px-3 font-mono text-sm text-[#111827] font-bold placeholder-[#9ca3af] focus:outline-none focus:border-[#000000]"
             />
             <button onclick="fillRandomRoomCode()" class="h-10 px-3 rounded-xl border border-[#d0d0ce] bg-[#ffffff] hover:bg-[#dededd] text-[#111827] font-mono text-xs font-bold transition">
@@ -845,6 +939,60 @@
           </button>
         </div>
       </div>
+
+      <!-- TAB 2: CREATE CUSTOM GROUP -->
+      <div id="roomSubTabCustom" class="space-y-3 hidden">
+        <form onsubmit="handleCreateCustomGroup(event)" class="space-y-3">
+          <div class="flex flex-col space-y-1">
+            <label class="text-[10px] font-mono text-[#6b7280] uppercase font-bold">Group Name</label>
+            <input 
+              type="text" 
+              id="customGroupNameInput" 
+              placeholder="e.g. Cyber Squad, Dev Ops, Family" 
+              required
+              class="h-10 bg-[#e9eeea] border border-[#d0d0ce] rounded-xl px-3 font-sans text-xs text-[#111827] font-bold focus:outline-none focus:border-[#000000]"
+            />
+          </div>
+
+          <div class="flex flex-col space-y-1">
+            <label class="text-[10px] font-mono text-[#6b7280] uppercase font-bold">Custom Room Code / Slug</label>
+            <input 
+              type="text" 
+              id="customGroupCodeInput" 
+              placeholder="e.g. cyber-squad-77" 
+              required
+              class="h-10 bg-[#e9eeea] border border-[#d0d0ce] rounded-xl px-3 font-mono text-xs text-[#111827] font-bold focus:outline-none focus:border-[#000000]"
+            />
+          </div>
+
+          <div class="flex flex-col space-y-1">
+            <label class="text-[10px] font-mono text-[#6b7280] uppercase font-bold">Group Icon / Emoji</label>
+            <div class="flex items-center gap-1.5 overflow-x-auto py-1">
+              <button type="button" onclick="selectGroupEmoji('🛡️')" class="grp-emoji-pill active text-lg p-1.5 rounded-lg border border-[#000000] bg-[#f0ff7a]">🛡️</button>
+              <button type="button" onclick="selectGroupEmoji('⚡')" class="grp-emoji-pill text-lg p-1.5 rounded-lg border border-[#d0d0ce] bg-[#ffffff]">⚡</button>
+              <button type="button" onclick="selectGroupEmoji('👻')" class="grp-emoji-pill text-lg p-1.5 rounded-lg border border-[#d0d0ce] bg-[#ffffff]">👻</button>
+              <button type="button" onclick="selectGroupEmoji('🚀')" class="grp-emoji-pill text-lg p-1.5 rounded-lg border border-[#d0d0ce] bg-[#ffffff]">🚀</button>
+              <button type="button" onclick="selectGroupEmoji('💻')" class="grp-emoji-pill text-lg p-1.5 rounded-lg border border-[#d0d0ce] bg-[#ffffff]">💻</button>
+              <button type="button" onclick="selectGroupEmoji('🔥')" class="grp-emoji-pill text-lg p-1.5 rounded-lg border border-[#d0d0ce] bg-[#ffffff]">🔥</button>
+              <button type="button" onclick="selectGroupEmoji('👑')" class="grp-emoji-pill text-lg p-1.5 rounded-lg border border-[#d0d0ce] bg-[#ffffff]">👑</button>
+              <input type="hidden" id="selectedGroupEmojiInput" value="🛡️" />
+            </div>
+          </div>
+
+          <button type="submit" class="w-full date-selector justify-center" style="background-color: #f0ff7a; color: #000000; border-color: #000000; font-weight: 700; height: 42px;">
+            ✨ CREATE & PIN GROUP
+          </button>
+        </form>
+      </div>
+
+      <!-- TAB 3: PINNED GROUPS & SAVED ROOMS -->
+      <div id="roomSubTabSaved" class="space-y-3 hidden">
+        <div class="text-[10px] font-mono text-[#6b7280] uppercase font-bold">Your Saved & Pinned Rooms</div>
+        <div id="savedGroupsContainer" class="space-y-2 max-h-60 overflow-y-auto custom-scroll">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -949,6 +1097,14 @@
       </div>
     </div>
 
+    <!-- Screen Recorder Active Warning Alert Box -->
+    <div id="screenRecorderWarningBox" class="hidden p-4 bg-rose-950/90 border border-rose-500 rounded-xl text-center space-y-2 mb-3 max-w-md z-30">
+      <div class="text-rose-400 font-mono text-sm font-bold animate-bounce">🚨 SCREEN RECORDER / CAPTURE ACTIVE</div>
+      <p class="text-xs text-rose-200 font-sans">
+        Screen recording or display capture detected! Image decryption is blocked and screen is blacked out for security.
+      </p>
+    </div>
+
     <!-- Canvas Surface -->
     <div class="relative max-w-2xl max-h-[75vh] border border-rose-500/40 rounded bg-black overflow-hidden flex items-center justify-center shadow-2xl">
       <canvas id="tripwireCanvas" class="max-w-full max-h-[72vh] object-contain select-none pointer-events-none"></canvas>
@@ -957,10 +1113,10 @@
 
     <div class="mt-3 text-center space-y-1">
       <div class="text-[11px] font-mono text-rose-300 font-bold uppercase tracking-wider animate-pulse">
-        ⚠️ DO NOT MOVE MOUSE, PRESS KEYS, OR TAKE SCREENSHOTS
+        ⚠️ DO NOT MOVE MOUSE, PRESS KEYS, PRESS VOLUME BUTTONS, OR TAKE SCREENSHOTS
       </div>
       <div class="text-[10px] font-mono text-slate-400">
-        Disturbance triggers permanent memory zeroing.
+        Volume buttons or screen recording will instantly shred and black out this photo.
       </div>
     </div>
   </div>
@@ -1035,11 +1191,24 @@
           <div class="text-xs font-mono font-bold text-[#111827] flex items-center gap-1.5">
             <span>📱 Mobile & Desktop PWA Application</span>
           </div>
-          <p class="text-xs text-[#4b5563] leading-relaxed">
+          <p class="text-xs text-[#4b5563] leading-relaxed font-sans">
             Install GHOST FREQUENCY on your iPhone, Android, or PC home screen. Works offline, launches like a native app, and receives background notifications!
           </p>
           <button onclick="triggerPwaInstallation()" class="w-full date-selector justify-center" style="background-color: #f0ff7a; color: #000000; border-color: #000000; font-weight: 700; height: 42px; font-size: 0.9rem;">
             🚀 INSTALL APP ON DEVICE NOW
+          </button>
+        </div>
+
+        <!-- Locked / Closed Screen Notification Tester -->
+        <div class="p-3 bg-[#e9eeea] border border-[#d0d0ce] rounded-2xl space-y-2">
+          <div class="text-xs font-mono font-bold text-[#111827] flex items-center gap-1.5">
+            <span>🧪 Test Lock Screen & Closed App Alerts</span>
+          </div>
+          <p class="text-xs text-[#4b5563] leading-relaxed font-sans">
+            Click below, then lock your phone screen or close app immediately. A notification will sound in 5 seconds to verify background operation!
+          </p>
+          <button onclick="scheduleTestLockNotification()" class="w-full date-selector justify-center" style="background-color: #f0ff7a; color: #000000; border-color: #000000; font-weight: 700; height: 38px;">
+            ⏰ TEST BACKGROUND NOTIFICATION IN 5s
           </button>
         </div>
 
@@ -1431,12 +1600,20 @@
 
     function updateMeshStatus() {
       const count = activePeers.size;
-      document.getElementById('meshPeersCountLabel').innerText = `${count} Peer${count === 1 ? '' : 's'} in Mesh`;
-      document.getElementById('rosterSubCount').innerText = `${count + 1} Connected Node${count === 0 ? '' : 's'} (Including You)`;
+      const totalOnline = count + 1; // Including self
+      const peersLbl = document.getElementById('meshPeersCountLabel');
+      if (peersLbl) peersLbl.innerText = `${count} Peer${count === 1 ? '' : 's'} in Mesh`;
+      const rosterLbl = document.getElementById('rosterSubCount');
+      if (rosterLbl) rosterLbl.innerText = `${totalOnline} Connected Node${totalOnline === 1 ? '' : 's'} (Including You)`;
+      const onlineTxt = document.getElementById('onlineCountText');
+      if (onlineTxt) onlineTxt.innerText = `${totalOnline} Member${totalOnline === 1 ? '' : 's'} Online`;
+
+      updatePinButtonUI();
     }
 
     function renderPeersRoster() {
       const list = document.getElementById('peersRosterList');
+      if (!list) return;
       list.innerHTML = '';
 
       const selfItem = document.createElement('div');
@@ -1481,6 +1658,455 @@
         `;
         list.appendChild(item);
       });
+    }
+
+    /* =========================================================================
+       PIN & SAVE ROOM FREQUENCY SYSTEM (BACKGROUND NOTIFICATIONS ENGINE)
+       ========================================================================= */
+    function getPinnedRooms() {
+      try {
+        return JSON.parse(localStorage.getItem('ghost_pinned_rooms') || '[]');
+      } catch(e) { return []; }
+    }
+
+    function savePinnedRooms(list) {
+      try {
+        localStorage.setItem('ghost_pinned_rooms', JSON.stringify(list));
+      } catch(e) {}
+    }
+
+    window.togglePinCurrentRoom = function() {
+      if (!currentRoomCode) {
+        showToast('Connect to a room first to pin/save it', 'error');
+        return;
+      }
+      let pinned = getPinnedRooms();
+      const idx = pinned.findIndex(r => r.code === currentRoomCode);
+      if (idx >= 0) {
+        pinned.splice(idx, 1);
+        savePinnedRooms(pinned);
+        showToast(`Room #${currentRoomCode} unpinned`, 'info');
+      } else {
+        pinned.push({
+          code: currentRoomCode,
+          name: `Room #${currentRoomCode}`,
+          emoji: '⭐',
+          pinnedAt: Date.now()
+        });
+        savePinnedRooms(pinned);
+        SoundFx.chime();
+        showToast(`⭐ Room #${currentRoomCode} PINNED! App will notify you even when closed.`, 'success');
+      }
+      updatePinButtonUI();
+      renderSavedGroupsList();
+    };
+
+    function updatePinButtonUI() {
+      if (!currentRoomCode) return;
+      const pinned = getPinnedRooms();
+      const isPinned = pinned.some(r => r.code === currentRoomCode);
+      const icon = document.getElementById('pinRoomBtnIcon');
+      const label = document.getElementById('pinRoomBtnLabel');
+      const btn = document.getElementById('pinRoomHeaderBtn');
+      if (isPinned) {
+        if (icon) icon.innerText = '⭐';
+        if (label) label.innerText = 'PINNED';
+        if (btn) {
+          btn.style.backgroundColor = '#f0ff7a';
+          btn.style.color = '#000000';
+          btn.style.borderColor = '#000000';
+        }
+      } else {
+        if (icon) icon.innerText = '📌';
+        if (label) label.innerText = 'PIN ROOM';
+        if (btn) {
+          btn.style.backgroundColor = '#ffffff';
+          btn.style.color = '#111827';
+          btn.style.borderColor = '#d0d0ce';
+        }
+      }
+    }
+
+    /* =========================================================================
+       CUSTOM NAMED GROUPS MANAGER
+       ========================================================================= */
+    window.switchRoomModalTab = function(tab) {
+      ['join', 'custom', 'saved'].forEach(t => {
+        const sub = document.getElementById(`roomSubTab${t.charAt(0).toUpperCase() + t.slice(1)}`);
+        const btn = document.getElementById(`roomTabBtn${t.charAt(0).toUpperCase() + t.slice(1)}`);
+        const active = t === tab;
+        if (sub) sub.classList.toggle('hidden', !active);
+        if (btn) {
+          if (active) {
+            btn.className = 'flex-1 py-1.5 rounded-lg bg-[#111827] text-white shadow-sm text-center font-bold';
+          } else {
+            btn.className = 'flex-1 py-1.5 rounded-lg text-[#6b7280] hover:text-[#111827] text-center font-bold';
+          }
+        }
+      });
+      if (tab === 'saved') renderSavedGroupsList();
+      SoundFx.click();
+    };
+
+    window.selectGroupEmoji = function(emoji) {
+      const input = document.getElementById('selectedGroupEmojiInput');
+      if (input) input.value = emoji;
+      document.querySelectorAll('.grp-emoji-pill').forEach(btn => {
+        if (btn.innerText.includes(emoji)) {
+          btn.className = 'grp-emoji-pill active text-lg p-1.5 rounded-lg border border-[#000000] bg-[#f0ff7a]';
+        } else {
+          btn.className = 'grp-emoji-pill text-lg p-1.5 rounded-lg border border-[#d0d0ce] bg-[#ffffff]';
+        }
+      });
+    };
+
+    window.handleCreateCustomGroup = function(e) {
+      e.preventDefault();
+      const name = document.getElementById('customGroupNameInput').value.trim();
+      const code = document.getElementById('customGroupCodeInput').value.trim().toLowerCase().replace(/\s+/g, '-');
+      const emoji = document.getElementById('selectedGroupEmojiInput').value || '🛡️';
+
+      if (!name || !code) return;
+
+      let pinned = getPinnedRooms();
+      if (!pinned.some(r => r.code === code)) {
+        pinned.push({
+          code: code,
+          name: name,
+          emoji: emoji,
+          pinnedAt: Date.now()
+        });
+        savePinnedRooms(pinned);
+      }
+      SoundFx.chime();
+      showToast(`Group "${name}" created and pinned!`, 'success');
+      document.getElementById('roomIdentifierInput').value = code;
+      connectToMeshRoom(code);
+    };
+
+    function renderSavedGroupsList() {
+      const container = document.getElementById('savedGroupsContainer');
+      if (!container) return;
+      const pinned = getPinnedRooms();
+      if (pinned.length === 0) {
+        container.innerHTML = `<div class="p-4 text-center text-xs font-mono text-[#6b7280] bg-[#f8faf9] border border-[#d0d0ce] rounded-xl">No saved groups or pinned rooms yet. Create a group or pin a room!</div>`;
+        return;
+      }
+
+      container.innerHTML = '';
+      pinned.forEach(room => {
+        const isCurrent = room.code === currentRoomCode;
+        const item = document.createElement('div');
+        item.className = 'p-3 bg-[#ffffff] border border-[#d0d0ce] rounded-xl flex items-center justify-between shadow-sm';
+        item.innerHTML = `
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 rounded-lg border border-[#d0d0ce] bg-[#e9eeea] flex items-center justify-center text-base">
+              ${room.emoji || '⭐'}
+            </div>
+            <div class="truncate">
+              <div class="text-xs font-mono font-bold text-[#111827] truncate flex items-center gap-1.5">
+                <span>${room.name}</span>
+                ${isCurrent ? '<span class="text-[9px] px-1.5 py-0.2 rounded-full bg-[#f0ff7a] text-[#000] font-bold">ACTIVE</span>' : ''}
+              </div>
+              <div class="text-[10px] font-mono text-[#6b7280]">CODE: #${room.code}</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-1.5 shrink-0">
+            <button onclick="connectToMeshRoom('${room.code}')" class="date-selector" style="padding: 0.25rem 0.6rem; font-size: 0.75rem; ${isCurrent ? 'background-color:#f0ff7a; color:#000; font-weight:700;' : ''}">
+              ${isCurrent ? 'Joined' : 'Join'}
+            </button>
+            <button onclick="deletePinnedRoom('${room.code}')" class="w-6 h-6 rounded-full border border-[#fca5a5] bg-[#fff1f2] text-[#991b1b] font-bold text-xs flex items-center justify-center" title="Delete Saved Room">
+              &times;
+            </button>
+          </div>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    window.deletePinnedRoom = function(code) {
+      let pinned = getPinnedRooms().filter(r => r.code !== code);
+      savePinnedRooms(pinned);
+      SoundFx.click();
+      renderSavedGroupsList();
+      updatePinButtonUI();
+      showToast(`Room #${code} removed from saved list`, 'info');
+    };
+
+    /* =========================================================================
+       BACKGROUND NOTIFICATION TESTER (FOR LOCKED & CLOSED APPS)
+       ========================================================================= */
+    window.scheduleTestLockNotification = function() {
+      if (!('Notification' in window)) {
+        showToast('Notifications not supported on this browser', 'error');
+        return;
+      }
+
+      const triggerSWTest = () => {
+        if (swRegistration && swRegistration.active) {
+          swRegistration.active.postMessage({
+            type: 'SCHEDULE_TEST_NOTIFICATION',
+            delay: 5000,
+            title: '⚡ GHOST FREQUENCY (Lock Screen Test)',
+            body: 'App background alerts WORK even when app is closed or phone is locked!'
+          });
+          showToast('🔒 LOCK SCREEN NOW! Notification will fire in 5 seconds...', 'success');
+          SoundFx.chime();
+        } else {
+          setTimeout(() => {
+            triggerOSNotification('⚡ GHOST FREQUENCY (Lock Test)', 'Background alert active!', 'lock-test');
+          }, 5000);
+          showToast('🔒 LOCK SCREEN NOW! Notification will fire in 5 seconds...', 'success');
+        }
+      };
+
+      if (Notification.permission === 'granted') {
+        triggerSWTest();
+      } else {
+        Notification.requestPermission().then(perm => {
+          if (perm === 'granted') triggerSWTest();
+          else showToast('Notification permission required', 'error');
+        });
+      }
+    };
+
+    /* =========================================================================
+       EMOJI & GIF PICKER ENGINE
+       ========================================================================= */
+    const EMOJI_COLLECTION = {
+      cyber: ['⚡', '🤖', '💀', '👻', '🛰️', '🔒', '🔑', '🛡️', '🕹️', '💾', '🌐', '👾', '🔥', '💥', '✨', '🎯'],
+      smileys: ['😊', '😂', '😎', '🤣', '😍', '🤔', '🙄', '🥳', '😴', '😇', '🤓', '😈', '🤯', '😜', '😭', '🤩'],
+      hands: ['👍', '👎', '👏', '🙌', '🤝', '👊', '✌️', '🤘', '🤙', '🖐️', '✍️', '🙏', '💪', '👈', '👉', '🖐️'],
+      animals: ['🐶', '🐱', '🦊', '🐻', '🐼', '🦁', '🐯', '🦄', '🦅', '🦉', '🦈', '🐉', '🐍', '🐝', '🐙', '🐺'],
+      food: ['🍕', '🍔', '🍟', '🌭', '🍿', '🍩', '🍪', '☕', '🍺', '🥤', '🌮', '🍣', '🍦', '🍎', '🥑', '🥞'],
+      symbols: ['❤️', '🖤', '💯', '⚠️', '⛔', '✅', '❌', '⭐', '🌟', '💎', '💡', '💬', '🔔', '🚀', '🏁', '🎉']
+    };
+
+    let currentEmojiCategory = 'all';
+
+    window.toggleEmojiGifPicker = function(forceState) {
+      const panel = document.getElementById('emojiGifPickerPanel');
+      if (!panel) return;
+      const isOpen = !panel.classList.contains('hidden');
+      const newState = forceState !== undefined ? forceState : !isOpen;
+      if (newState) {
+        panel.classList.remove('hidden');
+        renderEmojiGrid();
+        quickGifSearch('Hacking');
+        SoundFx.click();
+      } else {
+        panel.classList.add('hidden');
+      }
+    };
+
+    window.switchPickerTab = function(tab) {
+      const emSub = document.getElementById('pickerSubPanelEmoji');
+      const gifSub = document.getElementById('pickerSubPanelGif');
+      const emBtn = document.getElementById('pickerTabBtnEmoji');
+      const gifBtn = document.getElementById('pickerTabBtnGif');
+
+      if (tab === 'emoji') {
+        emSub.classList.remove('hidden');
+        gifSub.classList.add('hidden');
+        emBtn.className = 'px-3 py-1 rounded-full font-bold bg-[#111827] text-[#ffffff] transition';
+        gifBtn.className = 'px-3 py-1 rounded-full font-semibold text-[#6b7280] hover:text-[#111827] hover:bg-[#dededd] transition';
+      } else {
+        emSub.classList.add('hidden');
+        gifSub.classList.remove('hidden');
+        gifBtn.className = 'px-3 py-1 rounded-full font-bold bg-[#111827] text-[#ffffff] transition';
+        emBtn.className = 'px-3 py-1 rounded-full font-semibold text-[#6b7280] hover:text-[#111827] hover:bg-[#dededd] transition';
+      }
+      SoundFx.click();
+    };
+
+    window.filterEmojiCategory = function(cat) {
+      currentEmojiCategory = cat;
+      document.querySelectorAll('.emoji-cat-pill').forEach(btn => {
+        if (btn.id === `emCat-${cat}`) {
+          btn.className = 'emoji-cat-pill active px-2.5 py-0.5 rounded-full bg-[#f0ff7a] text-[#000000] border border-[#000000] font-bold shrink-0';
+        } else {
+          btn.className = 'emoji-cat-pill px-2.5 py-0.5 rounded-full bg-[#e9eeea] text-[#111827] border border-[#d0d0ce] font-bold shrink-0';
+        }
+      });
+      renderEmojiGrid();
+    };
+
+    function renderEmojiGrid() {
+      const grid = document.getElementById('emojiGrid');
+      if (!grid) return;
+      grid.innerHTML = '';
+      let list = [];
+      if (currentEmojiCategory === 'all') {
+        Object.values(EMOJI_COLLECTION).forEach(arr => list = list.concat(arr));
+      } else {
+        list = EMOJI_COLLECTION[currentEmojiCategory] || [];
+      }
+
+      list.forEach(emoji => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'p-1 hover:bg-[#e9eeea] rounded-lg transition cursor-pointer active:scale-125';
+        btn.innerText = emoji;
+        btn.onclick = () => insertEmoji(emoji);
+        grid.appendChild(btn);
+      });
+    }
+
+    window.insertEmoji = function(emoji) {
+      const input = document.getElementById('messageInput');
+      if (input) {
+        input.value += emoji;
+        input.focus();
+      }
+      SoundFx.click();
+    };
+
+    const CURATED_GIFS = {
+      Matrix: [
+        'https://media.giphy.com/media/A06UFEx8jxEwU/giphy.gif',
+        'https://media.giphy.com/media/V2aklmz97gSpG/giphy.gif',
+        'https://media.giphy.com/media/eIm6324ee3pG0/giphy.gif'
+      ],
+      Hacking: [
+        'https://media.giphy.com/media/YQitE4YNQNahy/giphy.gif',
+        'https://media.giphy.com/media/u01ioCe6G8URG/giphy.gif',
+        'https://media.giphy.com/media/26tn33aiTi1jkl6H6/giphy.gif'
+      ],
+      Cyberpunk: [
+        'https://media.giphy.com/media/Xw3pnKSKhcH7ozPozR/giphy.gif',
+        'https://media.giphy.com/media/fBEMsUeGHZpsfXeEIY/giphy.gif'
+      ],
+      Laughing: [
+        'https://media.giphy.com/media/10yXFibl978FqE/giphy.gif',
+        'https://media.giphy.com/media/I4Jm998s2UxTW/giphy.gif'
+      ],
+      Cat: [
+        'https://media.giphy.com/media/BzyTuYCmvSORqs1ABM/giphy.gif',
+        'https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif'
+      ],
+      Fire: [
+        'https://media.giphy.com/media/Lopx9eUi34rbq/giphy.gif',
+        'https://media.giphy.com/media/P7JmDW7IkB7Ww/giphy.gif'
+      ],
+      'Mind Blown': [
+        'https://media.giphy.com/media/26ufdipQqU2lhNA4g/giphy.gif',
+        'https://media.giphy.com/media/xT0xeJpnrWC4XWblEk/giphy.gif'
+      ]
+    };
+
+    window.quickGifSearch = function(term) {
+      const input = document.getElementById('gifSearchInput');
+      if (input) input.value = term;
+      renderGifResults(term);
+    };
+
+    window.searchGifs = function(query) {
+      renderGifResults(query);
+    };
+
+    function renderGifResults(query) {
+      const grid = document.getElementById('gifGrid');
+      if (!grid) return;
+      grid.innerHTML = '';
+      const q = (query || 'Hacking').trim().toLowerCase();
+
+      let matches = [];
+      Object.keys(CURATED_GIFS).forEach(key => {
+        if (key.toLowerCase().includes(q) || q.includes(key.toLowerCase())) {
+          matches = matches.concat(CURATED_GIFS[key]);
+        }
+      });
+
+      if (matches.length === 0) {
+        Object.values(CURATED_GIFS).forEach(arr => matches = matches.concat(arr));
+      }
+
+      matches.forEach((gifUrl) => {
+        const img = document.createElement('img');
+        img.src = gifUrl;
+        img.className = 'w-full h-24 object-cover rounded-xl border border-[#d0d0ce] cursor-pointer hover:opacity-85 hover:scale-105 transition shadow-sm bg-black';
+        img.onclick = () => selectAndSendGif(gifUrl);
+        grid.appendChild(img);
+      });
+    }
+
+    window.selectAndSendGif = function(gifUrl) {
+      if (!meshRoom) {
+        showToast('Connect to a room first to transmit GIFs', 'error');
+        return;
+      }
+      toggleEmojiGifPicker(false);
+      
+      const packet = {
+        id: 'gif_' + Math.random().toString(36).substr(2, 9),
+        name: 'animated_gif.gif',
+        size: 500000,
+        dataUri: gifUrl,
+        isImage: true,
+        isClassified: false,
+        persona: myPersona
+      };
+
+      if (sendFile) sendFile(packet);
+      renderInlineImage(gifUrl, 'Animated GIF', myPersona, 'me');
+      SoundFx.ping();
+      showToast('Animated GIF broadcasted to mesh', 'info');
+    };
+
+    /* =========================================================================
+       HARDWARE VOLUME BUTTON DISAPPEAR & ANTI-SCREEN-RECORDER BLACKOUT SHIELD
+       ========================================================================= */
+    function checkScreenRecordingActive() {
+      let detected = false;
+      if (document.pictureInPictureElement) detected = true;
+      if (window.outerWidth && window.innerWidth && (window.outerWidth - window.innerWidth > 340)) {
+        // Screen capture side drawer panel anomaly
+      }
+      return detected;
+    }
+
+    let antiRecorderGuardLoop = null;
+    function startAntiRecorderGuard(canvas) {
+      if (antiRecorderGuardLoop) cancelAnimationFrame(antiRecorderGuardLoop);
+      function tick() {
+        if (!activeTripwireId) return;
+        if (checkScreenRecordingActive() || document.hidden || !document.hasFocus()) {
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+          }
+          triggerImmediateDestruction('Screen recorder active or background recording detected');
+          return;
+        }
+        antiRecorderGuardLoop = requestAnimationFrame(tick);
+      }
+      antiRecorderGuardLoop = requestAnimationFrame(tick);
+    }
+
+    // Capture volume hardware keypresses on mobile & desktop
+    window.addEventListener('keydown', (e) => {
+      const k = (e.key || '').toUpperCase();
+      const code = (e.code || '').toUpperCase();
+      const volumeKeys = ['AUDIOVOLUMEUP', 'AUDIOVOLUMEDOWN', 'VOLUMEUP', 'VOLUMEDOWN', 'MEDIAPLAYPAUSE', 'MEDIATRACKNEXT', 'MEDIATRACKPREVIOUS', 'VOLUME_UP', 'VOLUME_DOWN'];
+
+      if (activeTripwireId && (volumeKeys.includes(k) || volumeKeys.includes(code) || e.keyCode === 174 || e.keyCode === 175 || e.keyCode === 179)) {
+        e.preventDefault();
+        e.stopPropagation();
+        triggerImmediateDestruction('Hardware Volume button pressed on device');
+        return;
+      }
+    }, true);
+
+    if ('mediaSession' in navigator) {
+      try {
+        navigator.mediaSession.setActionHandler('play', () => {
+          if (activeTripwireId) triggerImmediateDestruction('Hardware Volume/Media button pressed');
+        });
+        navigator.mediaSession.setActionHandler('pause', () => {
+          if (activeTripwireId) triggerImmediateDestruction('Hardware Volume/Media button pressed');
+        });
+      } catch(e) {}
     }
 
     function renderSystemNotice(msg) {
@@ -1875,6 +2501,18 @@
         return;
       }
 
+      // Check if screen recorder or display capture is running
+      if (checkScreenRecordingActive()) {
+        const warnBox = document.getElementById('screenRecorderWarningBox');
+        if (warnBox) warnBox.classList.remove('hidden');
+        showToast('🚨 Screen Recorder active! Image decryption blocked.', 'error');
+        SoundFx.alert();
+        return;
+      } else {
+        const warnBox = document.getElementById('screenRecorderWarningBox');
+        if (warnBox) warnBox.classList.add('hidden');
+      }
+
       activeTripwireId = id;
       tripwireArmed = false;
       initialPointerPos = null;
@@ -1925,6 +2563,8 @@
         modal.classList.remove('hidden');
         SoundFx.chime();
         showToast(`Retinal scan complete. ${timerSec > 0 ? timerSec + 's countdown active.' : 'Tripwire armed.'}`, 'info');
+
+        startAntiRecorderGuard(canvas);
 
         armingTimeout = setTimeout(() => {
           tripwireArmed = true;
@@ -1986,7 +2626,13 @@
       if (!tripwireArmed) return;
       e.preventDefault();
       e.stopPropagation();
-      triggerImmediateDestruction(`Key capture disturbance: ${e.key || 'MODIFIER'}`);
+      const k = (e.key || '').toUpperCase();
+      const volumeKeys = ['AUDIOVOLUMEUP', 'AUDIOVOLUMEDOWN', 'VOLUMEUP', 'VOLUMEDOWN', 'MEDIAPLAYPAUSE', 'MEDIATRACKNEXT', 'MEDIATRACKPREVIOUS', 'VOLUME_UP', 'VOLUME_DOWN'];
+      if (volumeKeys.includes(k) || e.keyCode === 174 || e.keyCode === 175 || e.keyCode === 179) {
+        triggerImmediateDestruction('Hardware Volume button pressed on device');
+      } else {
+        triggerImmediateDestruction(`Key capture disturbance: ${e.key || 'MODIFIER'}`);
+      }
     }
 
     function onTripwireVisibility() {
@@ -2025,21 +2671,23 @@
 
       const canvas = document.getElementById('tripwireCanvas');
       const dCanvas = document.getElementById('disintegrationCanvas');
-      dCanvas.classList.remove('hidden');
-      dCanvas.width = canvas.width;
-      dCanvas.height = canvas.height;
-      const dCtx = dCanvas.getContext('2d');
-      const cCtx = canvas.getContext('2d');
+      if (dCanvas && canvas) {
+        dCanvas.classList.remove('hidden');
+        dCanvas.width = canvas.width;
+        dCanvas.height = canvas.height;
+        const dCtx = dCanvas.getContext('2d');
+        const cCtx = canvas.getContext('2d');
 
-      try {
-        const imgData = cCtx.getImageData(0, 0, canvas.width, canvas.height);
-        for (let i = 0; i < imgData.data.length; i += 4) {
-          imgData.data[i] = Math.random() * 255;
-          imgData.data[i+1] = Math.random() * 40;
-          imgData.data[i+2] = Math.random() * 40;
-        }
-        cCtx.putImageData(imgData, 0, 0);
-      } catch(e) {}
+        try {
+          const imgData = cCtx.getImageData(0, 0, canvas.width, canvas.height);
+          for (let i = 0; i < imgData.data.length; i += 4) {
+            imgData.data[i] = 0; // Pure Black Mask
+            imgData.data[i+1] = 0;
+            imgData.data[i+2] = 0;
+          }
+          cCtx.putImageData(imgData, 0, 0);
+        } catch(e) {}
+      }
 
       const entry = ephemeralPhotoStore.get(burnedId);
       if (entry) {
@@ -2070,7 +2718,8 @@
       let frame = 0;
       function burnTick() {
         frame++;
-        dCtx.fillStyle = 'rgba(3, 4, 6, 0.2)';
+        const dCtx = dCanvas.getContext('2d');
+        dCtx.fillStyle = 'rgba(0, 0, 0, 0.4)';
         dCtx.fillRect(0, 0, dCanvas.width, dCanvas.height);
         if (frame < 12) {
           requestAnimationFrame(burnTick);
@@ -2316,7 +2965,7 @@
       } else if (k === 'CLR') {
         input.value = '';
       } else {
-        if (input.value.length < 12) {
+        if (input.value.length < 32) {
           input.value += k;
         }
       }
@@ -2352,6 +3001,10 @@
       generateStealthPersona();
       fillRandomRoomCode();
       updateNotificationUI();
+      renderEmojiGrid();
+      quickGifSearch('Hacking');
+      renderSavedGroupsList();
+      updatePinButtonUI();
 
       const urlParams = new URLSearchParams(window.location.search);
       const roomParam = urlParams.get('room');

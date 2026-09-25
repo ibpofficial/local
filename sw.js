@@ -104,7 +104,9 @@ self.addEventListener('notificationclick', (event) => {
 
 // 6. Direct Message Handler from Client Page to trigger SW System Notifications
 self.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'SHOW_NOTIFICATION') {
+  if (!event.data) return;
+
+  if (event.data.type === 'SHOW_NOTIFICATION') {
     const { title, body, tag, icon } = event.data;
     self.registration.showNotification(title, {
       body: body,
@@ -113,7 +115,26 @@ self.addEventListener('message', (event) => {
       tag: tag || 'ghost-msg',
       renotify: true,
       vibrate: [200, 100, 200],
-      requireInteraction: false
+      requireInteraction: true
     });
+  } else if (event.data.type === 'SCHEDULE_TEST_NOTIFICATION') {
+    const delay = event.data.delay || 5000;
+    const { title, body, tag } = event.data;
+    
+    setTimeout(() => {
+      self.registration.showNotification(title || '⚡ GHOST FREQUENCY (Background Test)', {
+        body: body || 'Success! App background notifications work even when app is closed or screen is locked.',
+        icon: './icon-192.png',
+        badge: './icon-192.png',
+        tag: tag || 'test-lock-notif',
+        renotify: true,
+        vibrate: [300, 100, 300, 100, 300],
+        requireInteraction: true,
+        actions: [
+          { action: 'open', title: '💬 Open Ghost App' }
+        ]
+      });
+    }, delay);
   }
 });
+
