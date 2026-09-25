@@ -1717,7 +1717,9 @@
 
   <!-- Application Core Script with WebRTC Mesh & Ephemeral Engine -->
   <script type="module">
-    import { joinRoom } from 'https://esm.sh/trystero@0.20.0/nostr';
+    import { joinRoom as joinMqttRoom } from 'https://esm.sh/trystero@0.20.0/mqtt';
+    import { joinRoom as joinTorrentRoom } from 'https://esm.sh/trystero@0.20.0/torrent';
+    import { joinRoom as joinNostrRoom } from 'https://esm.sh/trystero@0.20.0/nostr';
 
     /* =========================================================================
        ZERO PERSISTENT STORAGE ARCHITECTURE (STRICT RAM ONLY)
@@ -2221,6 +2223,87 @@
       if (homeInput) homeInput.value = randomCode;
     };
 
+    let mqttRoom = null, torrentRoom = null, nostrRoom = null;
+    let roomActions = {
+      chat: [],
+      file: [],
+      heart: [],
+      typing: [],
+      presence: []
+    };
+    const seenMessageIds = new Set();
+
+    function dispatchRoomAction(actionType, payload) {
+      if (roomActions[actionType]) {
+        roomActions[actionType].forEach(sendFn => {
+          try { sendFn(payload); } catch(e) {}
+        });
+      }
+      if (localBroadcastChannel) {
+        try {
+          localBroadcastChannel.postMessage({ action: actionType, data: payload, senderId: myPersona.id });
+        } catch(e) {}
+      }
+    }
+
+    function handleIncomingAction(actionType, payload, peerId) {
+      if (!payload) return;
+      if (mutedPeerIds.has(peerId)) return;
+
+      // Unique deduplication ID
+      const msgId = payload.id || (payload.timestamp ? `${peerId}_${payload.timestamp}_${payload.text || payload.name || ''}` : null);
+      if (msgId) {
+        if (seenMessageIds.has(msgId)) return;
+        seenMessageIds.add(msgId);
+        if (seenMessageIds.size > 800) {
+          const first = seenMessageIds.values().next().value;
+          seenMessageIds.delete(first);
+        }
+      }
+
+      const senderPersona = payload.persona || { name: 'Node-' + String(peerId).substring(0, 4), avatar: '⚡' };
+      if (peerId) {
+        activePeers.set(peerId, { persona: senderPersona });
+        updateMeshStatus();
+        renderPeersRoster();
+      }
+
+      if (actionType === 'chat') {
+        renderMessageCard(payload.text, senderPersona, 'peer', payload.replyTo);
+        SoundFx.chime();
+        triggerOSNotification(`💬 ${senderPersona.name}`, payload.text, `msg-${peerId}`);
+      } else if (actionType === 'file') {
+        if (payload.isClassified) {
+          renderClassifiedCard(payload, 'peer');
+          triggerOSNotification(`📸 CLASSIFIED PHOTO from ${senderPersona.name}`, `Ephemeral Ghost Photo received`, `file-${peerId}`);
+        } else if (payload.isImage) {
+          renderInlineImage(payload.dataUri, payload.name, senderPersona, 'peer');
+          triggerOSNotification(`🖼️ Image from ${senderPersona.name}`, `${payload.name} received`, `file-${peerId}`);
+        } else {
+          registerVaultCatalogItem(payload, payload.dataUri, false);
+          incrementVaultCount();
+          showToast(`Received ${payload.name} from ${senderPersona.name}`, 'success');
+          triggerOSNotification(`📁 File from ${senderPersona.name}`, `${payload.name} received`, `file-${peerId}`);
+        }
+        SoundFx.chime();
+      } else if (actionType === 'typing') {
+        const notice = document.getElementById('peerKeystrokeNotice');
+        const lbl = document.getElementById('typingPeersList');
+        if (notice && lbl) {
+          if (payload.active) {
+            notice.classList.remove('hidden');
+            lbl.innerText = `${senderPersona.name} is transmitting...`;
+          } else {
+            notice.classList.add('hidden');
+          }
+        }
+      } else if (actionType === 'heart') {
+        globalHeartCounter = Math.max(globalHeartCounter, payload.count || 0);
+        updateHeartUI(globalHeartCounter);
+        SoundFx.heart();
+      }
+    }
+
     function initLocalBroadcastChannel(code) {
       if (localBroadcastChannel) {
         try { localBroadcastChannel.close(); } catch(e) {}
@@ -2236,47 +2319,12 @@
 
           if (action === 'presence') {
             const isNew = !activePeers.has(senderId);
-            activePeers.set(senderId, { persona: data.persona });
+            handleIncomingAction('presence', data, senderId);
             if (isNew && localBroadcastChannel) {
               localBroadcastChannel.postMessage({ action: 'presence', data: { persona: myPersona }, senderId: myPersona.id });
             }
-            updateMeshStatus();
-            renderPeersRoster();
-          } else if (action === 'chat') {
-            if (mutedPeerIds.has(senderId)) return;
-            renderMessageCard(data.text, data.persona, 'peer', data.replyTo);
-            SoundFx.chime();
-            triggerOSNotification(`💬 ${data.persona.name}`, data.text, `msg-${senderId}`);
-          } else if (action === 'file') {
-            if (mutedPeerIds.has(senderId)) return;
-            if (data.isClassified) {
-              renderClassifiedCard(data, 'peer');
-              triggerOSNotification(`📸 CLASSIFIED PHOTO from ${data.persona.name}`, `Ephemeral Ghost Photo received`, `file-${senderId}`);
-            } else if (data.isImage) {
-              renderInlineImage(data.dataUri, data.name, data.persona, 'peer');
-              triggerOSNotification(`🖼️ Image from ${data.persona.name}`, `${data.name} received`, `file-${senderId}`);
-            } else {
-              registerVaultCatalogItem(data, data.dataUri, false);
-              incrementVaultCount();
-              showToast(`Received ${data.name} from ${data.persona.name}`, 'success');
-              triggerOSNotification(`📁 File from ${data.persona.name}`, `${data.name} received`, `file-${senderId}`);
-            }
-            SoundFx.chime();
-          } else if (action === 'typing') {
-            if (mutedPeerIds.has(senderId)) return;
-            const notice = document.getElementById('peerKeystrokeNotice');
-            const lbl = document.getElementById('typingPeersList');
-            if (data.active) {
-              notice.classList.remove('hidden');
-              lbl.innerText = `${data.persona.name} is transmitting...`;
-            } else {
-              notice.classList.add('hidden');
-            }
-          } else if (action === 'heart') {
-            if (mutedPeerIds.has(senderId)) return;
-            globalHeartCounter = Math.max(globalHeartCounter, data.count);
-            updateHeartUI(globalHeartCounter);
-            SoundFx.heart();
+          } else {
+            handleIncomingAction(action, data, senderId);
           }
         };
 
@@ -2300,11 +2348,14 @@
       if (homeInput) homeInput.value = code;
       if (codeInput) codeInput.value = code;
 
-      if (meshRoom) {
-        try { meshRoom.leave(); } catch(e) {}
-        meshRoom = null;
-        activePeers.clear();
-      }
+      // Clean up previous room handles
+      if (mqttRoom) { try { mqttRoom.leave(); } catch(e) {} mqttRoom = null; }
+      if (torrentRoom) { try { torrentRoom.leave(); } catch(e) {} torrentRoom = null; }
+      if (nostrRoom) { try { nostrRoom.leave(); } catch(e) {} nostrRoom = null; }
+      meshRoom = null;
+      activePeers.clear();
+      seenMessageIds.clear();
+      roomActions = { chat: [], file: [], heart: [], typing: [], presence: [] };
 
       currentRoomCode = code;
       document.getElementById('activeRoomCodeLabel').innerText = `ROOM: #${code}`;
@@ -2316,117 +2367,97 @@
 
       initLocalBroadcastChannel(code);
 
+      const appId = 'ghost-freq-multi-mesh-v4';
+      const rtcConfig = {
+        iceServers: [
+          { urls: 'stun:stun.l.google.com:19302' },
+          { urls: 'stun:stun1.l.google.com:19302' },
+          { urls: 'stun:stun2.l.google.com:19302' },
+          { urls: 'stun:stun3.l.google.com:19302' },
+          { urls: 'stun:stun4.l.google.com:19302' }
+        ]
+      };
+
+      const bindStrategy = (roomObj, name) => {
+        if (!roomObj) return;
+        meshRoom = roomObj;
+
+        const [sendMsg, getMsg] = roomObj.makeAction('chat');
+        const [sendFile, getFile] = roomObj.makeAction('file');
+        const [sendHeart, getHeart] = roomObj.makeAction('heart');
+        const [sendTyping, getTyping] = roomObj.makeAction('typing');
+        const [sendPresence, getPresence] = roomObj.makeAction('presence');
+
+        roomActions.chat.push(sendMsg);
+        roomActions.file.push(sendFile);
+        roomActions.heart.push(sendHeart);
+        roomActions.typing.push(sendTyping);
+        roomActions.presence.push(sendPresence);
+
+        roomObj.onPeerJoin(peerId => {
+          SoundFx.chime();
+          showToast(`Peer connected via ${name}`, 'success');
+          try { sendPresence({ persona: myPersona }); } catch(e) {}
+          try { sendHeart({ count: globalHeartCounter }); } catch(e) {}
+          renderSystemNotice(`A node joined frequency #${code} (${name})`);
+          triggerOSNotification(`⚡ Node Connected`, `A new peer joined Room #${code}`, `peer-${peerId}`);
+        });
+
+        roomObj.onPeerLeave(peerId => {
+          const departing = activePeers.get(peerId);
+          const peerName = departing ? departing.persona.name : 'Unknown Node';
+          activePeers.delete(peerId);
+          updateMeshStatus();
+          renderSystemNotice(`${peerName} disconnected from frequency`);
+          SoundFx.alert();
+        });
+
+        getMsg((data, peerId) => handleIncomingAction('chat', data, peerId));
+        getFile((data, peerId) => handleIncomingAction('file', data, peerId));
+        getHeart((data, peerId) => handleIncomingAction('heart', data, peerId));
+        getTyping((data, peerId) => handleIncomingAction('typing', data, peerId));
+        getPresence((data, peerId) => {
+          const isNew = !activePeers.has(peerId);
+          handleIncomingAction('presence', data, peerId);
+          if (isNew && sendPresence) {
+            try { sendPresence({ persona: myPersona }); } catch(e) {}
+          }
+        });
+      };
+
+      // 1. MQTT Strategy (Fastest global broker WebSockets)
+      try {
+        mqttRoom = joinMqttRoom({ appId: appId, rtcConfig: rtcConfig }, code);
+        bindStrategy(mqttRoom, 'MQTT Mesh');
+      } catch(e) {
+        console.warn('MQTT strategy init error:', e);
+      }
+
+      // 2. WebTorrent Tracker Strategy
+      try {
+        torrentRoom = joinTorrentRoom({ appId: appId, rtcConfig: rtcConfig }, code);
+        bindStrategy(torrentRoom, 'Torrent Trackers');
+      } catch(e) {
+        console.warn('Torrent strategy init error:', e);
+      }
+
+      // 3. Nostr Relays Strategy
       try {
         const nostrRelays = [
           'wss://relay.damus.io',
           'wss://nos.lol',
           'wss://relay.nostr.band',
           'wss://nostr.mom',
-          'wss://purplepag.es',
-          'wss://relay.snort.social'
+          'wss://purplepag.es'
         ];
-        const rtcConfig = {
-          iceServers: [
-            { urls: 'stun:stun.l.google.com:19302' },
-            { urls: 'stun:stun1.l.google.com:19302' },
-            { urls: 'stun:stun2.l.google.com:19302' },
-            { urls: 'stun:stun3.l.google.com:19302' },
-            { urls: 'stun:stun4.l.google.com:19302' }
-          ]
-        };
-
-        meshRoom = joinRoom({ appId: 'ghost-freq-multi-mesh-v3', relays: nostrRelays, rtcConfig: rtcConfig }, code);
-
-        [sendMsg, getMsg] = meshRoom.makeAction('chat');
-        [sendFile, getFile] = meshRoom.makeAction('file');
-        [sendHeart, getHeart] = meshRoom.makeAction('heart');
-        [sendTyping, getTyping] = meshRoom.makeAction('typing');
-        [sendPresence, getPresence] = meshRoom.makeAction('presence');
-
-        meshRoom.onPeerJoin(peerId => {
-          SoundFx.chime();
-          showToast(`Peer connected to mesh frequency`, 'success');
-          sendPresence({ persona: myPersona });
-          sendHeart({ count: globalHeartCounter });
-          renderSystemNotice(`A node joined frequency #${code}`);
-          triggerOSNotification(`⚡ Node Connected`, `A new peer joined Room #${code}`, `peer-${peerId}`);
-        });
-
-        meshRoom.onPeerLeave(peerId => {
-          const departing = activePeers.get(peerId);
-          const name = departing ? departing.persona.name : 'Unknown Node';
-          activePeers.delete(peerId);
-          updateMeshStatus();
-          renderSystemNotice(`${name} disconnected from frequency`);
-          SoundFx.alert();
-        });
-
-        getMsg((data, peerId) => {
-          if (mutedPeerIds.has(peerId)) return;
-          renderMessageCard(data.text, data.persona, 'peer', data.replyTo);
-          SoundFx.chime();
-          triggerOSNotification(`💬 ${data.persona.name}`, data.text, `msg-${peerId}`);
-        });
-
-        getFile((data, peerId) => {
-          if (mutedPeerIds.has(peerId)) return;
-          if (data.isClassified) {
-            renderClassifiedCard(data, 'peer');
-            triggerOSNotification(`📸 CLASSIFIED PHOTO from ${data.persona.name}`, `Ephemeral Ghost Photo received (${data.timerSeconds || 0}s timer)`, `file-${peerId}`);
-          } else if (data.isImage) {
-            renderInlineImage(data.dataUri, data.name, data.persona, 'peer');
-            triggerOSNotification(`🖼️ Image from ${data.persona.name}`, `${data.name} received`, `file-${peerId}`);
-          } else {
-            registerVaultCatalogItem(data, data.dataUri, false);
-            incrementVaultCount();
-            showToast(`Received ${data.name} from ${data.persona.name}`, 'success');
-            triggerOSNotification(`📁 File from ${data.persona.name}`, `${data.name} received`, `file-${peerId}`);
-          }
-          SoundFx.chime();
-        });
-
-        getHeart((data, peerId) => {
-          if (mutedPeerIds.has(peerId)) return;
-          globalHeartCounter = Math.max(globalHeartCounter, data.count);
-          updateHeartUI(globalHeartCounter);
-          SoundFx.heart();
-        });
-
-        const typingTimeouts = new Map();
-        getTyping((data, peerId) => {
-          if (mutedPeerIds.has(peerId)) return;
-          const notice = document.getElementById('peerKeystrokeNotice');
-          const lbl = document.getElementById('typingPeersList');
-          if (data.active) {
-            notice.classList.remove('hidden');
-            lbl.innerText = `${data.persona.name} is transmitting...`;
-            clearTimeout(typingTimeouts.get(peerId));
-            typingTimeouts.set(peerId, setTimeout(() => {
-              notice.classList.add('hidden');
-            }, 1800));
-          } else {
-            notice.classList.add('hidden');
-          }
-        });
-
-        getPresence((data, peerId) => {
-          if (mutedPeerIds.has(peerId)) return;
-          const isNew = !activePeers.has(peerId);
-          activePeers.set(peerId, { persona: data.persona });
-          if (isNew && sendPresence) {
-            sendPresence({ persona: myPersona });
-          }
-          updateMeshStatus();
-          renderPeersRoster();
-        });
-
-        updateMeshStatus();
-        renderPeersRoster();
-
-      } catch(err) {
-        console.warn('Trystero WebRTC init fallback to BroadcastChannel:', err);
-        showToast('Connecting via local mesh protocol...', 'info');
+        nostrRoom = joinNostrRoom({ appId: appId, relays: nostrRelays, rtcConfig: rtcConfig }, code);
+        bindStrategy(nostrRoom, 'Nostr Relays');
+      } catch(e) {
+        console.warn('Nostr strategy init error:', e);
       }
+
+      updateMeshStatus();
+      renderPeersRoster();
     };
 
     function updateMeshStatus() {
@@ -2948,7 +2979,7 @@
     }
 
     window.selectAndSendGif = function(gifUrl) {
-      if (!meshRoom && !currentRoomCode) {
+      if (!currentRoomCode) {
         showToast('Connect to a room first to transmit GIFs', 'error');
         return;
       }
@@ -2964,10 +2995,7 @@
         persona: myPersona
       };
 
-      if (sendFile) sendFile(packet);
-      if (localBroadcastChannel) {
-        localBroadcastChannel.postMessage({ action: 'file', data: packet, senderId: myPersona.id });
-      }
+      dispatchRoomAction('file', packet);
       renderInlineImage(gifUrl, 'Animated GIF', myPersona, 'me');
       SoundFx.ping();
       showToast('Animated GIF broadcasted to mesh', 'info');
@@ -3043,7 +3071,7 @@
     }
 
     window.toggleMeshHeart = function(cb) {
-      if (!meshRoom && !currentRoomCode) {
+      if (!currentRoomCode) {
         showToast('Connect to a room to broadcast reaction pulse', 'error');
         if (cb) cb.checked = false;
         return;
@@ -3051,10 +3079,7 @@
       globalHeartCounter++;
       updateHeartUI(globalHeartCounter);
       SoundFx.heart();
-      if (sendHeart) sendHeart({ count: globalHeartCounter });
-      if (localBroadcastChannel) {
-        localBroadcastChannel.postMessage({ action: 'heart', data: { count: globalHeartCounter }, senderId: myPersona.id });
-      }
+      dispatchRoomAction('heart', { count: globalHeartCounter, persona: myPersona });
       showToast('Pulse broadcasted across mesh', 'info');
     };
 
@@ -3081,24 +3106,25 @@
         return;
       }
 
-      if (!meshRoom && !currentRoomCode) {
+      if (!currentRoomCode) {
         showToast('Not connected to a room. Enter room code or open Room Hub.', 'error');
         return;
       }
 
-      const packet = { text: val, persona: myPersona, timestamp: Date.now(), replyTo: currentReplyState };
-      if (sendMsg) sendMsg(packet);
-      if (localBroadcastChannel) {
-        localBroadcastChannel.postMessage({ action: 'chat', data: packet, senderId: myPersona.id });
-      }
+      const packet = {
+        id: 'msg_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
+        text: val,
+        persona: myPersona,
+        timestamp: Date.now(),
+        replyTo: currentReplyState
+      };
+
+      dispatchRoomAction('chat', packet);
       renderMessageCard(val, myPersona, 'me', currentReplyState);
       SoundFx.ping();
       input.value = '';
       cancelReplyState();
-      if (sendTyping) sendTyping({ active: false, persona: myPersona });
-      if (localBroadcastChannel) {
-        localBroadcastChannel.postMessage({ action: 'typing', data: { active: false, persona: myPersona }, senderId: myPersona.id });
-      }
+      dispatchRoomAction('typing', { active: false, persona: myPersona });
     };
 
     function getAvatarHtml(avatar, sizeClass = 'w-6 h-6 sm:w-7 sm:h-7') {
@@ -3307,7 +3333,7 @@
 
     window.dispatchStagedFile = function() {
       if (!stagedFileData) return;
-      if (!meshRoom && !currentRoomCode) {
+      if (!currentRoomCode) {
         showToast('Connect to a room to broadcast files', 'error');
         return;
       }
@@ -3323,10 +3349,7 @@
         persona: myPersona
       };
 
-      if (sendFile) sendFile(packet);
-      if (localBroadcastChannel) {
-        localBroadcastChannel.postMessage({ action: 'file', data: packet, senderId: myPersona.id });
-      }
+      dispatchRoomAction('file', packet);
 
       if (stagedFileData.isClassified) {
         renderClassifiedCard(packet, 'me');
@@ -3340,13 +3363,14 @@
     };
 
     function readAndBroadcastGenericFile(file) {
-      if (!meshRoom && !currentRoomCode) {
+      if (!currentRoomCode) {
         showToast('Connect to a room to broadcast files', 'error');
         return;
       }
       const reader = new FileReader();
       reader.onload = (e) => {
         const packet = {
+          id: 'file_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
           name: file.name,
           size: file.size,
           mime: file.type || 'application/octet-stream',
@@ -3356,10 +3380,7 @@
           persona: myPersona
         };
 
-        if (sendFile) sendFile(packet);
-        if (localBroadcastChannel) {
-          localBroadcastChannel.postMessage({ action: 'file', data: packet, senderId: myPersona.id });
-        }
+        dispatchRoomAction('file', packet);
         registerVaultCatalogItem(packet, e.target.result, false);
         incrementVaultCount();
         SoundFx.chime();
