@@ -1011,6 +1011,76 @@
     </div>
   </div>
 
+  <!-- MODAL 7: PWA INSTALLATION & BACKGROUND NOTIFICATION ONBOARDING MODAL -->
+  <div id="pwaInstallModal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-3 hidden select-none">
+    <div class="w-full max-w-md bg-[#ffffff] border border-[#d0d0ce] rounded-[2rem] p-5 shadow-2xl space-y-4 text-[#111827] max-h-[90vh] overflow-y-auto custom-scroll">
+      <div class="flex items-center justify-between border-b border-[#d0d0ce] pb-3">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-xl bg-[#111827] text-white flex items-center justify-center font-mono font-bold text-xs">
+            ⚡
+          </div>
+          <div>
+            <h3 class="font-mono text-xs font-bold uppercase text-[#111827]">INSTALL GHOST MESH APP</h3>
+            <p class="text-[10px] font-mono text-[#6b7280]">Download App for Mobile & PC</p>
+          </div>
+        </div>
+        <button onclick="closeModal('pwaInstallModal')" class="w-7 h-7 rounded-full border border-[#d0d0ce] bg-[#e9eeea] hover:bg-[#dededd] text-[#111827] flex items-center justify-center font-bold text-xs transition">
+          &times;
+        </button>
+      </div>
+
+      <!-- PWA Installation Actions -->
+      <div class="space-y-3">
+        <div class="p-3 bg-[#e9eeea] border border-[#d0d0ce] rounded-2xl space-y-2">
+          <div class="text-xs font-mono font-bold text-[#111827] flex items-center gap-1.5">
+            <span>📱 Mobile & Desktop PWA Application</span>
+          </div>
+          <p class="text-xs text-[#4b5563] leading-relaxed">
+            Install GHOST FREQUENCY on your iPhone, Android, or PC home screen. Works offline, launches like a native app, and receives background notifications!
+          </p>
+          <button onclick="triggerPwaInstallation()" class="w-full date-selector justify-center" style="background-color: #f0ff7a; color: #000000; border-color: #000000; font-weight: 700; height: 42px; font-size: 0.9rem;">
+            🚀 INSTALL APP ON DEVICE NOW
+          </button>
+        </div>
+
+        <!-- Step-by-Step Mobile OS Instructions -->
+        <div class="p-3 bg-[#f8faf9] border border-[#d0d0ce] rounded-2xl space-y-2 font-sans text-xs">
+          <div class="font-mono text-[11px] font-bold text-[#111827] uppercase">// MANUAL MOBILE INSTALL GUIDE</div>
+          <div class="space-y-1.5 text-[11px] text-[#4b5563]">
+            <div class="flex items-start gap-2">
+              <span class="font-mono font-bold text-[#111827] bg-[#e9eeea] px-1.5 rounded shrink-0">iOS (iPhone)</span>
+              <span>Tap <strong>Share Icon</strong> <svg class="w-3.5 h-3.5 inline text-[#06b6d4]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg> ➔ scroll down & tap <strong>"Add to Home Screen"</strong>.</span>
+            </div>
+            <div class="flex items-start gap-2 pt-1 border-t border-[#e5e7eb]">
+              <span class="font-mono font-bold text-[#111827] bg-[#e9eeea] px-1.5 rounded shrink-0">Android</span>
+              <span>Tap browser menu <strong>(⋮)</strong> ➔ tap <strong>"Install app"</strong> or <strong>"Add to Home screen"</strong>.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Background Notification Setup -->
+        <div class="p-3 bg-[#f8faf9] border border-[#d0d0ce] rounded-2xl space-y-2">
+          <div class="flex items-center justify-between">
+            <div class="text-xs font-mono font-bold text-[#111827]">🔔 Background Notifications</div>
+            <span id="pwaModalNotifStatus" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 border border-rose-200">INACTIVE</span>
+          </div>
+          <p class="text-xs text-[#4b5563] leading-relaxed">
+            Receive OS alerts on your lock screen when messages, photos, or peers arrive—even when the app tab is closed!
+          </p>
+          <button onclick="requestNotificationPermission()" class="w-full date-selector justify-center" style="background-color: #111827; color: #ffffff; height: 38px;">
+            🔔 ENABLE BACKGROUND ALERTS NOW
+          </button>
+        </div>
+
+        <div class="pt-1 flex justify-end">
+          <button onclick="closeModal('pwaInstallModal')" class="date-selector" style="padding: 0.4rem 1rem;">
+            Continue in Browser
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Notification Feedback -->
   <div id="toastNotification" class="fixed bottom-14 sm:bottom-4 right-4 z-50 transform translate-y-16 opacity-0 pointer-events-none transition-all duration-200 border border-[#d0d0ce] bg-[#ffffff] px-4 py-2.5 rounded-full shadow-2xl flex items-center gap-2 text-xs font-mono text-[#111827]">
     <div id="toastDot" class="w-2 h-2 rounded-full bg-stealth-emerald"></div>
