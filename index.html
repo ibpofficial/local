@@ -43,7 +43,8 @@
             }
           },
           fontFamily: {
-            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+            sans: ['"Plus Jakarta Sans"', 'Fredoka', 'Inter', '-apple-system', 'sans-serif'],
+            funny: ['Fredoka', '"Plus Jakarta Sans"', 'cursive', 'sans-serif'],
             mono: ['JetBrains Mono', 'SF Mono', 'ui-monospace', 'Menlo', 'monospace']
           }
         }
@@ -56,7 +57,7 @@
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
     * {
       box-sizing: border-box;
@@ -82,7 +83,7 @@
     body {
       background-color: #e9eeea !important;
       color: #111827 !important;
-      font-family: 'Inter', sans-serif;
+      font-family: 'Plus Jakarta Sans', 'Fredoka', sans-serif;
       height: 100vh;
       height: 100dvh;
       min-height: -webkit-fill-available;
@@ -90,6 +91,85 @@
       overflow: hidden;
       margin: 0;
       padding: 0;
+    }
+
+    /* Uiverse Design Inspired Systems */
+    .uiverse-card {
+      background-color: #ffffff;
+      border: 1px solid #d0d0ce;
+      border-radius: 1.25rem;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .uiverse-card:hover {
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.09);
+      border-color: #94a3b8;
+    }
+
+    .uiverse-nav {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 9999px;
+      padding: 0.5rem 1.25rem;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+      transition: all 0.3s ease-in-out;
+      border: 1px solid rgba(208, 208, 206, 0.6);
+    }
+    .uiverse-nav:hover {
+      box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.12);
+      background: rgba(255, 255, 255, 0.95);
+    }
+
+    .uiverse-btn {
+      cursor: pointer;
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.65rem 1.75rem;
+      background-color: rgba(17, 24, 39, 0.95);
+      color: #f1f1f1;
+      border-radius: 1.5rem;
+      font-weight: 600;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.825rem;
+      border: 1px solid rgba(0, 0, 0, 0.8);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+      transition: all 0.2s ease-in-out;
+      user-select: none;
+    }
+    .uiverse-btn:hover {
+      background-color: rgba(0, 0, 0, 1);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+    }
+    .uiverse-btn:active {
+      transform: scale(0.96);
+    }
+    .uiverse-tooltip {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+      bottom: -2.25rem;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 0.25rem 0.6rem;
+      background-color: rgba(0, 0, 0, 0.85);
+      color: #ffffff;
+      font-size: 0.65rem;
+      font-family: 'JetBrains Mono', monospace;
+      border-radius: 0.375rem;
+      white-space: nowrap;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      z-index: 50;
+    }
+    .uiverse-btn:hover .uiverse-tooltip {
+      opacity: 1;
+      transform: translateX(-50%) translateY(2px);
     }
 
     /* Minimalist Custom Scrollbars */
@@ -538,64 +618,78 @@
 
 
   <!-- =========================================================================
-       MINIMALIST TOP APP BAR (Single-line Status Bar on Mobile & PC)
+       MODERN UIVERSE TOP APP BAR (Single-line Status Bar with sahilxkhadka Buttons & Tooltips)
        ========================================================================= -->
-  <header class="h-12 border-b border-[#d0d0ce] bg-[#ffffff] px-2.5 sm:px-5 flex items-center justify-between gap-2 shadow-sm z-30 select-none shrink-0">
+  <header class="h-14 border-b border-[#d0d0ce]/80 bg-white/90 backdrop-blur-md px-3 sm:px-6 flex items-center justify-between gap-2 shadow-sm z-30 select-none shrink-0">
     
-    <!-- Left Status Indicator -->
-    <div class="flex items-center gap-1.5 sm:gap-2 min-w-0">
-      <div class="w-7 h-7 shrink-0 rounded-xl bg-[#e9eeea] border border-[#d0d0ce] flex items-center justify-center text-[#111827] shadow-sm font-bold text-xs">
+    <!-- Left Status & Room Indicator -->
+    <div class="flex items-center gap-2 min-w-0">
+      <div class="w-8 h-8 shrink-0 rounded-xl bg-gradient-to-tr from-[#111827] to-[#374151] border border-black/20 flex items-center justify-center text-[#f0ff7a] shadow-sm font-bold text-sm">
         ⚡
       </div>
-      <div class="flex items-center gap-1.5 min-w-0">
-        <span id="activeRoomCodeLabel" class="font-mono text-xs font-bold text-[#111827] tracking-wide truncate max-w-[120px] sm:max-w-none">ROOM: NOT CONNECTED</span>
-        <span class="hidden sm:inline text-[#d0d0ce]">&bull;</span>
+      <div class="flex items-center gap-2 min-w-0">
+        <span id="activeRoomCodeLabel" class="font-sans text-xs font-bold text-[#111827] tracking-wide truncate max-w-[120px] sm:max-w-none">ROOM: NOT CONNECTED</span>
+        <span class="hidden sm:inline text-gray-300">&bull;</span>
         
         <!-- DYNAMIC ONLINE MEMBERS COUNTER BADGE -->
-        <span id="onlineMembersBadge" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1 shrink-0">
-          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+        <span id="onlineMembersBadge" class="text-[11px] font-mono font-bold px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-800 border border-emerald-500/30 flex items-center gap-1.5 shrink-0 shadow-xs">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
           <span id="onlineCountText">1 Member Online</span>
         </span>
 
-        <span id="meshPeersCountLabel" class="hidden md:inline text-[11px] font-mono text-[#6b7280]">0 Peers in Mesh</span>
+        <span id="meshPeersCountLabel" class="hidden md:inline text-[11px] font-mono text-gray-500">0 Peers in Mesh</span>
       </div>
     </div>
 
-    <!-- Right Controls: Reaction Pulse & Navigation 3-Dots Drawer Trigger -->
-    <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+    <!-- Right Controls: sahilxkhadka Inspired Action Buttons with Hover Tooltips -->
+    <div class="flex items-center gap-2 shrink-0">
       
       <!-- PIN / SAVE ROOM TOGGLE BUTTON -->
       <button 
         id="pinRoomHeaderBtn" 
         onclick="togglePinCurrentRoom()" 
-        class="date-selector flex items-center gap-1.5" 
-        style="height: 34px; padding: 0 10px;" 
-        title="Pin/Save room to receive notifications even when app is closed"
+        class="uiverse-btn group relative flex items-center gap-1.5" 
+        style="padding: 0.45rem 0.95rem; font-size: 0.75rem;" 
+        title="Save Room"
       >
         <span id="pinRoomBtnIcon" class="flex items-center justify-center">
-          <svg class="w-3.5 h-3.5 text-[#111827]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+          <svg class="w-3.5 h-3.5 text-yellow-400 fill-current" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
         </span>
-        <span id="pinRoomBtnLabel" class="text-xs font-bold hidden xs:inline">SAVE ROOM</span>
+        <span id="pinRoomBtnLabel" class="font-bold hidden xs:inline">SAVE ROOM</span>
+        <div class="uiverse-tooltip">Save Room for Notifications</div>
       </button>
 
-      <!-- PWA Install Quick Button -->
-      <button id="pwaInstallBtnHeader" onclick="triggerPwaInstallation()" class="hidden date-selector flex items-center gap-1" style="background-color: #f0ff7a; color: #000000; border-color: #000000; font-weight: 700; height: 34px; padding: 0 10px;" title="Install Ghost App on device">
-        <svg class="w-3.5 h-3.5 text-[#000000]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-        <span class="text-xs">INSTALL</span>
+      <!-- PWA INSTALL QUICK BUTTON (sahilxkhadka style with SVG download icon) -->
+      <button 
+        id="pwaInstallBtnHeader" 
+        onclick="triggerPwaInstallation()" 
+        class="hidden uiverse-btn group relative flex items-center gap-1.5" 
+        style="background: linear-gradient(135deg, #f0ff7a 0%, #eab308 100%); color: #000000; border-color: #000000; padding: 0.45rem 0.95rem; font-size: 0.75rem;" 
+        title="Install Ghost App"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" height="14px" width="14px" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 21H18M12 3V17M12 17L17 12M12 17L7 12"/></svg>
+        <span class="font-bold">INSTALL</span>
+        <div class="uiverse-tooltip">Install App on Phone</div>
       </button>
 
       <!-- ROOM HUB Quick Pill Button -->
-      <button onclick="openModal('roomModal')" class="date-selector flex items-center gap-1" style="background-color: #f0ff7a; color: #000000; border-color: #000000; font-weight: 700; height: 34px; padding: 0 10px;">
-        <svg class="w-3.5 h-3.5 text-[#000000]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z"/></svg>
-        <span class="text-xs">ROOMS</span>
+      <button 
+        onclick="openModal('roomModal')" 
+        class="uiverse-btn group relative flex items-center gap-1.5" 
+        style="padding: 0.45rem 0.95rem; font-size: 0.75rem;" 
+        title="Browse Rooms"
+      >
+        <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z"/></svg>
+        <span class="font-bold hidden sm:inline">ROOMS</span>
+        <div class="uiverse-tooltip">Join or Create Room</div>
       </button>
 
       <!-- 3-DOTS NAVIGATION TRIGGER BUTTON (Opens Side Drawer) -->
       <button 
         type="button" 
         onclick="toggleMobileSideNav()" 
-        class="w-9 h-9 rounded-full border border-[#d0d0ce] bg-[#ffffff] hover:bg-[#e9eeea] text-[#111827] flex items-center justify-center font-bold text-lg shadow-sm transition"
-        title="Open Navigation Side Drawer"
+        class="w-9 h-9 rounded-full border border-gray-300 bg-white hover:bg-gray-100 text-[#111827] flex items-center justify-center font-bold text-lg shadow-sm transition hover:scale-105 active:scale-95"
+        title="Open Navigation Drawer"
       >
         <svg class="w-5 h-5 text-[#111827]" fill="currentColor" viewBox="0 0 24 24">
           <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
@@ -606,26 +700,28 @@
   </header>
 
   <!-- =========================================================================
-       SUB-HEADER NAVIGATION TAB BAR (PROMINENT EASY SWITCHER ON MOBILE & PC)
+       SUB-HEADER NAVIGATION TAB BAR (Uiverse Floating Backdrop Pill Bar)
        ========================================================================= -->
-  <nav class="h-11 bg-[#f8faf9] border-b border-[#d0d0ce] px-2 flex items-center justify-around sm:justify-start sm:gap-2 z-20 shrink-0 font-mono text-xs select-none">
-    <button id="nav-tab-home" onclick="switchTab('home')" class="flex-1 sm:flex-initial h-8 px-3.5 rounded-xl flex items-center justify-center gap-1.5 font-bold transition bg-[#111827] text-[#ffffff] shadow-sm">
-      <svg class="w-4 h-4 text-[#f0ff7a]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-      <span>HOME</span>
-    </button>
-    <button id="nav-tab-chat" onclick="switchTab('chat')" class="flex-1 sm:flex-initial h-8 px-3.5 rounded-xl flex items-center justify-center gap-1.5 font-semibold text-[#6b7280] hover:text-[#111827] hover:bg-[#dededd] transition">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
-      <span>CHAT</span>
-    </button>
-    <button id="nav-tab-roster" onclick="switchTab('roster')" class="flex-1 sm:flex-initial h-8 px-3.5 rounded-xl flex items-center justify-center gap-1.5 font-semibold text-[#6b7280] hover:text-[#111827] hover:bg-[#dededd] transition">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-      <span>PEERS</span>
-    </button>
-    <button id="nav-tab-vault" onclick="switchTab('vault')" class="flex-1 sm:flex-initial h-8 px-3.5 rounded-xl flex items-center justify-center gap-1.5 font-semibold text-[#6b7280] hover:text-[#111827] hover:bg-[#dededd] transition">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-      <span>VAULT</span>
-    </button>
-  </nav>
+  <div class="w-full py-1.5 px-3 bg-[#e9eeea] z-20 shrink-0 select-none flex justify-center">
+    <nav class="uiverse-nav w-full max-w-md flex items-center justify-between font-sans text-xs">
+      <button id="nav-tab-home" onclick="switchTab('home')" class="flex-1 py-1.5 px-3 rounded-full flex items-center justify-center gap-1.5 font-bold transition-all duration-200 ease-in-out hover:scale-105 active:scale-95 bg-[#111827] text-white shadow-md">
+        <svg class="w-4 h-4 text-[#f0ff7a]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+        <span>HOME</span>
+      </button>
+      <button id="nav-tab-chat" onclick="switchTab('chat')" class="flex-1 py-1.5 px-3 rounded-full flex items-center justify-center gap-1.5 font-semibold text-gray-600 hover:text-gray-900 transition-all duration-200 ease-in-out hover:scale-105 active:scale-95">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+        <span>CHAT</span>
+      </button>
+      <button id="nav-tab-roster" onclick="switchTab('roster')" class="flex-1 py-1.5 px-3 rounded-full flex items-center justify-center gap-1.5 font-semibold text-gray-600 hover:text-gray-900 transition-all duration-200 ease-in-out hover:scale-105 active:scale-95">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+        <span>PEERS</span>
+      </button>
+      <button id="nav-tab-vault" onclick="switchTab('vault')" class="flex-1 py-1.5 px-3 rounded-full flex items-center justify-center gap-1.5 font-semibold text-gray-600 hover:text-gray-900 transition-all duration-200 ease-in-out hover:scale-105 active:scale-95">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+        <span>VAULT</span>
+      </button>
+    </nav>
+  </div>
 
 
   <!-- =========================================================================
@@ -637,82 +733,170 @@
     <div class="flex-1 relative bg-[#ffffff] flex flex-col min-h-0 overflow-hidden">
       
       <!-- VIEW 0: HOME DASHBOARD & PINNED ROOMS HUB (PRIMARY DEFAULT VIEW) -->
-      <div id="view-home" class="relative z-10 flex-1 flex flex-col min-h-0 p-4 sm:p-6 overflow-y-auto custom-scroll space-y-5 hidden">
+      <div id="view-home" class="relative z-10 flex-1 flex flex-col min-h-0 p-3 sm:p-6 overflow-y-auto custom-scroll space-y-4 sm:space-y-5 hidden">
         
-        <!-- Welcome & User Identity Card -->
-        <div class="bg-[#ffffff] border border-[#d0d0ce] rounded-3xl p-4 sm:p-5 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div class="flex items-center gap-3.5">
-            <!-- Custom User Avatar -->
-            <div onclick="openModal('avatarModal')" class="relative cursor-pointer group" title="Click to Change Profile Picture / Avatar">
-              <div id="homeUserAvatarContainer" class="w-14 h-14 rounded-2xl bg-[#111827] border-2 border-[#000000] text-white flex items-center justify-center font-bold text-xl shadow-md overflow-hidden">
+        <!-- Welcome & User Identity Card (Mobile Optimized Uiverse Layout) -->
+        <div class="uiverse-card p-3.5 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3.5">
+          <div class="flex items-center gap-3 min-w-0 w-full sm:w-auto">
+            <!-- Custom User Avatar (Funny Random Face SVG Engine) -->
+            <div onclick="openModal('avatarModal')" class="relative cursor-pointer group hover:scale-105 transition-transform shrink-0" title="Click to Change Profile Picture / Avatar">
+              <div id="homeUserAvatarContainer" class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-[#111827] border-2 border-[#000000] text-white flex items-center justify-center font-bold text-lg sm:text-xl shadow-md overflow-hidden">
                 <span id="homeUserAvatarInitial">G</span>
               </div>
-              <div class="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-[#f0ff7a] border border-[#000000] text-[#000000] flex items-center justify-center text-[10px] font-bold shadow">
+              <div class="absolute -bottom-1 -right-1 w-5 h-5 sm:w-5.5 sm:h-5.5 rounded-full bg-[#f0ff7a] border border-[#000000] text-[#000000] flex items-center justify-center text-[9px] sm:text-[10px] font-bold shadow-sm">
                 ✏️
               </div>
             </div>
 
-            <div class="flex flex-col">
-              <div class="flex items-center gap-2 flex-wrap">
-                <span id="homeUserCodename" class="font-mono text-base font-bold text-[#111827]">GUEST-USER</span>
-                <span id="homeUserGeoBadge" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
-                  🇮🇳 INDIA REGION VERIFIED
+            <div class="flex flex-col min-w-0 flex-1">
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span id="homeUserCodename" class="font-funny text-sm sm:text-base font-bold text-[#111827] truncate max-w-[140px] sm:max-w-none">GUEST-USER</span>
+                <span id="homeUserGeoBadge" class="text-[9px] sm:text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 shrink-0">
+                  🇮🇳 INDIA VERIFIED
                 </span>
               </div>
-              <div class="flex items-center gap-2 text-xs font-mono text-[#6b7280] mt-0.5">
-                <span>Private Session Active</span>
+              <div class="flex items-center gap-1.5 text-[11px] sm:text-xs font-sans text-gray-500 mt-0.5 flex-wrap">
+                <span>Private P2P Active</span>
                 <span>&bull;</span>
-                <button onclick="openModal('identityModal')" class="text-[#06b6d4] hover:underline font-bold">
-                  Security & Lock Settings &rarr;
+                <button onclick="openModal('identityModal')" class="text-cyan-600 hover:underline font-bold">
+                  Security Lock &rarr;
                 </button>
               </div>
             </div>
           </div>
 
-          <div class="flex items-center gap-2 w-full sm:w-auto">
-            <button onclick="openModal('roomModal')" class="flex-1 sm:flex-initial date-selector justify-center" style="background-color: #f0ff7a; color: #000000; border-color: #000000; font-weight: 700; height: 42px; padding: 0 16px;">
-              ⚡ JOIN A ROOM
+          <div class="flex items-center gap-2 w-full sm:w-auto shrink-0">
+            <button onclick="openModal('roomModal')" class="uiverse-btn w-full sm:w-auto group relative flex items-center justify-center gap-2" style="background: #111827; color: #ffffff; padding: 0.6rem 1.25rem;">
+              <svg class="w-4 h-4 text-yellow-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+              <span class="font-bold">JOIN A ROOM</span>
+              <div class="uiverse-tooltip">Connect to Frequency</div>
             </button>
           </div>
         </div>
 
         <!-- PINNED ROOMS & CUSTOM GROUPS DASHBOARD SECTION -->
-        <div class="space-y-3">
+        <div class="space-y-2.5 sm:space-y-3">
           <div class="flex items-center justify-between border-b border-[#d0d0ce] pb-2 font-mono text-xs">
             <div class="flex items-center gap-2 text-[#111827] uppercase tracking-wider font-bold">
               <span>⭐ SAVED ROOMS & GROUPS</span>
-              <span id="homePinnedCountBadge" class="text-[10px] px-2 py-0.5 rounded-full bg-[#e9eeea] border border-[#d0d0ce]">0 Saved</span>
+              <span id="homePinnedCountBadge" class="text-[10px] px-2 py-0.5 rounded-full bg-white border border-[#d0d0ce] font-bold">0 Saved</span>
             </div>
-            <button onclick="openModal('roomModal'); switchRoomModalTab('custom');" class="text-[#06b6d4] hover:underline font-bold text-xs flex items-center gap-1">
+            <button onclick="openModal('roomModal'); switchRoomModalTab('custom');" class="text-cyan-600 hover:underline font-bold text-xs flex items-center gap-1 font-sans">
               <span>+ Create Group</span>
             </button>
           </div>
 
           <!-- Pinned Rooms Grid -->
-          <div id="homePinnedRoomsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div id="homePinnedRoomsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-3.5">
             <!-- Dynamically populated pinned room cards -->
           </div>
         </div>
 
-        <!-- QUICK SYSTEM METRICS & SHORTCUTS -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 font-mono text-xs">
-          <div class="p-4 bg-[#ffffff] border border-[#d0d0ce] rounded-2xl flex flex-col justify-between space-y-2 shadow-sm">
-            <div class="text-[#6b7280] font-bold text-[10px] uppercase">Current Room</div>
-            <div id="homeCurrentRoomDisplay" class="text-sm font-bold text-[#111827]">ROOM: NOT CONNECTED</div>
-            <div class="text-[10px] text-[#10b981] font-bold">100% Private (No Servers)</div>
+        <!-- QUICK SYSTEM METRICS & SHORTCUTS (Manish-Tamang Uiverse Inspired Cards) -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-3.5 font-sans">
+          
+          <!-- Widget 1: Current Room -->
+          <div class="uiverse-card">
+            <div class="flex justify-between items-center px-3.5 py-2.5 sm:px-4 sm:py-3 border-b border-[#e5e7eb]">
+              <div class="flex items-center min-w-0">
+                <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-600 flex items-center justify-center font-bold text-xs sm:text-sm shrink-0">
+                  🌐
+                </div>
+                <div class="mx-2 min-w-0">
+                  <h4 class="text-[11px] sm:text-xs font-bold text-gray-800 uppercase">CURRENT ROOM</h4>
+                  <p id="homeCurrentRoomDisplay" class="text-[10px] sm:text-[11px] font-mono text-gray-600 font-bold truncate max-w-[120px] sm:max-w-[140px]">ROOM: NOT CONNECTED</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-1 shrink-0">
+                <svg class="h-4 w-4 text-red-500 fill-current" viewBox="0 0 24 24"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+                <svg class="h-4 w-4 text-yellow-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              </div>
+            </div>
+            <div class="px-4 py-2.5 bg-zinc-50/60">
+              <div class="flex items-center gap-2">
+                <svg class="h-3.5 w-3.5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/></svg>
+                <div class="w-full">
+                  <div class="relative h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                    <div class="absolute left-0 top-0 h-full bg-cyan-500 w-full rounded-full"></div>
+                  </div>
+                </div>
+                <span class="text-[10px] font-mono font-bold text-cyan-600">100%</span>
+              </div>
+              <div class="flex justify-between text-[10px] font-mono text-gray-400 mt-1.5">
+                <span>00:00</span>
+                <span class="font-bold text-emerald-600">ZERO SERVERS</span>
+              </div>
+            </div>
           </div>
 
-          <div class="p-4 bg-[#ffffff] border border-[#d0d0ce] rounded-2xl flex flex-col justify-between space-y-2 shadow-sm">
-            <div class="text-[#6b7280] font-bold text-[10px] uppercase">Friends Connected</div>
-            <div id="homePeersCountDisplay" class="text-sm font-bold text-[#111827]">1 Friend Online</div>
-            <div class="text-[10px] text-[#06b6d4] font-bold">Direct Encrypted Chat</div>
+          <!-- Widget 2: Friends Connected -->
+          <div class="uiverse-card">
+            <div class="flex justify-between items-center px-4 py-3 border-b border-[#e5e7eb]">
+              <div class="flex items-center">
+                <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 flex items-center justify-center font-bold text-sm">
+                  👥
+                </div>
+                <div class="mx-2.5">
+                  <h4 class="text-xs font-bold text-gray-800 uppercase">ONLINE FRIENDS</h4>
+                  <p id="homePeersCountDisplay" class="text-[11px] font-mono text-gray-600 font-bold truncate max-w-[130px]">1 Friend Online</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-1">
+                <svg class="h-4 w-4 text-red-500 fill-current" viewBox="0 0 24 24"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+                <svg class="h-4 w-4 text-yellow-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              </div>
+            </div>
+            <div class="px-4 py-2.5 bg-zinc-50/60">
+              <div class="flex items-center gap-2">
+                <svg class="h-3.5 w-3.5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/></svg>
+                <div class="w-full">
+                  <div class="relative h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                    <div class="absolute left-0 top-0 h-full bg-emerald-500 w-3/4 rounded-full"></div>
+                  </div>
+                </div>
+                <span class="text-[10px] font-mono font-bold text-emerald-600">LIVE</span>
+              </div>
+              <div class="flex justify-between text-[10px] font-mono text-gray-400 mt-1.5">
+                <span>00:03</span>
+                <span class="font-bold text-cyan-600">DIRECT ENCRYPTED</span>
+              </div>
+            </div>
           </div>
 
-          <div class="p-4 bg-[#ffffff] border border-[#d0d0ce] rounded-2xl flex flex-col justify-between space-y-2 shadow-sm">
-            <div class="text-[#6b7280] font-bold text-[10px] uppercase">Privacy Status</div>
-            <div id="homeSecurityDisplay" class="text-sm font-bold text-[#111827]">100% Private</div>
-            <div class="text-[10px] text-rose-600 font-bold">Nothing Saved on Servers</div>
+          <!-- Widget 3: Privacy Status -->
+          <div class="uiverse-card">
+            <div class="flex justify-between items-center px-4 py-3 border-b border-[#e5e7eb]">
+              <div class="flex items-center">
+                <div class="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-600 flex items-center justify-center font-bold text-sm">
+                  🛡️
+                </div>
+                <div class="mx-2.5">
+                  <h4 class="text-xs font-bold text-gray-800 uppercase">PRIVACY STATUS</h4>
+                  <p id="homeSecurityDisplay" class="text-[11px] font-mono text-gray-600 font-bold truncate max-w-[130px]">100% Private</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-1">
+                <svg class="h-4 w-4 text-red-500 fill-current" viewBox="0 0 24 24"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+                <svg class="h-4 w-4 text-yellow-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              </div>
+            </div>
+            <div class="px-4 py-2.5 bg-zinc-50/60">
+              <div class="flex items-center gap-2">
+                <svg class="h-3.5 w-3.5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/></svg>
+                <div class="w-full">
+                  <div class="relative h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                    <div class="absolute left-0 top-0 h-full bg-purple-500 w-full rounded-full"></div>
+                  </div>
+                </div>
+                <span class="text-[10px] font-mono font-bold text-purple-600">RAM ONLY</span>
+              </div>
+              <div class="flex justify-between text-[10px] font-mono text-gray-400 mt-1.5">
+                <span>00:00</span>
+                <span class="font-bold text-rose-600">NO DATABASE</span>
+              </div>
+            </div>
           </div>
+
         </div>
 
       </div>
@@ -2086,14 +2270,14 @@
       if (!container) return;
 
       const pinned = getPinnedRooms();
-      if (badge) badge.innerText = `${pinned.length} Pinned`;
+      if (badge) badge.innerText = `${pinned.length} Saved`;
 
       if (pinned.length === 0) {
         container.innerHTML = `
-          <div class="col-span-full p-6 text-center text-xs font-mono text-[#6b7280] border border-[#d0d0ce] rounded-2xl bg-[#ffffff] space-y-2 shadow-sm">
+          <div class="col-span-full uiverse-card p-6 text-center text-xs font-mono text-[#6b7280] space-y-2">
             <div class="text-2xl">📌</div>
-            <div class="font-bold text-[#111827]">No Pinned Rooms or Custom Groups</div>
-            <div>Join any room and click "PIN ROOM" in top bar, or click "+ Create Group" to pin channels here!</div>
+            <div class="font-bold text-[#111827] text-sm font-funny">No Saved Rooms or Groups Yet</div>
+            <div>Join any room and click "SAVE ROOM", or click "+ Create Group" to save channels here!</div>
           </div>
         `;
         return;
@@ -2103,7 +2287,7 @@
       pinned.forEach(room => {
         const isCurrent = room.code === currentRoomCode;
         const card = document.createElement('div');
-        card.className = `p-4 bg-[#ffffff] border ${isCurrent ? 'border-[#000000] ring-2 ring-[#f0ff7a]' : 'border-[#d0d0ce]'} rounded-2xl flex flex-col justify-between space-y-3 shadow-sm hover:shadow-md transition cursor-pointer group`;
+        card.className = `uiverse-card transition-all cursor-pointer group ${isCurrent ? 'ring-2 ring-[#000000]' : ''}`;
         card.onclick = (e) => {
           if (e.target.closest('.unpin-btn')) return;
           connectToMeshRoom(room.code);
@@ -2111,29 +2295,40 @@
         };
 
         card.innerHTML = `
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-2.5">
-              <div class="w-10 h-10 rounded-xl border border-[#d0d0ce] bg-[#e9eeea] flex items-center justify-center text-xl group-hover:scale-110 transition">
-                ${room.emoji || '⭐'}
+          <div class="flex justify-between items-center px-4 py-3 border-b border-[#e5e7eb]">
+            <div class="flex items-center">
+              <div class="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500 flex items-center justify-center text-base font-bold group-hover:scale-110 transition-transform">
+                ${room.emoji || '⚡'}
               </div>
-              <div>
-                <div class="text-xs font-mono font-bold text-[#111827] flex items-center gap-1.5">
-                  <span>${escapeHtml(room.name)}</span>
-                  ${isCurrent ? '<span class="text-[9px] px-1.5 py-0.2 rounded-full bg-[#f0ff7a] text-[#000] font-bold">ACTIVE</span>' : ''}
-                </div>
-                <div class="text-[10px] font-mono text-[#6b7280]">CODE: #${room.code}</div>
+              <div class="mx-2.5">
+                <h3 class="text-xs font-bold font-sans text-gray-800 truncate max-w-[120px] flex items-center gap-1">
+                  ${escapeHtml(room.name)}
+                  ${isCurrent ? '<span class="text-[9px] px-1.5 py-0.2 rounded-full bg-[#f0ff7a] text-black font-bold">ACTIVE</span>' : ''}
+                </h3>
+                <p class="text-[10px] font-mono text-gray-500">CODE: #${room.code}</p>
               </div>
             </div>
-            <button onclick="deletePinnedRoom('${room.code}')" class="unpin-btn w-7 h-7 rounded-full border border-[#fca5a5] bg-[#fff1f2] text-[#991b1b] font-bold text-xs flex items-center justify-center hover:bg-[#fee2e2] transition" title="Unpin Room">
-              &times;
-            </button>
+            <div class="flex items-center gap-1.5">
+              <button onclick="deletePinnedRoom('${room.code}')" class="unpin-btn text-red-500 hover:scale-125 transition-transform p-1" title="Unpin/Delete Room">
+                <svg class="h-4 w-4 fill-current" viewBox="0 0 24 24"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+              </button>
+              <svg class="h-4 w-4 text-yellow-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </div>
           </div>
-          <div class="flex items-center justify-between text-[11px] font-mono pt-1 border-t border-[#f0f0f0]">
-            <span class="text-[#6b7280]">Tap to Join Channel</span>
-            <span class="font-bold ${isCurrent ? 'text-[#10b981]' : 'text-[#06b6d4]'} flex items-center gap-1">
-              <span class="w-2 h-2 rounded-full ${isCurrent ? 'bg-[#10b981] animate-pulse' : 'bg-[#06b6d4]'}"></span>
-              ${isCurrent ? 'Connected' : 'Open Frequency &rarr;'}
-            </span>
+          <div class="px-4 py-2.5 bg-zinc-50/60">
+            <div class="flex items-center gap-2">
+              <svg class="h-3.5 w-3.5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/></svg>
+              <div class="w-full">
+                <div class="relative h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                  <div class="absolute left-0 top-0 h-full ${isCurrent ? 'bg-emerald-500 w-full animate-pulse' : 'bg-yellow-500 w-2/3'} rounded-full"></div>
+                </div>
+              </div>
+              <span class="text-[10px] font-mono font-bold ${isCurrent ? 'text-emerald-600' : 'text-gray-500'}">${isCurrent ? '100%' : 'READY'}</span>
+            </div>
+            <div class="flex justify-between text-[10px] font-mono text-gray-400 mt-1.5">
+              <span>00:01</span>
+              <span class="font-bold ${isCurrent ? 'text-emerald-600' : 'text-cyan-600'}">${isCurrent ? 'LIVE MESH CONNECTED' : 'JOIN CHANNEL &rarr;'}</span>
+            </div>
           </div>
         `;
         container.appendChild(card);
@@ -2708,6 +2903,18 @@
       if (sendTyping) sendTyping({ active: false, persona: myPersona });
     };
 
+    function getAvatarHtml(avatar, sizeClass = 'w-3.5 h-3.5') {
+      if (!avatar) return `<span class="mr-1">⚡</span>`;
+      const str = String(avatar).trim();
+      if (str.startsWith('data:image/') || str.startsWith('http://') || str.startsWith('https://')) {
+        return `<img src="${str}" class="${sizeClass} rounded-full object-cover inline-block mr-1 align-middle" alt="avatar"/>`;
+      }
+      if (str.includes('<svg')) {
+        return `<span class="${sizeClass} rounded-full inline-block mr-1 align-middle overflow-hidden shrink-0">${str}</span>`;
+      }
+      return `<span class="mr-1 inline-block align-middle">${str || '⚡'}</span>`;
+    }
+
     function renderMessageCard(text, senderPersona, side, replyTo = null) {
       document.getElementById('emptyNotice')?.classList.add('hidden');
       const container = document.getElementById('messagesContainer');
@@ -2737,15 +2944,13 @@
       const escapedText = escapeHtml(text);
       card.innerHTML = `${replyHtml}<div>${escapedText}</div>`;
 
-      // Avatar Icon
-      const avatarIcon = (senderPersona.avatar && senderPersona.avatar.length > 4) 
-        ? `<img src="${senderPersona.avatar}" class="w-3.5 h-3.5 rounded-full object-cover inline-block mr-1"/>`
-        : `<span class="mr-1">${senderPersona.avatar || '⚡'}</span>`;
+      // Avatar Icon (Handles SVG strings, image URLs, and emojis without broken img icons)
+      const avatarIcon = getAvatarHtml(senderPersona.avatar);
 
       const meta = document.createElement('div');
       meta.className = 'text-[9px] font-mono text-[#6b7280] px-1 flex items-center gap-2';
       meta.innerHTML = `
-        <span>${avatarIcon}${isMe ? 'YOU' : escapeHtml(senderPersona.name)} • ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+        <span class="inline-flex items-center">${avatarIcon}${isMe ? 'YOU' : escapeHtml(senderPersona.name)} • ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
         <button onclick="initiateReplyState('${escapeHtml(senderPersona.name)}', '${escapeHtml(textSnippet)}')" class="hover:text-[#06b6d4] font-bold text-[10px] flex items-center gap-1 opacity-80 hover:opacity-100 transition" title="Reply to message">
           <svg class="w-3 h-3 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path></svg> Reply
         </button>
@@ -3488,11 +3693,11 @@
         if (v) v.classList.toggle('hidden', !active);
         if (btn) {
           if (active) {
-            btn.className = 'flex-1 sm:flex-initial h-8 px-3.5 rounded-xl flex items-center justify-center gap-1.5 font-bold transition bg-[#111827] text-[#ffffff] shadow-sm';
+            btn.className = 'flex-1 py-1.5 px-3 rounded-full flex items-center justify-center gap-1.5 font-bold transition-all duration-200 ease-in-out hover:scale-105 active:scale-95 bg-[#111827] text-white shadow-md';
             const svg = btn.querySelector('svg');
             if (svg) svg.classList.add('text-[#f0ff7a]');
           } else {
-            btn.className = 'flex-1 sm:flex-initial h-8 px-3.5 rounded-xl flex items-center justify-center gap-1.5 font-semibold text-[#6b7280] hover:text-[#111827] hover:bg-[#dededd] transition';
+            btn.className = 'flex-1 py-1.5 px-3 rounded-full flex items-center justify-center gap-1.5 font-semibold text-gray-600 hover:text-gray-900 transition-all duration-200 ease-in-out hover:scale-105 active:scale-95';
             const svg = btn.querySelector('svg');
             if (svg) svg.classList.remove('text-[#f0ff7a]');
           }
