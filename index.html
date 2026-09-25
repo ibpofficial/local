@@ -5,6 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>GHOST FREQUENCY // Zero-Server Mesh Chat</title>
 
+  <!-- PWA & Mobile Web App Meta Tags -->
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#111827">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="GhostFreq">
+  <link rel="apple-touch-icon" href="./icon-192.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
+
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -429,6 +439,18 @@
           <svg class="w-4 h-4 ml-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
         </button>
         
+        <!-- PWA Install Button (Drawer) -->
+        <button id="pwaInstallBtnDrawer" onclick="triggerPwaInstallation(); toggleMobileSideNav(false);" class="w-full date-selector justify-start" style="background-color: #f0ff7a; color: #000000; border-color: #000000; font-weight: 700; padding: 0.65rem;">
+          <svg class="w-4 h-4 mr-2 text-[#000000]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          <span>📱 Install App on Mobile / PC</span>
+        </button>
+
+        <!-- Push & System Notification Toggle (Drawer) -->
+        <button id="notifToggleBtnDrawer" onclick="requestNotificationPermission(); toggleMobileSideNav(false);" class="w-full date-selector justify-start" style="padding: 0.65rem;">
+          <svg class="w-4 h-4 mr-2 text-[#111827]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+          <span id="notifDrawerStatusLabel">Notifications: OFF (Click)</span>
+        </button>
+
         <!-- Privacy Shield (H) -->
         <button onclick="toggleGhostShield(); toggleMobileSideNav(false);" class="w-full date-selector justify-start" style="padding: 0.65rem;">
           <svg class="w-4 h-4 mr-2 text-[#111827]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
@@ -541,6 +563,11 @@
           <span class="like-count two" id="likeCounterTwo">1</span>
         </label>
       </div>
+
+      <!-- PWA Install Quick Button -->
+      <button id="pwaInstallBtnHeader" onclick="triggerPwaInstallation()" class="hidden date-selector" style="background-color: #f0ff7a; color: #000000; border-color: #000000; font-weight: 700; height: 34px; padding: 0 8px;" title="Install Ghost Frequency App on device">
+        <span class="text-xs">📱 INSTALL</span>
+      </button>
 
       <!-- ROOM HUB Quick Pill Button -->
       <button onclick="openModal('roomModal')" class="date-selector" style="background-color: #f0ff7a; color: #000000; border-color: #000000; font-weight: 700; height: 34px; padding: 0 8px;">
@@ -1082,6 +1109,109 @@
     };
 
     /* =========================================================================
+       PWA INSTALLATION & BACKGROUND WEB NOTIFICATION ENGINE
+       ========================================================================= */
+    let deferredPwaPrompt = null;
+    let swRegistration = null;
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => {
+            swRegistration = reg;
+            console.log('Ghost Frequency ServiceWorker active scope:', reg.scope);
+            updateNotificationUI();
+          })
+          .catch(err => {
+            console.warn('ServiceWorker registration error:', err);
+          });
+      });
+    }
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPwaPrompt = e;
+      const headerBtn = document.getElementById('pwaInstallBtnHeader');
+      if (headerBtn) headerBtn.classList.remove('hidden');
+      const drawerBtn = document.getElementById('pwaInstallBtnDrawer');
+      if (drawerBtn) drawerBtn.innerText = '📱 Install Ghost App (Ready)';
+    });
+
+    window.triggerPwaInstallation = function() {
+      if (deferredPwaPrompt) {
+        deferredPwaPrompt.prompt();
+        deferredPwaPrompt.userChoice.then(choiceResult => {
+          if (choiceResult.outcome === 'accepted') {
+            showToast('Ghost Frequency App Installed!', 'success');
+          }
+          deferredPwaPrompt = null;
+        });
+      } else {
+        showToast('To install app: Tap browser menu (...) -> Add to Home Screen', 'info');
+      }
+    };
+
+    window.requestNotificationPermission = function() {
+      if (!('Notification' in window)) {
+        showToast('Notifications are not supported on this browser', 'error');
+        return;
+      }
+      if (Notification.permission === 'granted') {
+        showToast('System Notifications are ACTIVE!', 'success');
+        updateNotificationUI();
+        return;
+      }
+      Notification.requestPermission().then(permission => {
+        if (permission === 'granted') {
+          showToast('System Notifications ENABLED! Background alerts active.', 'success');
+          SoundFx.chime();
+          triggerOSNotification('GHOST FREQUENCY', 'Background alerts are now ACTIVE on your device!', 'system-init');
+        } else {
+          showToast('Notification permission denied', 'error');
+        }
+        updateNotificationUI();
+      });
+    };
+
+    function updateNotificationUI() {
+      const isGranted = 'Notification' in window && Notification.permission === 'granted';
+      const drawerLbl = document.getElementById('notifDrawerStatusLabel');
+      if (drawerLbl) {
+        drawerLbl.innerText = isGranted ? 'Notifications: ACTIVE 🔔' : 'Notifications: OFF (Click)';
+      }
+    }
+
+    function triggerOSNotification(title, body, tag = 'ghost-msg') {
+      try {
+        if (navigator.vibrate) {
+          navigator.vibrate([200, 100, 200]);
+        }
+      } catch(e) {}
+
+      if (!('Notification' in window) || Notification.permission !== 'granted') {
+        return;
+      }
+
+      if (swRegistration && swRegistration.active) {
+        swRegistration.active.postMessage({
+          type: 'SHOW_NOTIFICATION',
+          title: title,
+          body: body,
+          tag: tag,
+          icon: './icon-192.png'
+        });
+      } else {
+        try {
+          new Notification(title, {
+            body: body,
+            icon: './icon-192.png',
+            tag: tag
+          });
+        } catch(e) {}
+      }
+    }
+
+    /* =========================================================================
        DECENTRALIZED MESH ENGINE & PERSONA SYSTEM
        ========================================================================= */
     const CODENAME_PREFIXES = ['SPECTRE', 'CIPHER', 'PHANTOM', 'VORTEX', 'NEXUS', 'ONYX', 'AEGIS', 'SHADOW', 'TITAN', 'KRONOS'];
@@ -1159,6 +1289,7 @@
           sendPresence({ persona: myPersona });
           sendHeart({ count: globalHeartCounter });
           renderSystemNotice(`A node joined frequency #${code}`);
+          triggerOSNotification(`⚡ Node Connected`, `A new peer joined Room #${code}`, `peer-${peerId}`);
         });
 
         meshRoom.onPeerLeave(peerId => {
@@ -1173,17 +1304,21 @@
         getMsg((data, peerId) => {
           renderMessageCard(data.text, data.persona, 'peer');
           SoundFx.chime();
+          triggerOSNotification(`💬 ${data.persona.name}`, data.text, `msg-${peerId}`);
         });
 
         getFile((data, peerId) => {
           if (data.isClassified) {
             renderClassifiedCard(data, 'peer');
+            triggerOSNotification(`📸 CLASSIFIED PHOTO from ${data.persona.name}`, `Ephemeral Ghost Photo received (${data.timerSeconds || 0}s timer)`, `file-${peerId}`);
           } else if (data.isImage) {
             renderInlineImage(data.dataUri, data.name, data.persona, 'peer');
+            triggerOSNotification(`🖼️ Image from ${data.persona.name}`, `${data.name} received`, `file-${peerId}`);
           } else {
             registerVaultCatalogItem(data, data.dataUri, false);
             incrementVaultCount();
             showToast(`Received ${data.name} from ${data.persona.name}`, 'success');
+            triggerOSNotification(`📁 File from ${data.persona.name}`, `${data.name} received`, `file-${peerId}`);
           }
           SoundFx.chime();
         });
@@ -2146,6 +2281,7 @@
       enforceZeroStorage();
       generateStealthPersona();
       fillRandomRoomCode();
+      updateNotificationUI();
 
       const urlParams = new URLSearchParams(window.location.search);
       const roomParam = urlParams.get('room');
