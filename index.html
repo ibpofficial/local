@@ -735,41 +735,71 @@
       <!-- VIEW 0: HOME DASHBOARD & PINNED ROOMS HUB (PRIMARY DEFAULT VIEW) -->
       <div id="view-home" class="relative z-10 flex-1 flex flex-col min-h-0 p-3 sm:p-6 overflow-y-auto custom-scroll space-y-4 sm:space-y-5 hidden">
         
-        <!-- Welcome & User Identity Card (Mobile Optimized Uiverse Layout) -->
-        <div class="uiverse-card p-3.5 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3.5">
-          <div class="flex items-center gap-3 min-w-0 w-full sm:w-auto">
-            <!-- Custom User Avatar (Funny Random Face SVG Engine) -->
-            <div onclick="openModal('avatarModal')" class="relative cursor-pointer group hover:scale-105 transition-transform shrink-0" title="Click to Change Profile Picture / Avatar">
-              <div id="homeUserAvatarContainer" class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-[#111827] border-2 border-[#000000] text-white flex items-center justify-center font-bold text-lg sm:text-xl shadow-md overflow-hidden">
-                <span id="homeUserAvatarInitial">G</span>
+        <!-- Welcome & User Identity Card (100% Visible Profile Picture & Direct Quick Join) -->
+        <div class="uiverse-card p-4 sm:p-6 flex flex-col gap-4 bg-gradient-to-br from-white via-[#fcfdfe] to-[#f4f7f4] border border-[#d0d0ce] shadow-md">
+          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div class="flex items-center gap-4 min-w-0 w-full sm:w-auto">
+              <!-- Custom User Avatar (Large 100% Visible Profile Picture with Live Edit Badge) -->
+              <div onclick="openModal('avatarModal')" class="relative cursor-pointer group hover:scale-105 transition-all duration-200 shrink-0" title="Click to Change Profile Picture / Avatar">
+                <div id="homeUserAvatarContainer" class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-[#111827] border-2 border-[#000000] text-white flex items-center justify-center font-bold text-xl sm:text-2xl shadow-lg overflow-hidden shrink-0">
+                  <span id="homeUserAvatarInitial">G</span>
+                </div>
+                <div class="absolute -bottom-1 -right-1 w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-[#f0ff7a] border-2 border-[#000000] text-[#000000] flex items-center justify-center text-xs font-bold shadow-md group-hover:bg-white transition-colors">
+                  ✏️
+                </div>
               </div>
-              <div class="absolute -bottom-1 -right-1 w-5 h-5 sm:w-5.5 sm:h-5.5 rounded-full bg-[#f0ff7a] border border-[#000000] text-[#000000] flex items-center justify-center text-[9px] sm:text-[10px] font-bold shadow-sm">
-                ✏️
+
+              <div class="flex flex-col min-w-0 flex-1">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span id="homeUserCodename" class="font-funny text-base sm:text-lg font-bold text-[#111827] truncate max-w-[180px] sm:max-w-none">GUEST-USER</span>
+                  <span id="homeUserGeoBadge" class="text-[9px] sm:text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 shrink-0 shadow-xs">
+                    🇮🇳 INDIA VERIFIED
+                  </span>
+                </div>
+                <div class="flex items-center gap-2 text-xs font-sans text-gray-500 mt-1 flex-wrap">
+                  <span class="flex items-center gap-1 font-semibold text-emerald-700">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> P2P Mesh Active
+                  </span>
+                  <span>&bull;</span>
+                  <button onclick="openModal('avatarModal')" class="text-cyan-700 hover:text-cyan-900 font-bold hover:underline">
+                    Edit Profile Pic
+                  </button>
+                  <span>&bull;</span>
+                  <button onclick="openModal('identityModal')" class="text-gray-600 hover:text-gray-900 font-semibold">
+                    Security Lock &rarr;
+                  </button>
+                </div>
               </div>
             </div>
 
-            <div class="flex flex-col min-w-0 flex-1">
-              <div class="flex items-center gap-1.5 flex-wrap">
-                <span id="homeUserCodename" class="font-funny text-sm sm:text-base font-bold text-[#111827] truncate max-w-[140px] sm:max-w-none">GUEST-USER</span>
-                <span id="homeUserGeoBadge" class="text-[9px] sm:text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 shrink-0">
-                  🇮🇳 INDIA VERIFIED
-                </span>
-              </div>
-              <div class="flex items-center gap-1.5 text-[11px] sm:text-xs font-sans text-gray-500 mt-0.5 flex-wrap">
-                <span>Private P2P Active</span>
-                <span>&bull;</span>
-                <button onclick="openModal('identityModal')" class="text-cyan-600 hover:underline font-bold">
-                  Security Lock &rarr;
-                </button>
-              </div>
+            <div class="flex items-center gap-2 w-full sm:w-auto shrink-0">
+              <button onclick="openModal('roomModal')" class="uiverse-btn w-full sm:w-auto group relative flex items-center justify-center gap-2" style="background: #111827; color: #ffffff; padding: 0.65rem 1.25rem;">
+                <svg class="w-4 h-4 text-yellow-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                <span class="font-bold">ROOM HUB</span>
+                <div class="uiverse-tooltip">Browse & Create Rooms</div>
+              </button>
             </div>
           </div>
 
-          <div class="flex items-center gap-2 w-full sm:w-auto shrink-0">
-            <button onclick="openModal('roomModal')" class="uiverse-btn w-full sm:w-auto group relative flex items-center justify-center gap-2" style="background: #111827; color: #ffffff; padding: 0.6rem 1.25rem;">
-              <svg class="w-4 h-4 text-yellow-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-              <span class="font-bold">JOIN A ROOM</span>
-              <div class="uiverse-tooltip">Connect to Frequency</div>
+          <!-- DIRECT QUICK ROOM FREQUENCY JOIN INPUT BAR -->
+          <div class="pt-3 border-t border-[#d0d0ce]/70 flex flex-col sm:flex-row items-center gap-2">
+            <div class="flex-1 w-full relative">
+              <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 font-mono text-sm font-bold">#</span>
+              <input 
+                type="text" 
+                id="homeRoomInput" 
+                placeholder="Enter Room Code (e.g. 111)" 
+                onkeydown="if(event.key === 'Enter'){ connectToMeshRoom(this.value); }"
+                class="w-full h-11 bg-white border border-[#d0d0ce] rounded-xl pl-8 pr-4 font-mono text-sm font-bold text-[#111827] placeholder-[#9ca3af] focus:outline-none focus:border-[#000000] focus:ring-2 focus:ring-[#000000]/10 shadow-inner"
+              />
+            </div>
+            <button 
+              type="button"
+              onclick="connectToMeshRoom(document.getElementById('homeRoomInput').value)" 
+              class="w-full sm:w-auto h-11 date-selector justify-center transition-all hover:scale-[1.02] active:scale-95" 
+              style="background-color: #f0ff7a; color: #000000; border-color: #000000; font-weight: 700; padding: 0 1.5rem; font-size: 0.875rem;"
+            >
+              <span>⚡ JOIN FREQUENCY</span>
             </button>
           </div>
         </div>
@@ -1607,7 +1637,7 @@
           </div>
           <div>
             <h3 class="font-mono text-xs font-bold uppercase text-[#111827]">PROFILE PICTURE & AVATAR</h3>
-            <p class="text-[10px] font-mono text-[#6b7280]">Generate Funny Face or Upload Photo</p>
+            <p class="text-[10px] font-mono text-[#6b7280]">Select Preset, Generate Funny Face or Upload Photo</p>
           </div>
         </div>
         <button onclick="closeModal('avatarModal')" class="w-7 h-7 rounded-full border border-[#d0d0ce] bg-[#e9eeea] hover:bg-[#dededd] text-[#111827] flex items-center justify-center font-bold text-xs transition">
@@ -1615,9 +1645,23 @@
         </button>
       </div>
 
-      <div class="space-y-3">
+      <div class="space-y-4">
+        <!-- LIVE CURRENT AVATAR PREVIEW CARD -->
+        <div class="p-4 bg-[#f8faf9] border border-[#d0d0ce] rounded-2xl flex items-center justify-between gap-3 shadow-inner">
+          <div class="flex items-center gap-3">
+            <div id="modalAvatarPreviewBox" class="w-16 h-16 rounded-2xl bg-[#111827] border-2 border-[#000000] text-white flex items-center justify-center font-bold text-xl shadow-md overflow-hidden shrink-0">
+              <span>⚡</span>
+            </div>
+            <div>
+              <div class="text-xs font-mono font-bold text-[#111827]">Active Profile Picture</div>
+              <div class="text-[10px] font-mono text-[#6b7280]">Visible to all connected peers in room</div>
+            </div>
+          </div>
+          <span class="text-[9px] font-mono font-bold px-2 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">ACTIVE</span>
+        </div>
+
         <!-- Option 1: Generate Funny Random Face Avatar -->
-        <div class="p-3.5 bg-[#f0ff7a] border border-[#000000] rounded-2xl space-y-2 text-center">
+        <div class="p-3.5 bg-[#f0ff7a] border border-[#000000] rounded-2xl space-y-2 text-center shadow-xs">
           <div class="text-xs font-mono font-bold text-[#000000]">🎭 Funny Face Generator</div>
           <p class="text-[11px] text-[#333333] font-sans">Click to generate a unique random funny face icon!</p>
           <button onclick="generateNewFunnyAvatar()" class="w-full date-selector justify-center" style="background-color: #111827; color: #ffffff; font-weight: 700; height: 38px;">
@@ -1625,7 +1669,28 @@
           </button>
         </div>
 
-        <!-- Option 2: Upload Custom Photo -->
+        <!-- Option 2: Quick Preset Avatar Selector -->
+        <div class="p-3.5 bg-[#e9eeea] border border-[#d0d0ce] rounded-2xl space-y-2">
+          <div class="text-xs font-mono font-bold text-[#111827] uppercase">⚡ Quick Preset Avatars</div>
+          <div class="grid grid-cols-7 gap-2 text-center text-xl pt-1">
+            <button type="button" onclick="setAvatarPreset('🎭')" class="p-2 bg-white rounded-xl border border-[#d0d0ce] hover:bg-[#f0ff7a] hover:border-black transition active:scale-125">🎭</button>
+            <button type="button" onclick="setAvatarPreset('⚡')" class="p-2 bg-white rounded-xl border border-[#d0d0ce] hover:bg-[#f0ff7a] hover:border-black transition active:scale-125">⚡</button>
+            <button type="button" onclick="setAvatarPreset('🤖')" class="p-2 bg-white rounded-xl border border-[#d0d0ce] hover:bg-[#f0ff7a] hover:border-black transition active:scale-125">🤖</button>
+            <button type="button" onclick="setAvatarPreset('💀')" class="p-2 bg-white rounded-xl border border-[#d0d0ce] hover:bg-[#f0ff7a] hover:border-black transition active:scale-125">💀</button>
+            <button type="button" onclick="setAvatarPreset('👻')" class="p-2 bg-white rounded-xl border border-[#d0d0ce] hover:bg-[#f0ff7a] hover:border-black transition active:scale-125">👻</button>
+            <button type="button" onclick="setAvatarPreset('🛰️')" class="p-2 bg-white rounded-xl border border-[#d0d0ce] hover:bg-[#f0ff7a] hover:border-black transition active:scale-125">🛰️</button>
+            <button type="button" onclick="setAvatarPreset('🔒')" class="p-2 bg-white rounded-xl border border-[#d0d0ce] hover:bg-[#f0ff7a] hover:border-black transition active:scale-125">🔒</button>
+            <button type="button" onclick="setAvatarPreset('🛡️')" class="p-2 bg-white rounded-xl border border-[#d0d0ce] hover:bg-[#f0ff7a] hover:border-black transition active:scale-125">🛡️</button>
+            <button type="button" onclick="setAvatarPreset('👾')" class="p-2 bg-white rounded-xl border border-[#d0d0ce] hover:bg-[#f0ff7a] hover:border-black transition active:scale-125">👾</button>
+            <button type="button" onclick="setAvatarPreset('🔥')" class="p-2 bg-white rounded-xl border border-[#d0d0ce] hover:bg-[#f0ff7a] hover:border-black transition active:scale-125">🔥</button>
+            <button type="button" onclick="setAvatarPreset('👑')" class="p-2 bg-white rounded-xl border border-[#d0d0ce] hover:bg-[#f0ff7a] hover:border-black transition active:scale-125">👑</button>
+            <button type="button" onclick="setAvatarPreset('🦊')" class="p-2 bg-white rounded-xl border border-[#d0d0ce] hover:bg-[#f0ff7a] hover:border-black transition active:scale-125">🦊</button>
+            <button type="button" onclick="setAvatarPreset('🦁')" class="p-2 bg-white rounded-xl border border-[#d0d0ce] hover:bg-[#f0ff7a] hover:border-black transition active:scale-125">🦁</button>
+            <button type="button" onclick="setAvatarPreset('🐺')" class="p-2 bg-white rounded-xl border border-[#d0d0ce] hover:bg-[#f0ff7a] hover:border-black transition active:scale-125">🐺</button>
+          </div>
+        </div>
+
+        <!-- Option 3: Upload Custom Photo -->
         <div class="p-3.5 bg-[#e9eeea] border border-[#d0d0ce] rounded-2xl space-y-2 text-center">
           <div class="text-xs font-mono font-bold text-[#111827]">📷 Upload Custom Profile Image</div>
           <input type="file" id="customAvatarFileInput" accept="image/*" class="hidden" onchange="handleCustomAvatarUpload(event)">
@@ -2035,21 +2100,29 @@
       updateUserAvatarUI();
     }
 
+    let localBroadcastChannel = null;
+
     function updateUserAvatarUI() {
       if (document.getElementById('myPersonaDisplay')) document.getElementById('myPersonaDisplay').innerText = myPersona.name;
       if (document.getElementById('drawerPersonaDisplay')) document.getElementById('drawerPersonaDisplay').innerText = myPersona.name;
       if (document.getElementById('homeUserCodename')) document.getElementById('homeUserCodename').innerText = myPersona.name;
 
       const homeAvatarBox = document.getElementById('homeUserAvatarContainer');
-      if (homeAvatarBox) {
+      const modalAvatarBox = document.getElementById('modalAvatarPreviewBox');
+
+      const renderAvatarContent = (box) => {
+        if (!box) return;
         if (myPersona.avatar.startsWith('data:') || myPersona.avatar.startsWith('http')) {
-          homeAvatarBox.innerHTML = `<img src="${myPersona.avatar}" class="w-full h-full object-cover"/>`;
+          box.innerHTML = `<img src="${myPersona.avatar}" class="w-full h-full object-cover rounded-2xl"/>`;
         } else if (myPersona.avatar.includes('<svg')) {
-          homeAvatarBox.innerHTML = myPersona.avatar;
+          box.innerHTML = myPersona.avatar;
         } else {
-          homeAvatarBox.innerHTML = `<span>${myPersona.avatar}</span>`;
+          box.innerHTML = `<span class="text-2xl sm:text-3xl">${myPersona.avatar}</span>`;
         }
-      }
+      };
+
+      renderAvatarContent(homeAvatarBox);
+      renderAvatarContent(modalAvatarBox);
     }
 
     window.generateNewFunnyAvatar = function() {
@@ -2061,6 +2134,9 @@
       showToast('New Funny Face Avatar generated!', 'success');
       if (meshRoom && sendPresence) {
         sendPresence({ persona: myPersona });
+      }
+      if (localBroadcastChannel) {
+        localBroadcastChannel.postMessage({ action: 'presence', data: { persona: myPersona }, senderId: myPersona.id });
       }
     };
 
@@ -2077,6 +2153,9 @@
         if (meshRoom && sendPresence) {
           sendPresence({ persona: myPersona });
         }
+        if (localBroadcastChannel) {
+          localBroadcastChannel.postMessage({ action: 'presence', data: { persona: myPersona }, senderId: myPersona.id });
+        }
       };
       reader.readAsDataURL(file);
     };
@@ -2089,6 +2168,9 @@
       showToast(`Avatar set to ${emoji}`, 'info');
       if (meshRoom && sendPresence) {
         sendPresence({ persona: myPersona });
+      }
+      if (localBroadcastChannel) {
+        localBroadcastChannel.postMessage({ action: 'presence', data: { persona: myPersona }, senderId: myPersona.id });
       }
     };
 
@@ -2125,22 +2207,98 @@
       if (meshRoom && sendPresence) {
         sendPresence({ persona: myPersona });
       }
+      if (localBroadcastChannel) {
+        localBroadcastChannel.postMessage({ action: 'presence', data: { persona: myPersona }, senderId: myPersona.id });
+      }
       renderPeersRoster();
     };
 
     window.fillRandomRoomCode = function() {
       const randomCode = Math.floor(100000 + Math.random() * 900000).toString();
-      document.getElementById('roomIdentifierInput').value = randomCode;
+      const codeInput = document.getElementById('roomIdentifierInput');
+      if (codeInput) codeInput.value = randomCode;
+      const homeInput = document.getElementById('homeRoomInput');
+      if (homeInput) homeInput.value = randomCode;
     };
+
+    function initLocalBroadcastChannel(code) {
+      if (localBroadcastChannel) {
+        try { localBroadcastChannel.close(); } catch(e) {}
+        localBroadcastChannel = null;
+      }
+      if (!('BroadcastChannel' in window)) return;
+
+      try {
+        localBroadcastChannel = new BroadcastChannel(`ghost_mesh_room_${code}`);
+        localBroadcastChannel.onmessage = (event) => {
+          const { action, data, senderId } = event.data || {};
+          if (!senderId || senderId === myPersona.id) return;
+
+          if (action === 'presence') {
+            const isNew = !activePeers.has(senderId);
+            activePeers.set(senderId, { persona: data.persona });
+            if (isNew && localBroadcastChannel) {
+              localBroadcastChannel.postMessage({ action: 'presence', data: { persona: myPersona }, senderId: myPersona.id });
+            }
+            updateMeshStatus();
+            renderPeersRoster();
+          } else if (action === 'chat') {
+            if (mutedPeerIds.has(senderId)) return;
+            renderMessageCard(data.text, data.persona, 'peer', data.replyTo);
+            SoundFx.chime();
+            triggerOSNotification(`💬 ${data.persona.name}`, data.text, `msg-${senderId}`);
+          } else if (action === 'file') {
+            if (mutedPeerIds.has(senderId)) return;
+            if (data.isClassified) {
+              renderClassifiedCard(data, 'peer');
+              triggerOSNotification(`📸 CLASSIFIED PHOTO from ${data.persona.name}`, `Ephemeral Ghost Photo received`, `file-${senderId}`);
+            } else if (data.isImage) {
+              renderInlineImage(data.dataUri, data.name, data.persona, 'peer');
+              triggerOSNotification(`🖼️ Image from ${data.persona.name}`, `${data.name} received`, `file-${senderId}`);
+            } else {
+              registerVaultCatalogItem(data, data.dataUri, false);
+              incrementVaultCount();
+              showToast(`Received ${data.name} from ${data.persona.name}`, 'success');
+              triggerOSNotification(`📁 File from ${data.persona.name}`, `${data.name} received`, `file-${senderId}`);
+            }
+            SoundFx.chime();
+          } else if (action === 'typing') {
+            if (mutedPeerIds.has(senderId)) return;
+            const notice = document.getElementById('peerKeystrokeNotice');
+            const lbl = document.getElementById('typingPeersList');
+            if (data.active) {
+              notice.classList.remove('hidden');
+              lbl.innerText = `${data.persona.name} is transmitting...`;
+            } else {
+              notice.classList.add('hidden');
+            }
+          } else if (action === 'heart') {
+            if (mutedPeerIds.has(senderId)) return;
+            globalHeartCounter = Math.max(globalHeartCounter, data.count);
+            updateHeartUI(globalHeartCounter);
+            SoundFx.heart();
+          }
+        };
+
+        // Immediately broadcast presence on local channel
+        localBroadcastChannel.postMessage({ action: 'presence', data: { persona: myPersona }, senderId: myPersona.id });
+      } catch(e) {
+        console.warn('BroadcastChannel init error:', e);
+      }
+    }
 
     window.connectToMeshRoom = function(targetCode = null) {
       const codeInput = document.getElementById('roomIdentifierInput');
-      const code = (targetCode || codeInput.value).trim();
+      const homeInput = document.getElementById('homeRoomInput');
+      const code = String(targetCode || (homeInput && homeInput.value) || (codeInput && codeInput.value) || '').trim();
 
       if (!code) {
-        showToast('Please enter a room frequency identifier code', 'error');
+        showToast('Please enter a room frequency identifier code (e.g. 111)', 'error');
         return;
       }
+
+      if (homeInput) homeInput.value = code;
+      if (codeInput) codeInput.value = code;
 
       if (meshRoom) {
         try { meshRoom.leave(); } catch(e) {}
@@ -2152,12 +2310,32 @@
       document.getElementById('activeRoomCodeLabel').innerText = `ROOM: #${code}`;
       document.getElementById('emptyNotice')?.classList.add('hidden');
       closeModal('roomModal');
+      switchTab('chat');
       SoundFx.chime();
-      showToast(`Connecting to Mesh Room #${code}...`, 'info');
+      showToast(`Connected to Frequency Room #${code}!`, 'success');
+
+      initLocalBroadcastChannel(code);
 
       try {
-        const appId = 'ghost-freq-multi-mesh-v2';
-        meshRoom = joinRoom({ appId: appId }, code);
+        const nostrRelays = [
+          'wss://relay.damus.io',
+          'wss://nos.lol',
+          'wss://relay.nostr.band',
+          'wss://nostr.mom',
+          'wss://purplepag.es',
+          'wss://relay.snort.social'
+        ];
+        const rtcConfig = {
+          iceServers: [
+            { urls: 'stun:stun.l.google.com:19302' },
+            { urls: 'stun:stun1.l.google.com:19302' },
+            { urls: 'stun:stun2.l.google.com:19302' },
+            { urls: 'stun:stun3.l.google.com:19302' },
+            { urls: 'stun:stun4.l.google.com:19302' }
+          ]
+        };
+
+        meshRoom = joinRoom({ appId: 'ghost-freq-multi-mesh-v3', relays: nostrRelays, rtcConfig: rtcConfig }, code);
 
         [sendMsg, getMsg] = meshRoom.makeAction('chat');
         [sendFile, getFile] = meshRoom.makeAction('file');
@@ -2167,7 +2345,7 @@
 
         meshRoom.onPeerJoin(peerId => {
           SoundFx.chime();
-          showToast(`Node connected to mesh frequency`, 'success');
+          showToast(`Peer connected to mesh frequency`, 'success');
           sendPresence({ persona: myPersona });
           sendHeart({ count: globalHeartCounter });
           renderSystemNotice(`A node joined frequency #${code}`);
@@ -2232,7 +2410,12 @@
         });
 
         getPresence((data, peerId) => {
+          if (mutedPeerIds.has(peerId)) return;
+          const isNew = !activePeers.has(peerId);
           activePeers.set(peerId, { persona: data.persona });
+          if (isNew && sendPresence) {
+            sendPresence({ persona: myPersona });
+          }
           updateMeshStatus();
           renderPeersRoster();
         });
@@ -2241,7 +2424,8 @@
         renderPeersRoster();
 
       } catch(err) {
-        showToast('Mesh connection error: ' + err.message, 'error');
+        console.warn('Trystero WebRTC init fallback to BroadcastChannel:', err);
+        showToast('Connecting via local mesh protocol...', 'info');
       }
     };
 
@@ -2764,7 +2948,7 @@
     }
 
     window.selectAndSendGif = function(gifUrl) {
-      if (!meshRoom) {
+      if (!meshRoom && !currentRoomCode) {
         showToast('Connect to a room first to transmit GIFs', 'error');
         return;
       }
@@ -2781,6 +2965,9 @@
       };
 
       if (sendFile) sendFile(packet);
+      if (localBroadcastChannel) {
+        localBroadcastChannel.postMessage({ action: 'file', data: packet, senderId: myPersona.id });
+      }
       renderInlineImage(gifUrl, 'Animated GIF', myPersona, 'me');
       SoundFx.ping();
       showToast('Animated GIF broadcasted to mesh', 'info');
@@ -2856,24 +3043,29 @@
     }
 
     window.toggleMeshHeart = function(cb) {
-      if (!meshRoom) {
+      if (!meshRoom && !currentRoomCode) {
         showToast('Connect to a room to broadcast reaction pulse', 'error');
-        cb.checked = false;
+        if (cb) cb.checked = false;
         return;
       }
       globalHeartCounter++;
       updateHeartUI(globalHeartCounter);
       SoundFx.heart();
       if (sendHeart) sendHeart({ count: globalHeartCounter });
+      if (localBroadcastChannel) {
+        localBroadcastChannel.postMessage({ action: 'heart', data: { count: globalHeartCounter }, senderId: myPersona.id });
+      }
       showToast('Pulse broadcasted across mesh', 'info');
     };
 
     function updateHeartUI(count) {
-      document.getElementById('likeCounterOne').innerText = count;
-      document.getElementById('likeCounterTwo').innerText = count + 1;
+      if (document.getElementById('likeCounterOne')) document.getElementById('likeCounterOne').innerText = count;
+      if (document.getElementById('likeCounterTwo')) document.getElementById('likeCounterTwo').innerText = count + 1;
       const cb = document.getElementById('heart');
-      cb.checked = true;
-      setTimeout(() => cb.checked = false, 1200);
+      if (cb) {
+        cb.checked = true;
+        setTimeout(() => cb.checked = false, 1200);
+      }
     }
 
     window.transmitTextMessage = function(e) {
@@ -2889,30 +3081,36 @@
         return;
       }
 
-      if (!meshRoom) {
-        showToast('Not connected to a room. Open Room Hub or Home Dashboard.', 'error');
+      if (!meshRoom && !currentRoomCode) {
+        showToast('Not connected to a room. Enter room code or open Room Hub.', 'error');
         return;
       }
 
       const packet = { text: val, persona: myPersona, timestamp: Date.now(), replyTo: currentReplyState };
       if (sendMsg) sendMsg(packet);
+      if (localBroadcastChannel) {
+        localBroadcastChannel.postMessage({ action: 'chat', data: packet, senderId: myPersona.id });
+      }
       renderMessageCard(val, myPersona, 'me', currentReplyState);
       SoundFx.ping();
       input.value = '';
       cancelReplyState();
       if (sendTyping) sendTyping({ active: false, persona: myPersona });
+      if (localBroadcastChannel) {
+        localBroadcastChannel.postMessage({ action: 'typing', data: { active: false, persona: myPersona }, senderId: myPersona.id });
+      }
     };
 
-    function getAvatarHtml(avatar, sizeClass = 'w-3.5 h-3.5') {
-      if (!avatar) return `<span class="mr-1">⚡</span>`;
+    function getAvatarHtml(avatar, sizeClass = 'w-6 h-6 sm:w-7 sm:h-7') {
+      if (!avatar) return `<span class="mr-1.5 text-xs">⚡</span>`;
       const str = String(avatar).trim();
       if (str.startsWith('data:image/') || str.startsWith('http://') || str.startsWith('https://')) {
-        return `<img src="${str}" class="${sizeClass} rounded-full object-cover inline-block mr-1 align-middle" alt="avatar"/>`;
+        return `<img src="${str}" class="${sizeClass} rounded-full object-cover inline-block mr-1.5 align-middle border border-black/20 shrink-0" alt="avatar"/>`;
       }
       if (str.includes('<svg')) {
-        return `<span class="${sizeClass} rounded-full inline-block mr-1 align-middle overflow-hidden shrink-0">${str}</span>`;
+        return `<span class="${sizeClass} rounded-full inline-flex items-center justify-center mr-1.5 align-middle overflow-hidden shrink-0 border border-black/20">${str}</span>`;
       }
-      return `<span class="mr-1 inline-block align-middle">${str || '⚡'}</span>`;
+      return `<span class="mr-1.5 inline-block align-middle text-sm">${str || '⚡'}</span>`;
     }
 
     function renderMessageCard(text, senderPersona, side, replyTo = null) {
@@ -3109,7 +3307,7 @@
 
     window.dispatchStagedFile = function() {
       if (!stagedFileData) return;
-      if (!meshRoom) {
+      if (!meshRoom && !currentRoomCode) {
         showToast('Connect to a room to broadcast files', 'error');
         return;
       }
@@ -3126,6 +3324,9 @@
       };
 
       if (sendFile) sendFile(packet);
+      if (localBroadcastChannel) {
+        localBroadcastChannel.postMessage({ action: 'file', data: packet, senderId: myPersona.id });
+      }
 
       if (stagedFileData.isClassified) {
         renderClassifiedCard(packet, 'me');
@@ -3139,7 +3340,7 @@
     };
 
     function readAndBroadcastGenericFile(file) {
-      if (!meshRoom) {
+      if (!meshRoom && !currentRoomCode) {
         showToast('Connect to a room to broadcast files', 'error');
         return;
       }
@@ -3156,6 +3357,9 @@
         };
 
         if (sendFile) sendFile(packet);
+        if (localBroadcastChannel) {
+          localBroadcastChannel.postMessage({ action: 'file', data: packet, senderId: myPersona.id });
+        }
         registerVaultCatalogItem(packet, e.target.result, false);
         incrementVaultCount();
         SoundFx.chime();
