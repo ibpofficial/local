@@ -1216,6 +1216,7 @@
               id="roomIdentifierInput" 
               placeholder="e.g. 749215 or cyber-squad"
               maxlength="32"
+              onkeydown="if(event.key === 'Enter'){ connectToMeshRoom(this.value); }"
               class="flex-1 h-10 bg-[#e9eeea] border border-[#d0d0ce] rounded-xl px-3 font-mono text-sm text-[#111827] font-bold placeholder-[#9ca3af] focus:outline-none focus:border-[#000000]"
             />
             <button onclick="fillRandomRoomCode()" class="h-10 px-3 rounded-xl border border-[#d0d0ce] bg-[#ffffff] hover:bg-[#dededd] text-[#111827] font-mono text-xs font-bold transition">
@@ -1244,7 +1245,7 @@
         </div>
 
         <div class="pt-1 flex flex-col gap-2">
-          <button onclick="connectToMeshRoom()" class="date-selector" style="background-color: #f0ff7a; color: #000; border-color: #000; font-weight: 700; height: 44px; justify-content: center; font-size: 0.95rem;">
+          <button onclick="connectToMeshRoom(document.getElementById('roomIdentifierInput').value)" class="date-selector" style="background-color: #f0ff7a; color: #000; border-color: #000; font-weight: 700; height: 44px; justify-content: center; font-size: 0.95rem;">
             JOIN FREQUENCY ROOM
           </button>
           <button onclick="activateCameraScanner()" class="date-selector" style="justify-content: center;">
@@ -2348,6 +2349,42 @@
       }
     }
 
+    function sanitizeRoomCode(raw) {
+      if (!raw) return '';
+      return String(raw)
+        .toLowerCase()
+        .trim()
+        .replace(/^#+/, '')
+        .replace(/[^a-z0-9_-]/g, '')
+        .substring(0, 32);
+    }
+
+    function resolveRoomCodeInput(targetCode) {
+      if (typeof targetCode === 'string' && targetCode.trim().length > 0) {
+        return targetCode.trim();
+      }
+      
+      const modalEl = document.getElementById('roomModal');
+      const isModalOpen = modalEl && !modalEl.classList.contains('hidden');
+
+      const modalInput = document.getElementById('roomIdentifierInput');
+      const homeInput = document.getElementById('homeRoomInput');
+
+      if (isModalOpen && modalInput && modalInput.value && modalInput.value.trim().length > 0) {
+        return modalInput.value.trim();
+      }
+
+      if (homeInput && homeInput.value && homeInput.value.trim().length > 0) {
+        return homeInput.value.trim();
+      }
+
+      if (modalInput && modalInput.value && modalInput.value.trim().length > 0) {
+        return modalInput.value.trim();
+      }
+
+      return '';
+    }
+
     function initMqttMesh(code) {
       const topic = `ghostfreq/v4/room/${code}`;
       const brokers = [
@@ -2402,29 +2439,52 @@
     function initPeerJSConnection(code) {
       if (typeof Peer === 'undefined') return;
 
-      const myPeerId = `gf-${code}-${myPersona.id}`;
-      try {
-        peerInstance = new Peer(myPeerId, { debug: 1 });
+      const hostId = `gf-v4-${code}-host`;
+      const peerId = `gf-v4-${code}-${myPersona.id}`;
 
-        peerInstance.on('open', (id) => {
-          console.log('PeerJS initialized with ID:', id);
-          const hostId = `gf-${code}-host`;
-          if (myPeerId !== hostId) {
-            connectToPeerJSNode(hostId);
+      try {
+        peerInstance = new Peer(hostId, {
+          debug: 1,
+          config: {
+            iceServers: [
+              { urls: 'stun:stun.l.google.com:19302' },
+              { urls: 'stun:stun1.l.google.com:19302' },
+              { urls: 'stun:stun2.l.google.com:19302' }
+            ]
           }
         });
 
-        peerInstance.on('error', (err) => {
-          if (err.type === 'unavailable-id') {
-            peerInstance = new Peer(`gf-${code}-${Math.random().toString(36).substr(2, 6)}`);
-            peerInstance.on('open', () => {
-              connectToPeerJSNode(`gf-${code}-host`);
-            });
-          }
+        peerInstance.on('open', (id) => {
+          console.log('Registered as ROOM HOST for code:', code, id);
         });
 
         peerInstance.on('connection', (conn) => {
           setupPeerConnection(conn);
+        });
+
+        peerInstance.on('error', (err) => {
+          if (err.type === 'unavailable-id') {
+            // Host ID is already taken! Register as guest peer and connect to room host
+            peerInstance = new Peer(peerId, {
+              debug: 1,
+              config: {
+                iceServers: [
+                  { urls: 'stun:stun.l.google.com:19302' },
+                  { urls: 'stun:stun1.l.google.com:19302' },
+                  { urls: 'stun:stun2.l.google.com:19302' }
+                ]
+              }
+            });
+
+            peerInstance.on('open', (id) => {
+              console.log('Registered as GUEST PEER:', id);
+              connectToPeerJSNode(hostId);
+            });
+
+            peerInstance.on('connection', (conn) => {
+              setupPeerConnection(conn);
+            });
+          }
         });
       } catch(e) {
         console.warn('PeerJS init error:', e);
@@ -2459,17 +2519,25 @@
     }
 
     window.connectToMeshRoom = function(targetCode = null) {
-      const codeInput = document.getElementById('roomIdentifierInput');
-      const homeInput = document.getElementById('homeRoomInput');
-      const code = String(targetCode || (homeInput && homeInput.value) || (codeInput && codeInput.value) || '').trim();
+      const raw = resolveRoomCodeInput(targetCode);
+      const code = sanitizeRoomCode(raw);
 
       if (!code) {
         showToast('Please enter a room frequency identifier code (e.g. 111)', 'error');
         return;
       }
 
+      // Sync input fields
+      const codeInput = document.getElementById('roomIdentifierInput');
+      const homeInput = document.getElementById('homeRoomInput');
       if (homeInput) homeInput.value = code;
       if (codeInput) codeInput.value = code;
+
+      // Update URL query string seamlessly
+      try {
+        const newUrl = `${window.location.origin}${window.location.pathname}?room=${encodeURIComponent(code)}`;
+        window.history.replaceState(null, '', newUrl);
+      } catch(e) {}
 
       // Clean up previous room handles
       if (mqttClient) { try { mqttClient.end(true); } catch(e) {} mqttClient = null; }
@@ -2480,12 +2548,12 @@
       seenMessageIds.clear();
 
       currentRoomCode = code;
-      document.getElementById('activeRoomCodeLabel').innerText = `ROOM: #${code}`;
+      document.getElementById('activeRoomCodeLabel').innerText = `ROOM: #${code.toUpperCase()}`;
       document.getElementById('emptyNotice')?.classList.add('hidden');
       closeModal('roomModal');
       switchTab('chat');
       SoundFx.chime();
-      showToast(`Connected to Frequency Room #${code}!`, 'success');
+      showToast(`Connected to Frequency Room #${code.toUpperCase()}!`, 'success');
 
       initLocalBroadcastChannel(code);
       initMqttMesh(code);
