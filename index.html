@@ -65,12 +65,17 @@
       --text-muted: #6b7280;
     }
 
-    html, body {
+    html {
+      height: 100%;
+      height: -webkit-fill-available;
+    }
+    body {
       background-color: #e9eeea !important;
       color: #111827 !important;
       font-family: 'Inter', sans-serif;
       height: 100vh;
-      max-height: 100vh;
+      height: 100dvh;
+      min-height: -webkit-fill-available;
       width: 100vw;
       overflow: hidden;
       margin: 0;
@@ -386,7 +391,7 @@
   </style>
 </head>
 
-<body class="h-screen max-h-screen w-screen flex flex-col justify-between bg-[#e9eeea] text-[#111827] text-sm select-none relative overflow-hidden">
+<body class="h-full w-screen flex flex-col justify-between bg-[#e9eeea] text-[#111827] text-sm select-none relative overflow-hidden">
   
   <!-- =========================================================================
        SIDE NAVIGATION DRAWER (Houses all buttons, Room Hub, Shield, Manual, Purge)
@@ -502,25 +507,25 @@
   <!-- =========================================================================
        MINIMALIST TOP APP BAR (Single-line Status Bar on Mobile & PC)
        ========================================================================= -->
-  <header class="h-12 border-b border-[#d0d0ce] bg-[#ffffff] px-3 sm:px-5 flex items-center justify-between gap-2 shadow-sm z-30 select-none">
+  <header class="h-12 border-b border-[#d0d0ce] bg-[#ffffff] px-2.5 sm:px-5 flex items-center justify-between gap-2 shadow-sm z-30 select-none shrink-0">
     
     <!-- Left Status Indicator -->
-    <div class="flex items-center gap-2">
-      <div class="w-7 h-7 rounded-xl bg-[#e9eeea] border border-[#d0d0ce] flex items-center justify-center text-[#111827] shadow-sm font-bold text-xs">
+    <div class="flex items-center gap-1.5 sm:gap-2 min-w-0">
+      <div class="w-7 h-7 shrink-0 rounded-xl bg-[#e9eeea] border border-[#d0d0ce] flex items-center justify-center text-[#111827] shadow-sm font-bold text-xs">
         ⚡
       </div>
-      <div class="flex items-center gap-2">
-        <span id="activeRoomCodeLabel" class="font-mono text-xs font-bold text-[#111827] tracking-wide">ROOM: NOT CONNECTED</span>
+      <div class="flex items-center gap-1.5 min-w-0">
+        <span id="activeRoomCodeLabel" class="font-mono text-xs font-bold text-[#111827] tracking-wide truncate max-w-[130px] sm:max-w-none">ROOM: NOT CONNECTED</span>
         <span class="hidden sm:inline text-[#d0d0ce]">&bull;</span>
         <span id="meshPeersCountLabel" class="hidden sm:inline text-[11px] font-mono text-[#6b7280]">0 Peers in Mesh</span>
-        <span class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded-full bg-[#f0ff7a] text-[#000000] border border-[#000000]">
+        <span class="hidden xs:inline-block text-[9px] font-mono font-bold px-1.5 py-0.2 rounded-full bg-[#f0ff7a] text-[#000000] border border-[#000000] shrink-0">
           ZERO-TRACE
         </span>
       </div>
     </div>
 
     <!-- Right Controls: Reaction Pulse & Navigation 3-Dots Drawer Trigger -->
-    <div class="flex items-center gap-2">
+    <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
       
       <!-- Heart Pulse Reaction Button -->
       <div title="Room-Wide Realtime Heart Sync">
@@ -538,8 +543,8 @@
       </div>
 
       <!-- ROOM HUB Quick Pill Button -->
-      <button onclick="openModal('roomModal')" class="date-selector" style="background-color: #f0ff7a; color: #000000; border-color: #000000; font-weight: 700; height: 34px; padding: 0 10px;">
-        <span>ROOM HUB</span>
+      <button onclick="openModal('roomModal')" class="date-selector" style="background-color: #f0ff7a; color: #000000; border-color: #000000; font-weight: 700; height: 34px; padding: 0 8px;">
+        <span class="text-xs">ROOM</span>
       </button>
 
       <!-- 3-DOTS NAVIGATION TRIGGER BUTTON (Opens Side Drawer) -->
@@ -557,23 +562,41 @@
     </div>
   </header>
 
+  <!-- =========================================================================
+       SUB-HEADER NAVIGATION TAB BAR (PROMINENT EASY SWITCHER ON MOBILE & PC)
+       ========================================================================= -->
+  <nav class="h-10 bg-[#f8faf9] border-b border-[#d0d0ce] px-2 flex items-center justify-around sm:justify-start sm:gap-2 z-20 shrink-0 font-mono text-xs select-none">
+    <button id="nav-tab-chat" onclick="switchTab('chat')" class="flex-1 sm:flex-initial h-8 px-3 rounded-lg flex items-center justify-center gap-1.5 font-bold transition bg-[#111827] text-[#ffffff] shadow-sm">
+      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+      <span>CHAT</span>
+    </button>
+    <button id="nav-tab-roster" onclick="switchTab('roster')" class="flex-1 sm:flex-initial h-8 px-3 rounded-lg flex items-center justify-center gap-1.5 font-semibold text-[#6b7280] hover:text-[#111827] hover:bg-[#dededd] transition">
+      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+      <span>PEERS</span>
+    </button>
+    <button id="nav-tab-vault" onclick="switchTab('vault')" class="flex-1 sm:flex-initial h-8 px-3 rounded-lg flex items-center justify-center gap-1.5 font-semibold text-[#6b7280] hover:text-[#111827] hover:bg-[#dededd] transition">
+      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+      <span>VAULT</span>
+    </button>
+  </nav>
+
 
   <!-- =========================================================================
        MAIN 100% VIEWPORT CHAT CANVAS (Zero On-Screen Clutter)
        ========================================================================= -->
-  <main class="relative z-10 flex-1 w-full mx-auto flex flex-col overflow-hidden h-full">
+  <main class="relative z-10 flex-1 w-full mx-auto flex flex-col min-h-0 overflow-hidden">
     
     <!-- FULL CANVAS DISPLAY -->
-    <div class="flex-1 relative bg-[#ffffff] flex flex-col h-full overflow-hidden">
+    <div class="flex-1 relative bg-[#ffffff] flex flex-col min-h-0 overflow-hidden">
       
       <!-- VIEW 1: ANONYMOUS MULTI-PEER CHAT STREAM -->
-      <div id="view-chat" class="relative z-10 flex-1 flex flex-col h-full overflow-hidden">
+      <div id="view-chat" class="relative z-10 flex-1 flex flex-col min-h-0 overflow-hidden">
         
         <!-- Stream Feed Area -->
-        <div id="messagesContainer" class="flex-1 overflow-y-auto p-3 sm:p-6 space-y-3 custom-scroll select-text h-full">
+        <div id="messagesContainer" class="flex-1 overflow-y-auto p-3 sm:p-6 space-y-3 custom-scroll select-text min-h-0">
           
           <!-- Empty State Solid Sage Card -->
-          <div id="emptyNotice" class="w-full max-w-md mx-auto my-8 sm:my-16 border border-[#d0d0ce] bg-[#e9eeea] p-6 rounded-2xl sm:rounded-[2rem] text-center space-y-3 select-none shadow-sm">
+          <div id="emptyNotice" class="w-full max-w-md mx-auto my-6 sm:my-16 border border-[#d0d0ce] bg-[#e9eeea] p-5 sm:p-6 rounded-2xl sm:rounded-[2rem] text-center space-y-3 select-none shadow-sm">
             <div class="w-12 h-12 mx-auto rounded-full bg-[#ffffff] border border-[#d0d0ce] flex items-center justify-center text-[#111827] shadow-sm">
               <svg class="w-6 h-6 text-[#111827]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
             </div>
@@ -594,20 +617,20 @@
         </div>
 
         <!-- Live Typing Activity Indicator -->
-        <div id="peerKeystrokeNotice" class="px-4 py-1 text-[10px] font-mono text-stealth-cyan flex items-center gap-1.5 hidden border-t border-slate-100">
+        <div id="peerKeystrokeNotice" class="px-4 py-1 text-[10px] font-mono text-stealth-cyan flex items-center gap-1.5 hidden border-t border-slate-100 shrink-0">
           <span class="w-1.5 h-1.5 rounded-full bg-stealth-cyan animate-pulse"></span>
           <span id="typingPeersList">Nodes transmitting data...</span>
         </div>
 
         <!-- Image & File Staging Bar -->
-        <div id="stagingBar" class="hidden px-3 py-2 bg-[#f8faf9] border-t border-[#d0d0ce] flex flex-wrap items-center justify-between gap-2">
+        <div id="stagingBar" class="hidden px-3 py-2 bg-[#f8faf9] border-t border-[#d0d0ce] flex flex-wrap items-center justify-between gap-2 shrink-0">
           <div class="flex items-center gap-2.5">
             <img id="stagingImgPreview" src="" class="w-9 h-9 object-cover rounded border border-[#d0d0ce] bg-black" />
             <div class="flex flex-col">
               <div class="flex items-center gap-1.5">
-                <span id="stagingFileName" class="text-xs font-mono text-[#111827] truncate max-w-xs">image.png</span>
+                <span id="stagingFileName" class="text-xs font-mono text-[#111827] truncate max-w-[120px] sm:max-w-xs">image.png</span>
                 <span id="classifiedStagingBadge" class="hidden text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-rose-500/20 text-rose-700 border border-rose-500/30">
-                  CLASSIFIED EPHEMERAL
+                  EPHEMERAL
                 </span>
               </div>
               <span id="stagingFileSize" class="text-[10px] font-mono text-[#6b7280]">0 KB</span>
@@ -615,19 +638,18 @@
           </div>
 
           <!-- Ghost Ephemeral Photo Expiry Timer Selector Pill Strip -->
-          <div id="ghostTimerSelector" class="hidden flex items-center gap-1 bg-[#ffffff] border border-[#d0d0ce] px-2 py-1 rounded-full">
-            <span class="text-[10px] font-mono text-rose-600 font-bold uppercase tracking-wider pr-1">⏱️ TIMER:</span>
-            <button type="button" onclick="setStagedGhostTimer(0)" id="timerBtn-0" class="ghost-timer-pill px-2 py-0.5 rounded-full text-[10px] font-mono font-bold transition">TRIPWIRE ONLY</button>
-            <button type="button" onclick="setStagedGhostTimer(5)" id="timerBtn-5" class="ghost-timer-pill px-2 py-0.5 rounded-full text-[10px] font-mono font-bold transition">5s</button>
-            <button type="button" onclick="setStagedGhostTimer(10)" id="timerBtn-10" class="ghost-timer-pill active px-2 py-0.5 rounded-full text-[10px] font-mono font-bold transition">10s</button>
-            <button type="button" onclick="setStagedGhostTimer(30)" id="timerBtn-30" class="ghost-timer-pill px-2 py-0.5 rounded-full text-[10px] font-mono font-bold transition">30s</button>
-            <button type="button" onclick="setStagedGhostTimer(60)" id="timerBtn-60" class="ghost-timer-pill px-2 py-0.5 rounded-full text-[10px] font-mono font-bold transition">60s</button>
+          <div id="ghostTimerSelector" class="hidden flex items-center gap-1 bg-[#ffffff] border border-[#d0d0ce] px-2 py-1 rounded-full overflow-x-auto max-w-full">
+            <span class="text-[10px] font-mono text-rose-600 font-bold uppercase tracking-wider pr-1 shrink-0">⏱️ TIMER:</span>
+            <button type="button" onclick="setStagedGhostTimer(0)" id="timerBtn-0" class="ghost-timer-pill px-2 py-0.5 rounded-full text-[10px] font-mono font-bold transition shrink-0">TRIPWIRE ONLY</button>
+            <button type="button" onclick="setStagedGhostTimer(5)" id="timerBtn-5" class="ghost-timer-pill px-2 py-0.5 rounded-full text-[10px] font-mono font-bold transition shrink-0">5s</button>
+            <button type="button" onclick="setStagedGhostTimer(10)" id="timerBtn-10" class="ghost-timer-pill active px-2 py-0.5 rounded-full text-[10px] font-mono font-bold transition shrink-0">10s</button>
+            <button type="button" onclick="setStagedGhostTimer(30)" id="timerBtn-30" class="ghost-timer-pill px-2 py-0.5 rounded-full text-[10px] font-mono font-bold transition shrink-0">30s</button>
+            <button type="button" onclick="setStagedGhostTimer(60)" id="timerBtn-60" class="ghost-timer-pill px-2 py-0.5 rounded-full text-[10px] font-mono font-bold transition shrink-0">60s</button>
           </div>
 
           <div class="flex items-center gap-2">
             <button onclick="cancelStagedFile()" class="date-selector" style="padding: 0.3rem 0.6rem;">Cancel</button>
-            
-            <button class="button" onclick="dispatchStagedFile()" style="height: 32px; padding: 0 10px; width: 130px;">
+            <button class="button" onclick="dispatchStagedFile()" style="height: 32px; padding: 0 10px; min-width: 100px;">
               <span class="bell">
                 <svg viewBox="0 0 24 24" width="12" height="12"><path d="M12 2a4 4 0 0 0-4 4v7.17l-1.59 1.59A1 1 0 0 0 7 16h10a1 1 0 0 0 .71-1.71L16.12 13V6a4 4 0 0 0-4-4z"></path></svg>
               </span>
@@ -638,15 +660,15 @@
         </div>
 
         <!-- Bottom Chat Input Controls Dock -->
-        <div class="p-2 sm:p-3 bg-[#f8faf9] border-t border-[#d0d0ce] flex items-center gap-1.5 sm:gap-2">
+        <div class="shrink-0 p-2 sm:p-3 bg-[#f8faf9] border-t border-[#d0d0ce] flex items-center gap-1.5 sm:gap-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))]">
           
           <!-- Standard Attachment Trigger -->
           <input type="file" id="directFileInput" class="hidden" onchange="handleDirectFileSelect(event, false)">
           <button 
             type="button" 
             onclick="triggerUpload(false)"
-            class="h-10 w-10 min-w-[40px] rounded-full border border-[#d0d0ce] bg-[#ffffff] hover:bg-[#e9eeea] text-[#111827] flex items-center justify-center transition shadow-sm"
-            title="Upload standard file or photo (or paste with Ctrl+V)"
+            class="h-10 w-10 min-w-[40px] shrink-0 rounded-full border border-[#d0d0ce] bg-[#ffffff] hover:bg-[#e9eeea] text-[#111827] flex items-center justify-center transition shadow-sm"
+            title="Upload standard file or photo"
           >
             <svg class="w-4 h-4 text-[#111827]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
@@ -659,28 +681,28 @@
             type="button" 
             id="classifiedImageBtn"
             onclick="triggerUpload(true)"
-            class="h-10 px-3 rounded-full border border-[#000000] bg-[#f0ff7a] text-[#000000] hover:bg-[#dededd] flex items-center gap-1.5 transition select-none font-mono text-xs font-bold shadow-sm"
-            title="Send Classified Ephemeral Photo (Anti-Screenshot / Burn-on-Disturbance)"
+            class="h-10 px-2.5 sm:px-3 shrink-0 rounded-full border border-[#000000] bg-[#f0ff7a] text-[#000000] hover:bg-[#dededd] flex items-center gap-1.5 transition select-none font-mono text-xs font-bold shadow-sm"
+            title="Send Ephemeral Ghost Photo"
           >
-            <svg class="w-4 h-4 text-[#000000]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-4 h-4 text-[#000000] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
             </svg>
             <span class="hidden sm:inline">GHOST PIC</span>
           </button>
 
           <!-- Main Text Entry Form -->
-          <form id="chatForm" onsubmit="transmitTextMessage(event)" class="flex-1 flex items-center gap-1.5 sm:gap-2">
+          <form id="chatForm" onsubmit="transmitTextMessage(event)" class="flex-1 flex items-center gap-1.5 sm:gap-2 min-w-0">
             <input 
               type="text" 
               id="messageInput" 
-              placeholder="Broadcast to room mesh (Paste screenshots with Ctrl+V)..." 
+              placeholder="Type a message..." 
               autocomplete="off" 
               oninput="handleInputActivity()"
-              class="flex-1 h-10 bg-[#ffffff] border border-[#d0d0ce] rounded-full px-3.5 text-xs text-[#111827] placeholder-[#9ca3af] focus:outline-none focus:border-[#000000] focus:ring-1 focus:ring-[#000000] font-sans shadow-inner"
+              class="flex-1 min-w-0 h-10 bg-[#ffffff] border border-[#d0d0ce] rounded-full px-3.5 text-xs text-[#111827] placeholder-[#9ca3af] focus:outline-none focus:border-[#000000] focus:ring-1 focus:ring-[#000000] font-sans shadow-inner"
             />
             
-            <!-- vinodjangid07 Tactile Sliding Arrow Action Button for SEND -->
-            <button class="button" type="submit" style="height: 40px; padding: 0 12px; width: 100px; border-radius: 9999px; background-color: #111827;">
+            <!-- Send Button -->
+            <button class="button shrink-0" type="submit" style="height: 40px; padding: 0 12px; min-width: 80px; border-radius: 9999px; background-color: #111827;">
               <span class="bell">
                 <svg viewBox="0 0 24 24" width="13" height="13"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" fill="#f0ff7a"></path></svg>
               </span>
@@ -692,7 +714,7 @@
       </div>
 
       <!-- VIEW 2: CONNECTED PEERS ROSTER -->
-      <div id="view-roster" class="relative z-10 flex-1 flex flex-col h-full p-4 overflow-y-auto custom-scroll hidden space-y-3">
+      <div id="view-roster" class="relative z-10 flex-1 flex flex-col min-h-0 p-4 overflow-y-auto custom-scroll hidden space-y-3">
         <div class="flex items-center justify-between border-b border-[#d0d0ce] pb-2 font-mono text-xs">
           <span class="text-[#111827] uppercase tracking-wider font-semibold">Active Mesh Nodes</span>
           <span class="text-[#6b7280] text-[11px]" id="rosterSubCount">1 Connected Node</span>
@@ -704,7 +726,7 @@
       </div>
 
       <!-- VIEW 3: DIRECT RAM VAULT -->
-      <div id="view-vault" class="relative z-10 flex-1 flex flex-col h-full p-4 overflow-y-auto custom-scroll hidden space-y-4">
+      <div id="view-vault" class="relative z-10 flex-1 flex flex-col min-h-0 p-4 overflow-y-auto custom-scroll hidden space-y-4">
         <div 
           id="vaultDropTarget" 
           onclick="triggerUpload(false)"
@@ -945,10 +967,25 @@
         Close
       </button>
     </div>
+  <!-- MODAL 6: LIGHTBOX IMAGE VIEWER MODAL -->
+  <div id="lightboxModal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-3 hidden select-none">
+    <div class="relative w-full max-w-4xl max-h-[90vh] bg-[#0b0d14] border border-white/20 rounded-2xl overflow-hidden flex flex-col shadow-2xl">
+      <div class="p-3 border-b border-white/10 flex items-center justify-between bg-black/40 text-white font-mono text-xs">
+        <span id="lightboxTitle" class="truncate font-bold text-slate-200">Photo Viewer</span>
+        <button onclick="closeLightbox()" class="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-sm font-bold transition">&times;</button>
+      </div>
+      <div class="p-2 flex items-center justify-center overflow-hidden max-h-[75vh]">
+        <img id="lightboxImg" src="" class="max-w-full max-h-[75vh] object-contain rounded-lg" />
+      </div>
+      <div class="p-3 border-t border-white/10 bg-black/40 flex items-center justify-end gap-2 font-mono text-xs">
+        <a id="lightboxDownloadBtn" href="#" download class="date-selector" style="background-color: #f0ff7a; color: #000; font-weight: 700; padding: 0.4rem 0.8rem;">Download Image</a>
+        <button onclick="closeLightbox()" class="date-selector" style="padding: 0.4rem 0.8rem;">Close</button>
+      </div>
+    </div>
   </div>
 
   <!-- Toast Notification Feedback -->
-  <div id="toastNotification" class="fixed bottom-4 right-4 z-50 transform translate-y-16 opacity-0 pointer-events-none transition-all duration-200 border border-[#d0d0ce] bg-[#ffffff] px-4 py-2.5 rounded-full shadow-2xl flex items-center gap-2 text-xs font-mono text-[#111827]">
+  <div id="toastNotification" class="fixed bottom-14 sm:bottom-4 right-4 z-50 transform translate-y-16 opacity-0 pointer-events-none transition-all duration-200 border border-[#d0d0ce] bg-[#ffffff] px-4 py-2.5 rounded-full shadow-2xl flex items-center gap-2 text-xs font-mono text-[#111827]">
     <div id="toastDot" class="w-2 h-2 rounded-full bg-stealth-emerald"></div>
     <span id="toastText" class="font-semibold">System Ready</span>
   </div>
@@ -1983,8 +2020,16 @@
     window.switchTab = function(t) {
       ['chat', 'roster', 'vault'].forEach(tab => {
         const v = document.getElementById(`view-${tab}`);
+        const btn = document.getElementById(`nav-tab-${tab}`);
         const active = tab === t;
         if (v) v.classList.toggle('hidden', !active);
+        if (btn) {
+          if (active) {
+            btn.className = 'flex-1 sm:flex-initial h-8 px-3 rounded-lg flex items-center justify-center gap-1.5 font-bold transition bg-[#111827] text-[#ffffff] shadow-sm';
+          } else {
+            btn.className = 'flex-1 sm:flex-initial h-8 px-3 rounded-lg flex items-center justify-center gap-1.5 font-semibold text-[#6b7280] hover:text-[#111827] hover:bg-[#dededd] transition';
+          }
+        }
       });
       SoundFx.click();
     };
