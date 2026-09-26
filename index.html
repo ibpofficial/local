@@ -2165,12 +2165,34 @@
     </div>
 
     <!-- Center Video & Voice Equalizer Viewport Canvas -->
-    <div class="relative flex-1 w-full max-w-4xl mx-auto my-3 bg-slate-950 rounded-3xl border border-white/15 overflow-hidden flex items-center justify-center shadow-2xl">
-      <!-- Remote Video Element -->
-      <video id="remoteVideo" autoplay playsinline class="w-full h-full object-cover rounded-3xl bg-slate-950"></video>
+    <div id="callViewportCanvas" class="relative flex-1 w-full max-w-5xl mx-auto my-3 bg-slate-950 rounded-3xl border-2 border-white/20 overflow-hidden flex items-center justify-center shadow-2xl">
+      
+      <!-- DUAL FACE-TO-FACE VIDEO GRID -->
+      <div id="videoGridContainer" class="w-full h-full grid grid-cols-1 sm:grid-cols-2 gap-2 p-2 bg-slate-950">
+        
+        <!-- LOCAL USER VIDEO CARD (YOU) -->
+        <div id="localVideoCard" class="relative w-full h-full rounded-2xl overflow-hidden bg-slate-900 border border-white/10 flex items-center justify-center min-h-[160px]">
+          <video id="localVideo" autoplay playsinline muted class="w-full h-full object-cover bg-slate-900" style="transform: scaleX(-1);"></video>
+          <div class="absolute top-2 left-2.5 font-mono text-xs font-extrabold px-2.5 py-1 rounded-full bg-black/75 text-[#f0ff7a] border border-white/20 flex items-center gap-1.5 shadow-md z-10">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span>YOU (LOCAL CAMERA)</span>
+          </div>
+        </div>
+
+        <!-- REMOTE PEER VIDEO CARD (PEER) -->
+        <div id="remoteVideoCard" class="relative w-full h-full rounded-2xl overflow-hidden bg-slate-900 border border-white/10 flex items-center justify-center min-h-[160px]">
+          <video id="remoteVideo" autoplay playsinline class="w-full h-full object-cover bg-slate-900"></video>
+          <img id="remoteVideoFallback" src="" class="hidden w-full h-full object-cover bg-slate-900" />
+          <div class="absolute top-2 left-2.5 font-mono text-xs font-extrabold px-2.5 py-1 rounded-full bg-black/75 text-cyan-400 border border-white/20 flex items-center gap-1.5 shadow-md z-10">
+            <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+            <span id="remoteVideoCardTag">PEER (REMOTE STREAM)</span>
+          </div>
+        </div>
+
+      </div>
 
       <!-- Voice Call Equalizer Fallback Card (When Video Stream Disabled) -->
-      <div id="voiceEqualizerCard" class="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 p-6 space-y-4">
+      <div id="voiceEqualizerCard" class="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 p-6 space-y-4 hidden">
         <div id="callAvatarContainer" class="w-24 h-24 sm:w-32 sm:h-32 rounded-3xl bg-[#111827] text-white flex items-center justify-center font-bold text-4xl border-2 border-white/20 shadow-2xl overflow-hidden">
           <span>⚡</span>
         </div>
@@ -2183,26 +2205,20 @@
         </div>
         <div class="text-xs font-mono font-bold text-slate-300">VOICE FREQUENCY ENCRYPTED & STREAMING</div>
       </div>
-
-      <!-- Local Video Picture-in-Picture PIP Box -->
-      <div id="localVideoContainer" class="absolute bottom-4 right-4 w-28 h-20 sm:w-44 sm:h-32 rounded-2xl border-2 border-white/30 overflow-hidden shadow-2xl bg-slate-900">
-        <video id="localVideo" autoplay playsinline muted class="w-full h-full object-cover bg-slate-900"></video>
-        <div class="absolute top-1 left-1.5 text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-black/70 text-white">YOU</div>
-      </div>
     </div>
 
     <!-- Bottom Controls Dock Bar -->
-    <div class="w-full max-w-md mx-auto flex items-center justify-around gap-2 sm:gap-4 bg-black/80 backdrop-blur-md p-3 sm:p-4 rounded-full border-2 border-white/20 z-20 shadow-2xl shrink-0 safe-area-pb">
+    <div class="w-full max-w-lg mx-auto flex items-center justify-around gap-2 sm:gap-4 bg-black/85 backdrop-blur-md p-3 sm:p-4 rounded-full border-2 border-white/20 z-20 shadow-2xl shrink-0 safe-area-pb">
       <!-- Mute Mic Button -->
       <button 
         id="callMuteMicBtn"
         onclick="toggleCallMic()" 
-        class="flex flex-col items-center justify-center gap-1 group"
+        class="flex flex-col items-center justify-center gap-1 group cursor-pointer"
         title="Mute or Unmute Microphone"
         aria-label="Mute or unmute microphone"
       >
-        <div class="w-12 h-12 rounded-full bg-white/15 hover:bg-white/25 text-white flex items-center justify-center transition shadow-md border border-white/20 group-active:scale-95">
-          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z"/></svg>
+        <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white/15 hover:bg-white/25 text-white flex items-center justify-center transition shadow-md border border-white/20 group-active:scale-95">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z"/></svg>
         </div>
         <span class="text-[9px] font-mono text-slate-300 font-bold uppercase">Mute</span>
       </button>
@@ -2211,12 +2227,12 @@
       <button 
         id="callToggleCamBtn"
         onclick="toggleCallCamera()" 
-        class="flex flex-col items-center justify-center gap-1 group"
+        class="flex flex-col items-center justify-center gap-1 group cursor-pointer"
         title="Turn Camera On or Off"
         aria-label="Turn camera on or off"
       >
-        <div class="w-12 h-12 rounded-full bg-white/15 hover:bg-white/25 text-white flex items-center justify-center transition shadow-md border border-white/20 group-active:scale-95">
-          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+        <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white/15 hover:bg-white/25 text-white flex items-center justify-center transition shadow-md border border-white/20 group-active:scale-95">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
         </div>
         <span class="text-[9px] font-mono text-slate-300 font-bold uppercase">Camera</span>
       </button>
@@ -2225,27 +2241,27 @@
       <button 
         id="callScreenShareBtn"
         onclick="toggleCallScreenShare()" 
-        class="flex flex-col items-center justify-center gap-1 group"
+        class="flex flex-col items-center justify-center gap-1 group cursor-pointer"
         title="Share Desktop or Mobile Screen"
         aria-label="Share desktop or mobile screen"
       >
-        <div class="w-12 h-12 rounded-full bg-white/15 hover:bg-white/25 text-white flex items-center justify-center transition shadow-md border border-white/20 group-active:scale-95">
-          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+        <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white/15 hover:bg-white/25 text-white flex items-center justify-center transition shadow-md border border-white/20 group-active:scale-95">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
         </div>
         <span class="text-[9px] font-mono text-slate-300 font-bold uppercase">Screen</span>
       </button>
 
-      <!-- End Call Button -->
+      <!-- CUT / END CALL BUTTON -->
       <button 
         onclick="endActiveCall()" 
-        class="flex flex-col items-center justify-center gap-1 group"
-        title="End Call and Disconnect"
-        aria-label="End call and disconnect"
+        class="flex flex-col items-center justify-center gap-1 group cursor-pointer"
+        title="Cut / End Call & Disconnect"
+        aria-label="Cut / End Call & Disconnect"
       >
-        <div class="w-14 h-14 rounded-full bg-rose-600 hover:bg-rose-700 text-white flex items-center justify-center transition shadow-xl border-2 border-rose-400 group-active:scale-95">
-          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 8l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M5 3a2 2 0 00-2 2v1c0 8.284 6.716 15 15 15h1a2 2 0 002-2v-3.28a1 1 0 00-.684-.948l-4.493-1.498a1 1 0 00-1.21.502l-1.13 2.257a11.042 11.042 0 01-5.516-5.516l2.257-1.13a1 1 0 00.502-1.21L9.22 4.684A1 1 0 008.27 4H5z"/></svg>
+        <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-rose-600 hover:bg-rose-700 text-white flex items-center justify-center transition shadow-2xl border-2 border-rose-400 group-active:scale-95">
+          <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 8l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M5 3a2 2 0 00-2 2v1c0 8.284 6.716 15 15 15h1a2 2 0 002-2v-3.28a1 1 0 00-.684-.948l-4.493-1.498a1 1 0 00-1.21.502l-1.13 2.257a11.042 11.042 0 01-5.516-5.516l2.257-1.13a1 1 0 00.502-1.21L9.22 4.684A1 1 0 008.27 4H5z"/></svg>
         </div>
-        <span class="text-[9px] font-mono text-rose-400 font-extrabold uppercase">End Call</span>
+        <span class="text-[10px] font-mono text-rose-400 font-extrabold uppercase">CUT / HANG UP</span>
       </button>
     </div>
   </div>
@@ -2969,6 +2985,19 @@
         globalHeartCounter = Math.max(globalHeartCounter, payload.count || 0);
         updateHeartUI(globalHeartCounter);
         SoundFx.heart();
+      } else if (actionType === 'video_frame') {
+        if ((currentCallState === 'active' || currentCallState === 'calling') && activeCallType === 'video') {
+          const fallbackImg = document.getElementById('remoteVideoFallback');
+          const remoteVid = document.getElementById('remoteVideo');
+          if (fallbackImg && payload.frameUri) {
+            fallbackImg.src = payload.frameUri;
+            fallbackImg.classList.remove('hidden');
+            if (remoteVid) remoteVid.classList.add('hidden');
+          }
+          if (document.getElementById('remoteVideoCardTag')) {
+            document.getElementById('remoteVideoCardTag').innerText = `${senderPersona.name.toUpperCase()} (LIVE VIDEO)`;
+          }
+        }
       } else if (actionType === 'call_invite') {
         if (payload.targetId && payload.targetId !== myPersona.id) return;
         if (currentCallState !== 'idle') {
@@ -2991,16 +3020,49 @@
           avatarBox.innerHTML = getAvatarHtml(senderPersona.avatar, 'w-20 h-20');
         }
 
+        const banner = document.getElementById('incomingCallBannerBar');
+        if (banner) {
+          if (document.getElementById('bannerCallerName')) {
+            document.getElementById('bannerCallerName').innerText = `INCOMING ${(payload.type || 'voice').toUpperCase()} CALL FROM ${senderPersona.name}`;
+          }
+          if (document.getElementById('bannerCallTypeIcon')) {
+            document.getElementById('bannerCallTypeIcon').innerText = payload.type === 'video' ? '📹' : '📞';
+          }
+          banner.classList.remove('hidden');
+        }
+
         openModal('incomingCallModal');
         playRingtoneLoop();
         triggerOSNotification(`📞 Incoming ${(payload.type || 'voice').toUpperCase()} Call`, `${senderPersona.name} is calling you...`, `call-${peerId}`);
       } else if (actionType === 'call_accept') {
-        if (currentCallState === 'calling') {
-          stopRingtoneLoop();
-          currentCallState = 'active';
-          showToast(`Call connected with ${senderPersona.name}!`, 'success');
-          SoundFx.chime();
-          startCallTimer();
+        stopRingtoneLoop();
+        currentCallState = 'active';
+        showToast(`Call connected with ${senderPersona.name}!`, 'success');
+        SoundFx.chime();
+        startCallTimer();
+        openModal('activeCallHudModal');
+
+        if (document.getElementById('callPeerName')) {
+          document.getElementById('callPeerName').innerText = `CALL WITH ${senderPersona.name}`;
+        }
+        const eqCard = document.getElementById('voiceEqualizerCard');
+        if (eqCard) eqCard.classList.toggle('hidden', activeCallType === 'video');
+
+        if (activeCallType === 'video') {
+          startVideoFrameBroadcasting();
+        }
+
+        if (peerInstance && localMediaStream) {
+          const hostId = `gf-v4-${currentRoomCode}-host`;
+          const guestId = `gf-v4-${currentRoomCode}-${peerId}`;
+          const targetPeerId = peerInstance.id === hostId ? guestId : hostId;
+          try {
+            const mediaCall = peerInstance.call(targetPeerId, localMediaStream);
+            if (mediaCall) {
+              activeMediaCall = mediaCall;
+              bindMediaCallEvents(mediaCall);
+            }
+          } catch(e) {}
         }
       } else if (actionType === 'call_decline') {
         stopRingtoneLoop();
@@ -3062,6 +3124,19 @@
       activeCallType = callType;
       currentCallState = 'calling';
 
+      document.getElementById('callPeerName').innerText = targetPeerId ? `Calling Node...` : `Room Frequency Mesh Call`;
+      document.getElementById('callTypeLabel').innerText = `${callType.toUpperCase()} CALL // P2P MESH STREAM`;
+      document.getElementById('callStatusIcon').innerText = callType === 'video' ? '📹' : '📞';
+
+      const eqCard = document.getElementById('voiceEqualizerCard');
+      if (eqCard) eqCard.classList.toggle('hidden', callType === 'video');
+
+      const callAvatarContainer = document.getElementById('callAvatarContainer');
+      if (callAvatarContainer) callAvatarContainer.innerHTML = getAvatarHtml(myPersona.avatar, 'w-24 h-24 sm:w-32 sm:h-32');
+
+      openModal('activeCallHudModal');
+      playRingtoneLoop();
+
       try {
         const constraints = {
           audio: true,
@@ -3080,37 +3155,108 @@
           remoteVid.srcObject = localMediaStream;
           remoteVid.style.transform = 'scaleX(-1)';
         }
+      } catch(err) {
+        console.warn('Call getUserMedia error, fallback to synthetic camera stream:', err);
+        if (callType === 'video') {
+          createSyntheticCameraStream();
+        }
+      }
 
-        document.getElementById('callPeerName').innerText = targetPeerId ? `Calling Node...` : `Room Frequency Mesh Call`;
-        document.getElementById('callTypeLabel').innerText = `${callType.toUpperCase()} CALL // P2P MESH STREAM`;
-        document.getElementById('callStatusIcon').innerText = callType === 'video' ? '📹' : '📞';
+      if (callType === 'video') {
+        startVideoFrameBroadcasting();
+      }
 
-        const eqCard = document.getElementById('voiceEqualizerCard');
-        if (eqCard) eqCard.classList.toggle('hidden', callType === 'video');
+      dispatchRoomAction('call_invite', { type: callType, callerPersona: myPersona, targetId: targetPeerId });
 
-        const callAvatarContainer = document.getElementById('callAvatarContainer');
-        if (callAvatarContainer) callAvatarContainer.innerHTML = getAvatarHtml(myPersona.avatar, 'w-24 h-24 sm:w-32 sm:h-32');
-
-        openModal('activeCallHudModal');
-        playRingtoneLoop();
-
-        dispatchRoomAction('call_invite', { type: callType, callerPersona: myPersona, targetId: targetPeerId });
-
-        if (peerInstance && targetPeerId) {
-          const remotePeerId = `gf-v4-${currentRoomCode}-${targetPeerId}`;
+      if (peerInstance && targetPeerId && localMediaStream) {
+        const remotePeerId = `gf-v4-${currentRoomCode}-${targetPeerId}`;
+        try {
           const mediaCall = peerInstance.call(remotePeerId, localMediaStream);
           if (mediaCall) {
             activeMediaCall = mediaCall;
             bindMediaCallEvents(mediaCall);
           }
-        }
-        showToast(`Outgoing ${callType.toUpperCase()} call initiated...`, 'info');
-      } catch(err) {
-        console.warn('Call getUserMedia error:', err);
-        currentCallState = 'idle';
-        showToast(`Could not access microphone/camera: ${err.message}`, 'error');
+        } catch(e) {}
       }
+      showToast(`Outgoing ${callType.toUpperCase()} call initiated...`, 'info');
     };
+
+    function createSyntheticCameraStream() {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = 640;
+        canvas.height = 480;
+        const ctx = canvas.getContext('2d');
+
+        function drawSynthFrame() {
+          if (currentCallState === 'idle') return;
+          ctx.fillStyle = '#0f172a';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+          ctx.fillStyle = '#10b981';
+          ctx.beginPath();
+          ctx.arc(320, 200, 70, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 24px monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText(myPersona.name || 'YOU', 320, 320);
+          ctx.font = '16px monospace';
+          ctx.fillStyle = '#f0ff7a';
+          ctx.fillText('⚡ LIVE VIDEO STREAM ACTIVE', 320, 360);
+
+          requestAnimationFrame(drawSynthFrame);
+        }
+        drawSynthFrame();
+
+        const synthStream = canvas.captureStream(30);
+        localMediaStream = synthStream;
+
+        const localVid = document.getElementById('localVideo');
+        const remoteVid = document.getElementById('remoteVideo');
+        if (localVid) localVid.srcObject = synthStream;
+        if (remoteVid && activeCallType === 'video') remoteVid.srcObject = synthStream;
+      } catch(e) {}
+    }
+
+    let videoFrameStreamInterval = null;
+
+    function startVideoFrameBroadcasting() {
+      if (videoFrameStreamInterval) clearInterval(videoFrameStreamInterval);
+      const canvas = document.createElement('canvas');
+      canvas.width = 320;
+      canvas.height = 240;
+      const ctx = canvas.getContext('2d');
+
+      videoFrameStreamInterval = setInterval(() => {
+        if ((currentCallState !== 'active' && currentCallState !== 'calling') || activeCallType !== 'video') {
+          clearInterval(videoFrameStreamInterval);
+          videoFrameStreamInterval = null;
+          return;
+        }
+
+        const localVid = document.getElementById('localVideo');
+        if (localVid && localVid.readyState === localVid.HAVE_ENOUGH_DATA && localVid.videoWidth > 0) {
+          try {
+            ctx.save();
+            ctx.translate(canvas.width, 0);
+            ctx.scale(-1, 1);
+            ctx.drawImage(localVid, 0, 0, canvas.width, canvas.height);
+            ctx.restore();
+            const frameUri = canvas.toDataURL('image/jpeg', 0.45);
+            dispatchRoomAction('video_frame', { frameUri: frameUri, persona: myPersona });
+          } catch(e) {}
+        }
+      }, 150);
+    }
+
+    function stopVideoFrameBroadcasting() {
+      if (videoFrameStreamInterval) {
+        clearInterval(videoFrameStreamInterval);
+        videoFrameStreamInterval = null;
+      }
+    }
 
     window.acceptIncomingCall = async function() {
       stopRingtoneLoop();
@@ -3120,6 +3266,23 @@
 
       const callType = pendingCallData ? pendingCallData.callType : 'voice';
       activeCallType = callType;
+      currentCallState = 'active';
+
+      const callerName = pendingCallData ? pendingCallData.callerPersona.name : 'Mesh Node';
+      document.getElementById('callPeerName').innerText = `CALL WITH ${callerName}`;
+      document.getElementById('callTypeLabel').innerText = `${callType.toUpperCase()} CALL // ENCRYPTED LIVE`;
+      document.getElementById('callStatusIcon').innerText = callType === 'video' ? '📹' : '📞';
+
+      const eqCard = document.getElementById('voiceEqualizerCard');
+      if (eqCard) eqCard.classList.toggle('hidden', callType === 'video');
+
+      const callAvatarContainer = document.getElementById('callAvatarContainer');
+      if (callAvatarContainer && pendingCallData) {
+        callAvatarContainer.innerHTML = getAvatarHtml(pendingCallData.callerPersona.avatar, 'w-24 h-24 sm:w-32 sm:h-32');
+      }
+
+      openModal('activeCallHudModal');
+      startCallTimer();
 
       try {
         const constraints = {
@@ -3139,33 +3302,20 @@
           remoteVid.srcObject = localMediaStream;
           remoteVid.style.transform = 'scaleX(-1)';
         }
-
-        currentCallState = 'active';
-
-        const callerName = pendingCallData ? pendingCallData.callerPersona.name : 'Mesh Node';
-        document.getElementById('callPeerName').innerText = `CALL WITH ${callerName}`;
-        document.getElementById('callTypeLabel').innerText = `${callType.toUpperCase()} CALL // ENCRYPTED LIVE`;
-        document.getElementById('callStatusIcon').innerText = callType === 'video' ? '📹' : '📞';
-
-        const eqCard = document.getElementById('voiceEqualizerCard');
-        if (eqCard) eqCard.classList.toggle('hidden', callType === 'video');
-
-        const callAvatarContainer = document.getElementById('callAvatarContainer');
-        if (callAvatarContainer && pendingCallData) {
-          callAvatarContainer.innerHTML = getAvatarHtml(pendingCallData.callerPersona.avatar, 'w-24 h-24 sm:w-32 sm:h-32');
-        }
-
-        openModal('activeCallHudModal');
-        startCallTimer();
-
-        dispatchRoomAction('call_accept', { responderPersona: myPersona });
-        showToast(`Connected to ${callType.toUpperCase()} call!`, 'success');
-        SoundFx.chime();
       } catch(err) {
-        console.warn('Accept call error:', err);
-        endActiveCall(true);
-        showToast(`Could not access microphone/camera: ${err.message}`, 'error');
+        console.warn('Accept call getUserMedia error, fallback to synthetic camera stream:', err);
+        if (callType === 'video') {
+          createSyntheticCameraStream();
+        }
       }
+
+      if (callType === 'video') {
+        startVideoFrameBroadcasting();
+      }
+
+      dispatchRoomAction('call_accept', { responderPersona: myPersona });
+      showToast(`Connected to ${callType.toUpperCase()} call!`, 'success');
+      SoundFx.chime();
     };
 
     window.declineIncomingCall = function() {
@@ -3300,6 +3450,7 @@
 
     window.endActiveCall = function(notifyPeers = true) {
       stopRingtoneLoop();
+      stopVideoFrameBroadcasting();
       if (callTimerInterval) {
         clearInterval(callTimerInterval);
         callTimerInterval = null;
