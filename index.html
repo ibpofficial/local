@@ -1141,6 +1141,25 @@
       <!-- VIEW 1: MAIN CHAT SCREEN -->
       <div id="view-chat" class="relative z-10 flex-1 flex flex-col min-h-0 overflow-hidden">
         
+        <!-- Live Incoming Call Action Bar (Displays when receiving call invite) -->
+        <div id="incomingCallBannerBar" class="hidden px-4 py-2 bg-gradient-to-r from-[#111827] via-[#1f2937] to-[#111827] border-b-2 border-emerald-500 text-white flex items-center justify-between shadow-md shrink-0 animate-msg-in">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <span id="bannerCallTypeIcon" class="text-xl animate-bounce">📹</span>
+            <div class="flex flex-col min-w-0 font-mono">
+              <span id="bannerCallerName" class="text-xs font-extrabold text-white truncate">INCOMING VIDEO CALL</span>
+              <span class="text-[10px] text-emerald-400 font-bold">Press RECEIVE to answer or CUT to decline</span>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <button onclick="declineIncomingCall()" class="px-3 py-1 rounded-full bg-rose-600 hover:bg-rose-700 text-white font-mono text-xs font-extrabold transition shadow-sm cursor-pointer" title="Cut / Decline Call">
+              🔴 CUT
+            </button>
+            <button onclick="acceptIncomingCall()" class="px-3.5 py-1 rounded-full bg-emerald-500 hover:bg-emerald-600 text-black font-mono text-xs font-extrabold transition shadow-sm cursor-pointer" title="Accept / Receive Call">
+              📞 RECEIVE
+            </button>
+          </div>
+        </div>
+
         <!-- Stream Feed Area -->
         <div id="messagesContainer" class="flex-1 overflow-y-auto p-3 sm:p-6 space-y-3 custom-scroll select-text min-h-0">
           
@@ -3052,7 +3071,15 @@
         localMediaStream = await navigator.mediaDevices.getUserMedia(constraints);
         
         const localVid = document.getElementById('localVideo');
-        if (localVid) localVid.srcObject = localMediaStream;
+        const remoteVid = document.getElementById('remoteVideo');
+        if (localVid) {
+          localVid.srcObject = localMediaStream;
+          localVid.style.transform = 'scaleX(-1)';
+        }
+        if (remoteVid && callType === 'video') {
+          remoteVid.srcObject = localMediaStream;
+          remoteVid.style.transform = 'scaleX(-1)';
+        }
 
         document.getElementById('callPeerName').innerText = targetPeerId ? `Calling Node...` : `Room Frequency Mesh Call`;
         document.getElementById('callTypeLabel').innerText = `${callType.toUpperCase()} CALL // P2P MESH STREAM`;
@@ -3088,6 +3115,8 @@
     window.acceptIncomingCall = async function() {
       stopRingtoneLoop();
       closeModal('incomingCallModal');
+      const banner = document.getElementById('incomingCallBannerBar');
+      if (banner) banner.classList.add('hidden');
 
       const callType = pendingCallData ? pendingCallData.callType : 'voice';
       activeCallType = callType;
@@ -3101,7 +3130,15 @@
         localMediaStream = await navigator.mediaDevices.getUserMedia(constraints);
         
         const localVid = document.getElementById('localVideo');
-        if (localVid) localVid.srcObject = localMediaStream;
+        const remoteVid = document.getElementById('remoteVideo');
+        if (localVid) {
+          localVid.srcObject = localMediaStream;
+          localVid.style.transform = 'scaleX(-1)';
+        }
+        if (remoteVid && callType === 'video') {
+          remoteVid.srcObject = localMediaStream;
+          remoteVid.style.transform = 'scaleX(-1)';
+        }
 
         currentCallState = 'active';
 
@@ -3134,6 +3171,8 @@
     window.declineIncomingCall = function() {
       stopRingtoneLoop();
       closeModal('incomingCallModal');
+      const banner = document.getElementById('incomingCallBannerBar');
+      if (banner) banner.classList.add('hidden');
       dispatchRoomAction('call_decline', { responderPersona: myPersona });
       currentCallState = 'idle';
       pendingCallData = null;
@@ -3282,8 +3321,11 @@
 
       const localVid = document.getElementById('localVideo');
       const remoteVid = document.getElementById('remoteVideo');
-      if (localVid) localVid.srcObject = null;
-      if (remoteVid) remoteVid.srcObject = null;
+      if (localVid) { localVid.srcObject = null; localVid.style.transform = ''; }
+      if (remoteVid) { remoteVid.srcObject = null; remoteVid.style.transform = ''; }
+
+      const banner = document.getElementById('incomingCallBannerBar');
+      if (banner) banner.classList.add('hidden');
 
       closeModal('activeCallHudModal');
       closeModal('incomingCallModal');
@@ -3301,7 +3343,12 @@
     function bindMediaCallEvents(mediaCall) {
       mediaCall.on('stream', (remoteStream) => {
         const remoteVid = document.getElementById('remoteVideo');
-        if (remoteVid) remoteVid.srcObject = remoteStream;
+        if (remoteVid) {
+          remoteVid.srcObject = remoteStream;
+          remoteVid.style.transform = 'scaleX(1)';
+        }
+        const eqCard = document.getElementById('voiceEqualizerCard');
+        if (eqCard) eqCard.classList.add('hidden');
       });
       mediaCall.on('close', () => {
         endActiveCall(false);
