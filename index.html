@@ -2367,7 +2367,10 @@
       } catch(e) {}
     }
 
-    window.addEventListener('beforeunload', enforceZeroStorage);
+    window.addEventListener('beforeunload', () => {
+      enforceZeroStorage();
+      if (typeof endActiveCall === 'function') endActiveCall(true);
+    });
     window.addEventListener('load', enforceZeroStorage);
 
     /* =========================================================================
@@ -3081,7 +3084,7 @@
           return;
         }
         currentCallState = 'ringing';
-        pendingCallData = { callerId: peerId, callType: payload.type || 'voice', callerPersona: senderPersona };
+        pendingCallData = { callerId: peerId, callType: payload.type || 'voice', callerPersona: senderPersona, callerPeerJsId: payload.callerPeerJsId };
         
         if (document.getElementById('incomingCallerName')) document.getElementById('incomingCallerName').innerText = senderPersona.name;
         if (document.getElementById('incomingCallTypeBadge')) {
@@ -3093,7 +3096,7 @@
         
         const avatarBox = document.getElementById('incomingCallAvatarBox');
         if (avatarBox) {
-          avatarBox.innerHTML = getAvatarHtml(senderPersona.avatar, 'w-20 h-20');
+          avatarBox.innerHTML = getAvatarHtml(senderPersona.avatar, 'w-24 h-24');
         }
 
         const banner = document.getElementById('incomingCallBannerBar');
@@ -3113,13 +3116,18 @@
       } else if (actionType === 'call_accept') {
         stopRingtoneLoop();
         currentCallState = 'active';
+        clearStreamTimeoutWatcher();
+        const preCallOverlay = document.getElementById('preCallCallingOverlay');
+        if (preCallOverlay) preCallOverlay.classList.add('hidden');
+
         showToast(`Call connected with ${senderPersona.name}!`, 'success');
         SoundFx.chime();
         startCallTimer();
         openModal('activeCallHudModal');
+        makeLocalVideoDraggable();
 
         if (document.getElementById('callPeerName')) {
-          document.getElementById('callPeerName').innerText = `CALL WITH ${senderPersona.name}`;
+          document.getElementById('callPeerName').innerText = `CALL WITH ${senderPersona.name.toUpperCase()}`;
         }
         const eqCard = document.getElementById('voiceEqualizerCard');
         if (eqCard) eqCard.classList.toggle('hidden', activeCallType === 'video');
@@ -3128,12 +3136,9 @@
           startVideoFrameBroadcasting();
         }
 
-        if (peerInstance && localMediaStream) {
-          const hostId = `gf-v4-${currentRoomCode}-host`;
-          const guestId = `gf-v4-${currentRoomCode}-${peerId}`;
-          const targetPeerId = peerInstance.id === hostId ? guestId : hostId;
+        if (payload.responderPeerJsId && peerInstance && localMediaStream && !activeMediaCall) {
           try {
-            const mediaCall = peerInstance.call(targetPeerId, localMediaStream);
+            const mediaCall = peerInstance.call(payload.responderPeerJsId, localMediaStream);
             if (mediaCall) {
               activeMediaCall = mediaCall;
               bindMediaCallEvents(mediaCall);
@@ -3152,19 +3157,32 @@
     }
 
     /* =========================================================================
-       DECENTRALIZED P2P VOICE & VIDEO CALLING ENGINE
+       DECENTRALIZED P2P VOICE & VIDEO CALLING ENGINE (PEERJS + TURN)
        ========================================================================= */
     let currentCallState = 'idle'; // 'idle', 'calling', 'ringing', 'active'
     let activeCallType = 'voice';  // 'voice' or 'video'
     let localMediaStream = null;
     let activeMediaCall = null;
+    let pendingMediaCall = null;
+    let pendingCallData = null;
     let callTimerInterval = null;
     let callSecondsElapsed = 0;
+    let streamConnectTimeout = null;
     let isCallMicMuted = false;
     let isCallCamOff = false;
     let isCallScreenSharing = false;
-    let pendingCallData = null;
     let ringtoneLoopInterval = null;
+    let activeFacingMode = 'user'; // 'user' or 'environment'
+
+    const globalIceServers = [
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'stun:stun1.l.google.com:19302' },
+      { urls: 'stun:stun2.l.google.com:19302' },
+      { urls: 'stun:openrelay.metered.ca:80' },
+      { urls: 'turn:openrelay.metered.ca:80', username: 'openrelay', credential: 'openrelay' },
+      { urls: 'turn:openrelay.metered.ca:443', username: 'openrelay', credential: 'openrelay' },
+      { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelay', credential: 'openrelay' }
+    ];
 
     function playRingtoneLoop() {
       if (ringtoneLoopInterval) clearInterval(ringtoneLoopInterval);
@@ -3186,6 +3204,44 @@
       }
     }
 
+    window.openCallPickerModal = function(callType = 'voice') {
+      const listContainer = document.getElementById('callPickerList');
+      if (!listContainer) return;
+      listContainer.innerHTML = '';
+
+      if (activePeers.size === 0) {
+        showToast('No one else is in this room yet', 'info');
+        return;
+      }
+
+      activePeers.forEach((peer, peerId) => {
+        const item = document.createElement('div');
+        item.className = 'p-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-between transition';
+        item.innerHTML = `
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-full bg-slate-800 text-white border border-white/20 flex items-center justify-center font-bold text-xs">
+              ${(peer.persona.name || 'P').substring(0, 2)}
+            </div>
+            <div>
+              <div class="text-xs font-mono font-bold text-white">${peer.persona.name || 'Peer'}</div>
+              <div class="text-[10px] font-mono text-emerald-400 font-semibold">Online in Room</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="closeModal('callPickerModal'); initiateRoomCall('voice', '${peerId}');" class="px-2.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-mono font-bold text-[11px] shadow">
+              📞 Voice
+            </button>
+            <button onclick="closeModal('callPickerModal'); initiateRoomCall('video', '${peerId}');" class="px-2.5 py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-mono font-bold text-[11px] shadow">
+              📹 Video
+            </button>
+          </div>
+        `;
+        listContainer.appendChild(item);
+      });
+
+      openModal('callPickerModal');
+    };
+
     window.initiateRoomCall = async function(callType = 'voice', targetPeerId = null) {
       if (!currentRoomCode) {
         showToast('Connect to a room first to initiate a call', 'error');
@@ -3197,39 +3253,62 @@
         return;
       }
 
+      // 1. Check connected peers if targetPeerId is not provided
+      if (!targetPeerId) {
+        const peerIds = Array.from(activePeers.keys());
+        if (peerIds.length === 0) {
+          showToast('No one else is in this room yet', 'info');
+          return;
+        } else if (peerIds.length === 1) {
+          targetPeerId = peerIds[0];
+        } else {
+          openCallPickerModal(callType);
+          return;
+        }
+      }
+
+      const targetPeer = activePeers.get(targetPeerId);
+      const targetName = targetPeer ? targetPeer.persona.name : 'Mesh Peer';
+
       activeCallType = callType;
       currentCallState = 'calling';
 
-      document.getElementById('callPeerName').innerText = targetPeerId ? `Calling Node...` : `Room Frequency Mesh Call`;
-      document.getElementById('callTypeLabel').innerText = `${callType.toUpperCase()} CALL // P2P MESH STREAM`;
-      document.getElementById('callStatusIcon').innerText = callType === 'video' ? '📹' : '📞';
+      // Update HUD UI
+      if (document.getElementById('callPeerName')) document.getElementById('callPeerName').innerText = `CALLING ${targetName.toUpperCase()}`;
+      if (document.getElementById('callTypeLabel')) document.getElementById('callTypeLabel').innerText = `${callType.toUpperCase()} CALL // INITIATING P2P STREAM`;
+      if (document.getElementById('callStatusIcon')) document.getElementById('callStatusIcon').innerText = callType === 'video' ? '📹' : '📞';
+      if (document.getElementById('preCallPeerName')) document.getElementById('preCallPeerName').innerText = `Calling ${targetName}...`;
+
+      const preCallOverlay = document.getElementById('preCallCallingOverlay');
+      if (preCallOverlay) preCallOverlay.classList.remove('hidden');
+
+      const failureOverlay = document.getElementById('callFailureOverlay');
+      if (failureOverlay) failureOverlay.classList.add('hidden');
+
+      const preCallAvatarBox = document.getElementById('preCallAvatarBox');
+      if (preCallAvatarBox && targetPeer) {
+        preCallAvatarBox.innerHTML = getAvatarHtml(targetPeer.persona.avatar, 'w-24 h-24 sm:w-28 sm:h-28');
+      }
 
       const eqCard = document.getElementById('voiceEqualizerCard');
       if (eqCard) eqCard.classList.toggle('hidden', callType === 'video');
 
-      const callAvatarContainer = document.getElementById('callAvatarContainer');
-      if (callAvatarContainer) callAvatarContainer.innerHTML = getAvatarHtml(myPersona.avatar, 'w-24 h-24 sm:w-32 sm:h-32');
-
       openModal('activeCallHudModal');
+      makeLocalVideoDraggable();
       playRingtoneLoop();
 
+      // Acquire user media stream
       try {
         const constraints = {
           audio: true,
-          video: callType === 'video' ? { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' } : false
+          video: callType === 'video' ? { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: activeFacingMode } : false
         };
-
         localMediaStream = await navigator.mediaDevices.getUserMedia(constraints);
         
         const localVid = document.getElementById('localVideo');
-        const remoteVid = document.getElementById('remoteVideo');
         if (localVid) {
           localVid.srcObject = localMediaStream;
           localVid.style.transform = 'scaleX(-1)';
-        }
-        if (remoteVid && callType === 'video') {
-          remoteVid.srcObject = localMediaStream;
-          remoteVid.style.transform = 'scaleX(-1)';
         }
       } catch(err) {
         console.warn('Call getUserMedia error, fallback to synthetic camera stream:', err);
@@ -3242,19 +3321,74 @@
         startVideoFrameBroadcasting();
       }
 
-      dispatchRoomAction('call_invite', { type: callType, callerPersona: myPersona, targetId: targetPeerId });
+      // Dispatch call invite with caller's PeerJS ID
+      const callerPeerJsId = peerInstance ? peerInstance.id : null;
+      dispatchRoomAction('call_invite', { type: callType, callerPersona: myPersona, targetId: targetPeerId, callerPeerJsId: callerPeerJsId });
 
-      if (peerInstance && targetPeerId && localMediaStream) {
-        const remotePeerId = `gf-v4-${currentRoomCode}-${targetPeerId}`;
+      // Place PeerJS Media Call
+      if (peerInstance && localMediaStream) {
+        const remotePeerJsId = targetPeer && targetPeer.peerJsId 
+          ? targetPeer.peerJsId 
+          : (peerInstance.id.includes('host') ? `gf-v4-${currentRoomCode}-${targetPeerId}` : `gf-v4-${currentRoomCode}-host`);
         try {
-          const mediaCall = peerInstance.call(remotePeerId, localMediaStream);
+          const mediaCall = peerInstance.call(remotePeerJsId, localMediaStream);
           if (mediaCall) {
             activeMediaCall = mediaCall;
             bindMediaCallEvents(mediaCall);
           }
-        } catch(e) {}
+        } catch(e) {
+          console.warn('PeerJS call creation error:', e);
+        }
       }
-      showToast(`Outgoing ${callType.toUpperCase()} call initiated...`, 'info');
+
+      // Start stream timeout watcher (8s)
+      startStreamTimeoutWatcher();
+      showToast(`Calling ${targetName}...`, 'info');
+    };
+
+    function startStreamTimeoutWatcher() {
+      if (streamConnectTimeout) clearTimeout(streamConnectTimeout);
+      streamConnectTimeout = setTimeout(() => {
+        if (currentCallState === 'calling' || (currentCallState === 'active' && !hasRemoteStreamLoaded())) {
+          const failureOverlay = document.getElementById('callFailureOverlay');
+          if (failureOverlay) failureOverlay.classList.remove('hidden');
+          updateCallQualityUI('reconnecting');
+        }
+      }, 8000);
+    }
+
+    function clearStreamTimeoutWatcher() {
+      if (streamConnectTimeout) {
+        clearTimeout(streamConnectTimeout);
+        streamConnectTimeout = null;
+      }
+      const failureOverlay = document.getElementById('callFailureOverlay');
+      if (failureOverlay) failureOverlay.classList.add('hidden');
+    }
+
+    function hasRemoteStreamLoaded() {
+      const remoteVid = document.getElementById('remoteVideo');
+      return remoteVid && remoteVid.srcObject && remoteVid.readyState >= 2;
+    }
+
+    window.retryCallConnection = function() {
+      clearStreamTimeoutWatcher();
+      if (pendingCallData || activeMediaCall) {
+        showToast('Retrying media stream connection...', 'info');
+        if (peerInstance && localMediaStream && pendingCallData) {
+          const targetId = pendingCallData.callerPeerJsId || `gf-v4-${currentRoomCode}-host`;
+          try {
+            const mediaCall = peerInstance.call(targetId, localMediaStream);
+            if (mediaCall) {
+              activeMediaCall = mediaCall;
+              bindMediaCallEvents(mediaCall);
+            }
+          } catch(e) {}
+        }
+        startStreamTimeoutWatcher();
+      } else {
+        endActiveCall(false);
+      }
     };
 
     function createSyntheticCameraStream() {
@@ -3290,9 +3424,7 @@
         localMediaStream = synthStream;
 
         const localVid = document.getElementById('localVideo');
-        const remoteVid = document.getElementById('remoteVideo');
         if (localVid) localVid.srcObject = synthStream;
-        if (remoteVid && activeCallType === 'video') remoteVid.srcObject = synthStream;
       } catch(e) {}
     }
 
@@ -3345,38 +3477,32 @@
       currentCallState = 'active';
 
       const callerName = pendingCallData ? pendingCallData.callerPersona.name : 'Mesh Node';
-      document.getElementById('callPeerName').innerText = `CALL WITH ${callerName}`;
-      document.getElementById('callTypeLabel').innerText = `${callType.toUpperCase()} CALL // ENCRYPTED LIVE`;
-      document.getElementById('callStatusIcon').innerText = callType === 'video' ? '📹' : '📞';
+      if (document.getElementById('callPeerName')) document.getElementById('callPeerName').innerText = `CALL WITH ${callerName.toUpperCase()}`;
+      if (document.getElementById('callTypeLabel')) document.getElementById('callTypeLabel').innerText = `${callType.toUpperCase()} CALL // ENCRYPTED P2P LIVE`;
+      if (document.getElementById('callStatusIcon')) document.getElementById('callStatusIcon').innerText = callType === 'video' ? '📹' : '📞';
+
+      const preCallOverlay = document.getElementById('preCallCallingOverlay');
+      if (preCallOverlay) preCallOverlay.classList.add('hidden');
 
       const eqCard = document.getElementById('voiceEqualizerCard');
       if (eqCard) eqCard.classList.toggle('hidden', callType === 'video');
 
-      const callAvatarContainer = document.getElementById('callAvatarContainer');
-      if (callAvatarContainer && pendingCallData) {
-        callAvatarContainer.innerHTML = getAvatarHtml(pendingCallData.callerPersona.avatar, 'w-24 h-24 sm:w-32 sm:h-32');
-      }
-
       openModal('activeCallHudModal');
+      makeLocalVideoDraggable();
       startCallTimer();
 
       try {
         const constraints = {
           audio: true,
-          video: callType === 'video' ? { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' } : false
+          video: callType === 'video' ? { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: activeFacingMode } : false
         };
 
         localMediaStream = await navigator.mediaDevices.getUserMedia(constraints);
         
         const localVid = document.getElementById('localVideo');
-        const remoteVid = document.getElementById('remoteVideo');
         if (localVid) {
           localVid.srcObject = localMediaStream;
           localVid.style.transform = 'scaleX(-1)';
-        }
-        if (remoteVid && callType === 'video') {
-          remoteVid.srcObject = localMediaStream;
-          remoteVid.style.transform = 'scaleX(-1)';
         }
       } catch(err) {
         console.warn('Accept call getUserMedia error, fallback to synthetic camera stream:', err);
@@ -3389,8 +3515,32 @@
         startVideoFrameBroadcasting();
       }
 
-      dispatchRoomAction('call_accept', { responderPersona: myPersona });
-      showToast(`Connected to ${callType.toUpperCase()} call!`, 'success');
+      // Dispatch accept signal with responder's PeerJS ID
+      const responderPeerJsId = peerInstance ? peerInstance.id : null;
+      dispatchRoomAction('call_accept', { responderPersona: myPersona, responderPeerJsId: responderPeerJsId });
+
+      // Answer incoming PeerJS call if pending
+      if (pendingMediaCall && localMediaStream) {
+        try {
+          pendingMediaCall.answer(localMediaStream);
+          activeMediaCall = pendingMediaCall;
+          bindMediaCallEvents(activeMediaCall);
+          pendingMediaCall = null;
+        } catch(e) {
+          console.warn('Error answering pending media call:', e);
+        }
+      } else if (pendingCallData && pendingCallData.callerPeerJsId && peerInstance && localMediaStream) {
+        try {
+          const mediaCall = peerInstance.call(pendingCallData.callerPeerJsId, localMediaStream);
+          if (mediaCall) {
+            activeMediaCall = mediaCall;
+            bindMediaCallEvents(mediaCall);
+          }
+        } catch(e) {}
+      }
+
+      startStreamTimeoutWatcher();
+      showToast(`Call connected with ${callerName}!`, 'success');
       SoundFx.chime();
     };
 
@@ -3400,6 +3550,10 @@
       const banner = document.getElementById('incomingCallBannerBar');
       if (banner) banner.classList.add('hidden');
       dispatchRoomAction('call_decline', { responderPersona: myPersona });
+      if (pendingMediaCall) {
+        try { pendingMediaCall.close(); } catch(e) {}
+        pendingMediaCall = null;
+      }
       currentCallState = 'idle';
       pendingCallData = null;
       SoundFx.click();
@@ -3422,6 +3576,170 @@
       if (lbl) lbl.innerText = `${mins}:${secs}`;
     }
 
+    function bindMediaCallEvents(mediaCall) {
+      if (!mediaCall) return;
+
+      mediaCall.on('stream', (remoteStream) => {
+        clearStreamTimeoutWatcher();
+        const preCallOverlay = document.getElementById('preCallCallingOverlay');
+        if (preCallOverlay) preCallOverlay.classList.add('hidden');
+
+        const remoteVid = document.getElementById('remoteVideo');
+        if (remoteVid) {
+          remoteVid.srcObject = remoteStream;
+          remoteVid.style.transform = 'scaleX(1)';
+        }
+        const eqCard = document.getElementById('voiceEqualizerCard');
+        if (eqCard) eqCard.classList.toggle('hidden', activeCallType === 'video' && !isCallCamOff);
+        updateCallQualityUI('good');
+      });
+
+      mediaCall.on('close', () => {
+        endActiveCall(false);
+      });
+
+      mediaCall.on('error', (err) => {
+        console.warn('PeerJS mediaCall error:', err);
+        endActiveCall(false);
+      });
+
+      if (mediaCall.peerConnection) {
+        mediaCall.peerConnection.oniceconnectionstatechange = () => {
+          const state = mediaCall.peerConnection.iceConnectionState;
+          console.log('PeerConnection ICE state change:', state);
+          if (state === 'connected' || state === 'completed') {
+            updateCallQualityUI('good');
+            clearStreamTimeoutWatcher();
+          } else if (state === 'disconnected') {
+            updateCallQualityUI('poor');
+          } else if (state === 'checking') {
+            updateCallQualityUI('reconnecting');
+          } else if (state === 'failed') {
+            updateCallQualityUI('failed');
+            const failureOverlay = document.getElementById('callFailureOverlay');
+            if (failureOverlay) failureOverlay.classList.remove('hidden');
+          }
+        };
+      }
+    }
+
+    function updateCallQualityUI(qualityState) {
+      const badge = document.getElementById('callQualityBadge');
+      const dot = document.getElementById('callQualityDot');
+      const txt = document.getElementById('callQualityText');
+      if (!badge || !dot || !txt) return;
+
+      if (qualityState === 'good') {
+        dot.className = 'w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse';
+        txt.innerText = 'GOOD';
+        txt.className = 'text-emerald-400 font-bold';
+      } else if (qualityState === 'poor') {
+        dot.className = 'w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping';
+        txt.innerText = 'POOR';
+        txt.className = 'text-amber-400 font-bold';
+      } else if (qualityState === 'reconnecting') {
+        dot.className = 'w-1.5 h-1.5 rounded-full bg-rose-400 animate-ping';
+        txt.innerText = 'RECONNECTING...';
+        txt.className = 'text-rose-400 font-bold';
+      } else if (qualityState === 'failed') {
+        dot.className = 'w-1.5 h-1.5 rounded-full bg-rose-600';
+        txt.innerText = 'FAILED';
+        txt.className = 'text-rose-500 font-bold';
+      }
+    }
+
+    window.flipCallCamera = async function() {
+      if (!localMediaStream || activeCallType !== 'video') return;
+      activeFacingMode = activeFacingMode === 'user' ? 'environment' : 'user';
+      try {
+        const videoTrack = localMediaStream.getVideoTracks()[0];
+        if (videoTrack) videoTrack.stop();
+
+        const newStream = await navigator.mediaDevices.getUserMedia({
+          video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: activeFacingMode },
+          audio: false
+        });
+        const newVideoTrack = newStream.getVideoTracks()[0];
+
+        localMediaStream.removeTrack(videoTrack);
+        localMediaStream.addTrack(newVideoTrack);
+
+        const localVid = document.getElementById('localVideo');
+        if (localVid) {
+          localVid.srcObject = localMediaStream;
+          localVid.style.transform = activeFacingMode === 'user' ? 'scaleX(-1)' : 'scaleX(1)';
+        }
+
+        if (activeMediaCall && activeMediaCall.peerConnection) {
+          const senders = activeMediaCall.peerConnection.getSenders();
+          const videoSender = senders.find(s => s.track && s.track.kind === 'video');
+          if (videoSender) {
+            videoSender.replaceTrack(newVideoTrack);
+          }
+        }
+        showToast(`Switched camera to ${activeFacingMode}`, 'info');
+      } catch(err) {
+        console.warn('Flip camera error:', err);
+        showToast('Could not flip camera', 'error');
+      }
+    };
+
+    function makeLocalVideoDraggable() {
+      const card = document.getElementById('localVideoCard');
+      const container = document.getElementById('callViewportCanvas');
+      if (!card || !container) return;
+
+      let isDragging = false;
+      let startX = 0, startY = 0, initialLeft = 0, initialTop = 0;
+
+      function onPointerDown(e) {
+        isDragging = true;
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        startX = clientX;
+        startY = clientY;
+        const rect = card.getBoundingClientRect();
+        const containerRect = container.getBoundingClientRect();
+        initialLeft = rect.left - containerRect.left;
+        initialTop = rect.top - containerRect.top;
+        card.style.right = 'auto';
+        card.style.bottom = 'auto';
+        card.style.left = `${initialLeft}px`;
+        card.style.top = `${initialTop}px`;
+      }
+
+      function onPointerMove(e) {
+        if (!isDragging) return;
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        const dx = clientX - startX;
+        const dy = clientY - startY;
+
+        const containerRect = container.getBoundingClientRect();
+        const cardRect = card.getBoundingClientRect();
+
+        let newLeft = initialLeft + dx;
+        let newTop = initialTop + dy;
+
+        newLeft = Math.max(8, Math.min(containerRect.width - cardRect.width - 8, newLeft));
+        newTop = Math.max(8, Math.min(containerRect.height - cardRect.height - 8, newTop));
+
+        card.style.left = `${newLeft}px`;
+        card.style.top = `${newTop}px`;
+      }
+
+      function onPointerUp() {
+        isDragging = false;
+      }
+
+      card.onmousedown = onPointerDown;
+      card.ontouchstart = onPointerDown;
+      window.onmousemove = onPointerMove;
+      window.ontouchmove = onPointerMove;
+      window.onmouseup = onPointerUp;
+      window.ontouchend = onPointerUp;
+    }
+
     window.toggleCallMic = function() {
       if (!localMediaStream) return;
       const audioTracks = localMediaStream.getAudioTracks();
@@ -3430,20 +3748,22 @@
       isCallMicMuted = !isCallMicMuted;
       audioTracks.forEach(t => t.enabled = !isCallMicMuted);
 
-      const btn = document.getElementById('callMuteMicBtn');
-      if (btn) {
-        const iconContainer = btn.querySelector('div');
-        const labelText = btn.querySelector('span');
-        if (iconContainer) {
-          iconContainer.className = isCallMicMuted 
-            ? 'w-12 h-12 rounded-full bg-rose-600 text-white flex items-center justify-center transition shadow-md border border-rose-400 group-active:scale-95'
-            : 'w-12 h-12 rounded-full bg-white/15 hover:bg-white/25 text-white flex items-center justify-center transition shadow-md border border-white/20 group-active:scale-95';
-        }
-        if (labelText) {
-          labelText.innerText = isCallMicMuted ? 'Muted' : 'Mute';
-          labelText.className = isCallMicMuted ? 'text-[9px] font-mono text-rose-400 font-bold uppercase' : 'text-[9px] font-mono text-slate-300 font-bold uppercase';
-        }
+      const iconBox = document.getElementById('callMuteMicIconBox');
+      const iconOn = document.getElementById('callMuteMicIconOn');
+      const iconOff = document.getElementById('callMuteMicIconOff');
+      const label = document.getElementById('callMuteMicLabel');
+
+      if (iconBox) iconBox.className = isCallMicMuted
+        ? 'w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-rose-600 text-white flex items-center justify-center transition shadow-lg border-2 border-rose-400 group-active:scale-95'
+        : 'w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white/15 hover:bg-white/25 text-white flex items-center justify-center transition shadow-md border border-white/20 group-active:scale-95';
+
+      if (iconOn) iconOn.classList.toggle('hidden', isCallMicMuted);
+      if (iconOff) iconOff.classList.toggle('hidden', !isCallMicMuted);
+      if (label) {
+        label.innerText = isCallMicMuted ? 'Muted' : 'Mute';
+        label.className = isCallMicMuted ? 'text-[9px] font-mono text-rose-400 font-bold uppercase' : 'text-[9px] font-mono text-slate-300 font-bold uppercase';
       }
+
       showToast(isCallMicMuted ? 'Microphone muted' : 'Microphone unmuted', 'info');
       SoundFx.click();
     };
@@ -3457,25 +3777,24 @@
         videoTracks.forEach(t => t.enabled = !isCallCamOff);
       }
 
-      const btn = document.getElementById('callToggleCamBtn');
-      if (btn) {
-        const iconContainer = btn.querySelector('div');
-        const labelText = btn.querySelector('span');
-        if (iconContainer) {
-          iconContainer.className = isCallCamOff
-            ? 'w-12 h-12 rounded-full bg-amber-600 text-white flex items-center justify-center transition shadow-md border border-amber-400 group-active:scale-95'
-            : 'w-12 h-12 rounded-full bg-white/15 hover:bg-white/25 text-white flex items-center justify-center transition shadow-md border border-white/20 group-active:scale-95';
-        }
-        if (labelText) {
-          labelText.innerText = isCallCamOff ? 'Cam Off' : 'Camera';
-          labelText.className = isCallCamOff ? 'text-[9px] font-mono text-amber-400 font-bold uppercase' : 'text-[9px] font-mono text-slate-300 font-bold uppercase';
-        }
+      const iconBox = document.getElementById('callToggleCamIconBox');
+      const iconOn = document.getElementById('callToggleCamIconOn');
+      const iconOff = document.getElementById('callToggleCamIconOff');
+      const label = document.getElementById('callToggleCamLabel');
+
+      if (iconBox) iconBox.className = isCallCamOff
+        ? 'w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-amber-600 text-white flex items-center justify-center transition shadow-lg border-2 border-amber-400 group-active:scale-95'
+        : 'w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white/15 hover:bg-white/25 text-white flex items-center justify-center transition shadow-md border border-white/20 group-active:scale-95';
+
+      if (iconOn) iconOn.classList.toggle('hidden', isCallCamOff);
+      if (iconOff) iconOff.classList.toggle('hidden', !isCallCamOff);
+      if (label) {
+        label.innerText = isCallCamOff ? 'Cam Off' : 'Camera';
+        label.className = isCallCamOff ? 'text-[9px] font-mono text-amber-400 font-bold uppercase' : 'text-[9px] font-mono text-slate-300 font-bold uppercase';
       }
 
       const eqCard = document.getElementById('voiceEqualizerCard');
-      if (eqCard) {
-        eqCard.classList.toggle('hidden', !isCallCamOff && activeCallType === 'video');
-      }
+      if (eqCard) eqCard.classList.toggle('hidden', !isCallCamOff && activeCallType === 'video');
 
       showToast(isCallCamOff ? 'Camera turned off' : 'Camera turned on', 'info');
       SoundFx.click();
@@ -3488,9 +3807,8 @@
       }
 
       try {
-        const btn = document.getElementById('callScreenShareBtn');
-        const iconContainer = btn ? btn.querySelector('div') : null;
-        const labelText = btn ? btn.querySelector('span') : null;
+        const iconBox = document.getElementById('callScreenShareIconBox');
+        const label = document.getElementById('callScreenShareLabel');
 
         if (!isCallScreenSharing) {
           const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
@@ -3505,18 +3823,22 @@
           const localVid = document.getElementById('localVideo');
           if (localVid) localVid.srcObject = screenStream;
 
-          isCallScreenSharing = true;
-          if (iconContainer) iconContainer.className = 'w-12 h-12 rounded-full bg-cyan-600 text-white flex items-center justify-center transition shadow-md border border-cyan-400 group-active:scale-95';
-          if (labelText) { labelText.innerText = 'Sharing'; labelText.className = 'text-[9px] font-mono text-cyan-400 font-bold uppercase'; }
+          if (activeMediaCall && activeMediaCall.peerConnection) {
+            const senders = activeMediaCall.peerConnection.getSenders();
+            const videoSender = senders.find(s => s.track && s.track.kind === 'video');
+            if (videoSender) videoSender.replaceTrack(screenTrack);
+          }
 
-          screenTrack.onended = () => {
-            toggleCallScreenShare();
-          };
+          isCallScreenSharing = true;
+          if (iconBox) iconBox.className = 'w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-cyan-600 text-white flex items-center justify-center transition shadow-lg border-2 border-cyan-400 group-active:scale-95';
+          if (label) { label.innerText = 'Sharing'; label.className = 'text-[9px] font-mono text-cyan-400 font-bold uppercase'; }
+
+          screenTrack.onended = () => { toggleCallScreenShare(); };
           showToast('🖥️ Screen sharing active!', 'success');
         } else {
           isCallScreenSharing = false;
-          if (iconContainer) iconContainer.className = 'w-12 h-12 rounded-full bg-white/15 hover:bg-white/25 text-white flex items-center justify-center transition shadow-md border border-white/20 group-active:scale-95';
-          if (labelText) { labelText.innerText = 'Screen'; labelText.className = 'text-[9px] font-mono text-slate-300 font-bold uppercase'; }
+          if (iconBox) iconBox.className = 'w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white/15 hover:bg-white/25 text-white flex items-center justify-center transition shadow-md border border-white/20 group-active:scale-95';
+          if (label) { label.innerText = 'Screen'; label.className = 'text-[9px] font-mono text-slate-300 font-bold uppercase'; }
           showToast('Stopped screen sharing', 'info');
         }
       } catch(err) {
@@ -3527,6 +3849,8 @@
     window.endActiveCall = function(notifyPeers = true) {
       stopRingtoneLoop();
       stopVideoFrameBroadcasting();
+      clearStreamTimeoutWatcher();
+
       if (callTimerInterval) {
         clearInterval(callTimerInterval);
         callTimerInterval = null;
@@ -3539,6 +3863,11 @@
       if (localMediaStream) {
         localMediaStream.getTracks().forEach(track => track.stop());
         localMediaStream = null;
+      }
+
+      if (pendingMediaCall) {
+        try { pendingMediaCall.close(); } catch(e) {}
+        pendingMediaCall = null;
       }
 
       if (activeMediaCall) {
@@ -3556,6 +3885,7 @@
 
       closeModal('activeCallHudModal');
       closeModal('incomingCallModal');
+      closeModal('callPickerModal');
 
       currentCallState = 'idle';
       pendingCallData = null;
@@ -3567,142 +3897,6 @@
       showToast('Call ended', 'info');
     };
 
-    function bindMediaCallEvents(mediaCall) {
-      mediaCall.on('stream', (remoteStream) => {
-        const remoteVid = document.getElementById('remoteVideo');
-        if (remoteVid) {
-          remoteVid.srcObject = remoteStream;
-          remoteVid.style.transform = 'scaleX(1)';
-        }
-        const eqCard = document.getElementById('voiceEqualizerCard');
-        if (eqCard) eqCard.classList.add('hidden');
-      });
-      mediaCall.on('close', () => {
-        endActiveCall(false);
-      });
-      mediaCall.on('error', (err) => {
-        console.warn('PeerJS call error:', err);
-        endActiveCall(false);
-      });
-    }
-
-    function initLocalBroadcastChannel(code) {
-      if (localBroadcastChannel) {
-        try { localBroadcastChannel.close(); } catch(e) {}
-        localBroadcastChannel = null;
-      }
-      if (!('BroadcastChannel' in window)) return;
-
-      try {
-        localBroadcastChannel = new BroadcastChannel(`ghost_mesh_room_${code}`);
-        localBroadcastChannel.onmessage = (event) => {
-          const { action, data, senderId } = event.data || {};
-          if (!senderId || senderId === myPersona.id) return;
-
-          if (action === 'presence') {
-            const isNew = !activePeers.has(senderId);
-            handleIncomingAction('presence', data, senderId);
-            if (isNew && localBroadcastChannel) {
-              localBroadcastChannel.postMessage({ action: 'presence', data: { persona: myPersona }, senderId: myPersona.id });
-            }
-          } else {
-            handleIncomingAction(action, data, senderId);
-          }
-        };
-
-        localBroadcastChannel.postMessage({ action: 'presence', data: { persona: myPersona }, senderId: myPersona.id });
-      } catch(e) {
-        console.warn('BroadcastChannel init error:', e);
-      }
-    }
-
-    function sanitizeRoomCode(raw) {
-      if (!raw) return '';
-      return String(raw)
-        .toLowerCase()
-        .trim()
-        .replace(/^#+/, '')
-        .replace(/[^a-z0-9_-]/g, '')
-        .substring(0, 64);
-    }
-
-    function resolveRoomCodeInput(targetCode) {
-      if (typeof targetCode === 'string' && targetCode.trim().length > 0) {
-        return targetCode.trim();
-      }
-      
-      const modalEl = document.getElementById('roomModal');
-      const isModalOpen = modalEl && !modalEl.classList.contains('hidden');
-
-      const modalInput = document.getElementById('roomIdentifierInput');
-      const homeInput = document.getElementById('homeRoomInput');
-
-      if (isModalOpen && modalInput && modalInput.value && modalInput.value.trim().length > 0) {
-        return modalInput.value.trim();
-      }
-
-      if (homeInput && homeInput.value && homeInput.value.trim().length > 0) {
-        return homeInput.value.trim();
-      }
-
-      if (modalInput && modalInput.value && modalInput.value.trim().length > 0) {
-        return modalInput.value.trim();
-      }
-
-      return '';
-    }
-
-    function initMqttMesh(code) {
-      const topic = `ghostfreq/v4/room/${code}`;
-      const brokers = [
-        'wss://broker.emqx.io:8084/mqtt',
-        'wss://test.mosquitto.org:8081',
-        'wss://public.mqtthq.com:8084/mqtt'
-      ];
-
-      let brokerIdx = 0;
-      function tryConnect() {
-        if (brokerIdx >= brokers.length) return;
-        const url = brokers[brokerIdx];
-        try {
-          if (typeof mqtt === 'undefined') return;
-          mqttClient = mqtt.connect(url, {
-            clientId: 'gf_' + myPersona.id + '_' + Math.random().toString(36).substr(2, 6),
-            clean: true,
-            connectTimeout: 6000,
-            reconnectPeriod: 3000
-          });
-
-          mqttClient.on('connect', () => {
-            console.log('Connected to MQTT Broker:', url);
-            mqttClient.subscribe(topic, { qos: 0 });
-            dispatchRoomAction('presence', { persona: myPersona });
-            dispatchRoomAction('heart', { count: globalHeartCounter });
-            renderSystemNotice(`Live Mesh channel connected (${url.split('/')[2]})`);
-          });
-
-          mqttClient.on('message', (t, message) => {
-            try {
-              const packet = JSON.parse(message.toString());
-              if (!packet || packet.senderId === myPersona.id) return;
-              handleIncomingAction(packet.action, packet.data, packet.senderId);
-            } catch(e) {}
-          });
-
-          mqttClient.on('error', (err) => {
-            console.warn('MQTT error on', url, err);
-            try { mqttClient.end(true); } catch(e) {}
-            brokerIdx++;
-            tryConnect();
-          });
-        } catch(e) {
-          brokerIdx++;
-          tryConnect();
-        }
-      }
-      tryConnect();
-    }
-
     function initPeerJSConnection(code) {
       if (typeof Peer === 'undefined') return;
 
@@ -3713,11 +3907,7 @@
         peerInstance = new Peer(hostId, {
           debug: 1,
           config: {
-            iceServers: [
-              { urls: 'stun:stun.l.google.com:19302' },
-              { urls: 'stun:stun1.l.google.com:19302' },
-              { urls: 'stun:stun2.l.google.com:19302' }
-            ]
+            iceServers: globalIceServers
           }
         });
 
@@ -3730,24 +3920,32 @@
         });
 
         peerInstance.on('call', (mediaCall) => {
-          activeMediaCall = mediaCall;
-          bindMediaCallEvents(mediaCall);
-          if (localMediaStream) {
+          console.log('Incoming PeerJS call received from:', mediaCall.peer);
+          pendingMediaCall = mediaCall;
+          if (currentCallState === 'active' && localMediaStream) {
             mediaCall.answer(localMediaStream);
+            activeMediaCall = mediaCall;
+            bindMediaCallEvents(mediaCall);
+            pendingMediaCall = null;
+          } else {
+            mediaCall.on('close', () => {
+              if (pendingMediaCall === mediaCall) pendingMediaCall = null;
+              endActiveCall(false);
+            });
+            mediaCall.on('error', (err) => {
+              console.warn('Pending mediaCall error:', err);
+              if (pendingMediaCall === mediaCall) pendingMediaCall = null;
+              endActiveCall(false);
+            });
           }
         });
 
         peerInstance.on('error', (err) => {
           if (err.type === 'unavailable-id') {
-            // Host ID is already taken! Register as guest peer and connect to room host
             peerInstance = new Peer(peerId, {
               debug: 1,
               config: {
-                iceServers: [
-                  { urls: 'stun:stun.l.google.com:19302' },
-                  { urls: 'stun:stun1.l.google.com:19302' },
-                  { urls: 'stun:stun2.l.google.com:19302' }
-                ]
+                iceServers: globalIceServers
               }
             });
 
@@ -3761,10 +3959,23 @@
             });
 
             peerInstance.on('call', (mediaCall) => {
-              activeMediaCall = mediaCall;
-              bindMediaCallEvents(mediaCall);
-              if (localMediaStream) {
+              console.log('Incoming Guest PeerJS call received from:', mediaCall.peer);
+              pendingMediaCall = mediaCall;
+              if (currentCallState === 'active' && localMediaStream) {
                 mediaCall.answer(localMediaStream);
+                activeMediaCall = mediaCall;
+                bindMediaCallEvents(mediaCall);
+                pendingMediaCall = null;
+              } else {
+                mediaCall.on('close', () => {
+                  if (pendingMediaCall === mediaCall) pendingMediaCall = null;
+                  endActiveCall(false);
+                });
+                mediaCall.on('error', (err) => {
+                  console.warn('Pending guest mediaCall error:', err);
+                  if (pendingMediaCall === mediaCall) pendingMediaCall = null;
+                  endActiveCall(false);
+                });
               }
             });
           }
