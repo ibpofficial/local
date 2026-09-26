@@ -861,17 +861,6 @@
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
       </button>
 
-      <!-- SETTINGS BUTTON -->
-      <button 
-        type="button" 
-        onclick="openModal('identityModal')" 
-        class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#111827] hover:bg-[#1f2937] text-white flex items-center justify-center transition shadow-xs active:scale-95 border border-black"
-        title="App Settings & Identity Shield"
-        aria-label="Open settings and identity shield"
-      >
-        <svg class="w-4 h-4 text-slate-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-      </button>
-
       <!-- 3-DOTS OVERFLOW MENU BUTTON -->
       <button 
         type="button" 
@@ -2110,117 +2099,191 @@
     </div>
   </div>
 
+  <!-- MODAL 10B: CALL WHO PICKER MODAL -->
+  <div id="callPickerModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 hidden select-none">
+    <div class="uiverse-card w-full max-w-sm p-5 space-y-4 shadow-2xl border-2 border-emerald-500/40 bg-[#0f172a] text-white rounded-3xl">
+      <div class="flex items-center justify-between border-b border-white/10 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">📞</span>
+          <h3 class="text-sm font-extrabold font-mono text-emerald-400">SELECT PEER TO CALL</h3>
+        </div>
+        <button onclick="closeModal('callPickerModal')" class="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center font-bold text-xs">✕</button>
+      </div>
+      <p class="text-xs text-slate-300 font-mono">Multiple peers are connected in this room. Who would you like to call?</p>
+      <div id="callPickerList" class="space-y-2 max-h-60 overflow-y-auto pr-1">
+        <!-- Dynamically rendered peer list items -->
+      </div>
+      <div class="pt-1">
+        <button onclick="closeModal('callPickerModal')" class="w-full py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-slate-300 font-mono font-bold text-xs">
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL 11: INCOMING VOICE & VIDEO CALL OVERLAY MODAL -->
-  <div id="incomingCallModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-lg flex items-center justify-center p-4 hidden select-none">
-    <div class="uiverse-card w-full max-w-sm p-6 text-center space-y-5 shadow-2xl animate-msg-in border-2 border-[#111827]">
-      <div class="relative w-20 h-20 mx-auto">
-        <div id="incomingCallAvatarBox" class="w-20 h-20 rounded-2xl bg-[#111827] text-white flex items-center justify-center text-3xl font-bold border-2 border-black shadow-md overflow-hidden">
+  <div id="incomingCallModal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-xl flex items-center justify-center p-4 hidden select-none">
+    <div class="w-full max-w-sm p-6 text-center space-y-6 shadow-2xl animate-msg-in border-2 border-emerald-500/50 bg-slate-950 text-white rounded-3xl relative overflow-hidden">
+      <!-- Ambient background pulse -->
+      <div class="absolute -top-24 -left-24 w-48 h-48 bg-emerald-500/20 rounded-full blur-3xl animate-pulse"></div>
+      <div class="absolute -bottom-24 -right-24 w-48 h-48 bg-cyan-500/20 rounded-full blur-3xl animate-pulse"></div>
+
+      <div class="relative w-24 h-24 mx-auto pt-2">
+        <div id="incomingCallAvatarBox" class="w-24 h-24 rounded-3xl bg-slate-900 text-white flex items-center justify-center text-4xl font-bold border-2 border-emerald-400 shadow-2xl overflow-hidden relative z-10">
           <span>⚡</span>
         </div>
-        <div class="absolute -top-1 -right-1 w-7 h-7 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xs animate-ping"></div>
-        <div class="absolute -top-1 -right-1 w-7 h-7 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xs font-bold shadow-sm">
-          <span id="incomingCallTypeIcon">📞</span>
+        <div class="absolute inset-0 rounded-3xl bg-emerald-500/30 animate-ping z-0"></div>
+        <div class="absolute -top-1 -right-1 w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center text-sm font-bold shadow-lg z-20 border-2 border-slate-950">
+          <span id="incomingCallTypeIcon">📹</span>
         </div>
       </div>
 
-      <div class="space-y-1">
-        <span id="incomingCallTypeBadge" class="text-[10px] font-mono font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
-          INCOMING VOICE CALL
+      <div class="space-y-2 relative z-10">
+        <span id="incomingCallTypeBadge" class="text-[10px] font-mono font-extrabold px-3 py-1 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-500/40 uppercase tracking-wider">
+          INCOMING VIDEO CALL
         </span>
-        <h3 id="incomingCallerName" class="text-base font-extrabold font-sans text-[#111827] truncate">SPECTRE-02</h3>
-        <p class="text-xs font-mono text-gray-500">Decentralized P2P Encrypted Call</p>
+        <h3 id="incomingCallerName" class="text-xl font-extrabold font-sans text-white truncate">SPECTRE-02</h3>
+        <p class="text-xs font-mono text-slate-400">Decentralized P2P Mesh Call</p>
       </div>
 
-      <div class="flex items-center gap-3 pt-2">
-        <button onclick="declineIncomingCall()" class="flex-1 date-selector justify-center" style="background-color: #fee2e2; border-color: #fca5a5; color: #991b1b; font-weight: 700; height: 44px;">
-          🔴 DECLINE
+      <div class="flex items-center gap-3 pt-2 relative z-10">
+        <button onclick="declineIncomingCall()" class="flex-1 py-3.5 px-4 rounded-2xl bg-rose-600/20 hover:bg-rose-600/30 border-2 border-rose-500/60 text-rose-300 font-mono font-extrabold text-sm flex items-center justify-center gap-2 transition active:scale-95 shadow-lg">
+          <svg class="w-5 h-5 text-rose-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 8l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M5 3a2 2 0 00-2 2v1c0 8.284 6.716 15 15 15h1a2 2 0 002-2v-3.28a1 1 0 00-.684-.948l-4.493-1.498a1 1 0 00-1.21.502l-1.13 2.257a11.042 11.042 0 01-5.516-5.516l2.257-1.13a1 1 0 00.502-1.21L9.22 4.684A1 1 0 008.27 4H5z"/></svg>
+          <span>DECLINE</span>
         </button>
-        <button onclick="acceptIncomingCall()" class="flex-1 date-selector justify-center" style="background-color: #10b981; border-color: #059669; color: #ffffff; font-weight: 700; height: 44px;">
-          📞 ACCEPT
+        <button onclick="acceptIncomingCall()" class="flex-1 py-3.5 px-4 rounded-2xl bg-emerald-600 hover:bg-emerald-500 border-2 border-emerald-400 text-white font-mono font-extrabold text-sm flex items-center justify-center gap-2 transition active:scale-95 shadow-xl animate-pulse">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+          <span>ACCEPT</span>
         </button>
       </div>
     </div>
   </div>
 
   <!-- MODAL 12: ACTIVE VOICE & VIDEO CALL FLOATING HUD CANVAS -->
-  <div id="activeCallHudModal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-xl flex flex-col justify-between p-3 sm:p-6 hidden select-none">
-    <!-- Call Top Header Status Bar -->
-    <div class="w-full max-w-4xl mx-auto flex items-center justify-between bg-black/60 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-white/20 text-white font-mono text-xs z-20 shadow-lg">
-      <div class="flex items-center gap-2.5 min-w-0">
-        <span id="callStatusIcon" class="text-base">📹</span>
+  <div id="activeCallHudModal" class="fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-2xl flex flex-col justify-between p-2 sm:p-5 hidden select-none overflow-hidden">
+    
+    <!-- Top Header Status Bar -->
+    <div class="w-full max-w-5xl mx-auto flex items-center justify-between bg-black/60 backdrop-blur-md px-4 py-2.5 rounded-full border border-white/20 text-white font-mono text-xs z-30 shadow-2xl">
+      <div class="flex items-center gap-3 min-w-0">
+        <span id="callStatusIcon" class="text-lg">📹</span>
         <div class="flex flex-col min-w-0">
-          <span id="callPeerName" class="font-extrabold truncate text-slate-100">CALL WITH PEER</span>
-          <span id="callTypeLabel" class="text-[10px] text-emerald-400 font-bold">P2P ENCRYPTED MEDIA STREAM</span>
+          <div class="flex items-center gap-2">
+            <span id="callPeerName" class="font-extrabold truncate text-slate-100 text-sm">CALL WITH PEER</span>
+            <!-- Connection Quality Indicator -->
+            <span id="callQualityBadge" class="hidden sm:inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-500/40">
+              <span id="callQualityDot" class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span id="callQualityText">GOOD</span>
+            </span>
+          </div>
+          <span id="callTypeLabel" class="text-[10px] text-cyan-400 font-bold uppercase tracking-wide">P2P DIRECT MEDIA STREAM</span>
         </div>
       </div>
 
       <div class="flex items-center gap-3 shrink-0">
-        <span id="callTimerLabel" class="text-xs font-extrabold font-mono text-[#f0ff7a] bg-black px-3 py-1 rounded-full border border-white/20">
+        <!-- Live Call Timer -->
+        <span id="callTimerLabel" class="text-xs font-extrabold font-mono text-[#f0ff7a] bg-black px-3 py-1 rounded-full border border-white/20 shadow-inner">
           00:00
         </span>
-        <button onclick="toggleCallPipMode()" class="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition" title="Toggle Compact Canvas">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
-        </button>
       </div>
     </div>
 
-    <!-- Center Video & Voice Equalizer Viewport Canvas -->
-    <div id="callViewportCanvas" class="relative flex-1 w-full max-w-5xl mx-auto my-3 bg-slate-950 rounded-3xl border-2 border-white/20 overflow-hidden flex items-center justify-center shadow-2xl">
+    <!-- Center Viewport Canvas for Video & Equalizer -->
+    <div id="callViewportCanvas" class="relative flex-1 w-full max-w-5xl mx-auto my-2.5 bg-slate-900 rounded-3xl border-2 border-white/15 overflow-hidden flex items-center justify-center shadow-2xl">
       
-      <!-- DUAL FACE-TO-FACE VIDEO GRID -->
-      <div id="videoGridContainer" class="w-full h-full grid grid-cols-1 sm:grid-cols-2 gap-2 p-2 bg-slate-950">
+      <!-- REMOTE VIDEO PRIMARY FULL-BLEED SURFACE -->
+      <div id="remoteVideoContainer" class="relative w-full h-full flex items-center justify-center bg-slate-950 overflow-hidden">
+        <video id="remoteVideo" autoplay playsinline class="w-full h-full object-cover bg-slate-950"></video>
+        <img id="remoteVideoFallback" src="" class="hidden w-full h-full object-cover bg-slate-950" />
         
-        <!-- LOCAL USER VIDEO CARD (YOU) -->
-        <div id="localVideoCard" class="relative w-full h-full rounded-2xl overflow-hidden bg-slate-900 border border-white/10 flex items-center justify-center min-h-[160px]">
-          <video id="localVideo" autoplay playsinline muted class="w-full h-full object-cover bg-slate-900" style="transform: scaleX(-1);"></video>
-          <div class="absolute top-2 left-2.5 font-mono text-xs font-extrabold px-2.5 py-1 rounded-full bg-black/75 text-[#f0ff7a] border border-white/20 flex items-center gap-1.5 shadow-md z-10">
-            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span>YOU (LOCAL CAMERA)</span>
+        <!-- Pre-call Outgoing Call Overlay -->
+        <div id="preCallCallingOverlay" class="absolute inset-0 bg-slate-950/80 backdrop-blur-md flex flex-col items-center justify-center p-6 space-y-4 text-center z-20 hidden">
+          <div class="relative">
+            <div id="preCallAvatarBox" class="w-28 h-28 rounded-full bg-slate-900 border-4 border-cyan-400 text-white text-4xl flex items-center justify-center font-bold shadow-2xl">
+              <span>⚡</span>
+            </div>
+            <div class="absolute inset-0 rounded-full border-2 border-cyan-400/50 animate-ping"></div>
+          </div>
+          <div>
+            <h3 id="preCallPeerName" class="text-xl font-extrabold font-sans text-white">Calling Peer...</h3>
+            <p class="text-xs font-mono text-cyan-400 font-bold animate-pulse mt-1">WAITING FOR ANSWER</p>
+          </div>
+          <button onclick="endActiveCall()" class="px-6 py-2.5 rounded-full bg-rose-600 hover:bg-rose-700 text-white font-mono font-bold text-xs border border-rose-400 shadow-lg active:scale-95 transition">
+            Cancel Call
+          </button>
+        </div>
+
+        <!-- Connection Failure Warning Overlay -->
+        <div id="callFailureOverlay" class="absolute inset-0 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center p-6 space-y-4 text-center z-25 hidden">
+          <div class="w-16 h-16 rounded-full bg-rose-950/80 border-2 border-rose-500 text-rose-400 flex items-center justify-center text-3xl font-bold">⚠️</div>
+          <div>
+            <h4 id="failureReasonText" class="text-base font-extrabold text-white">Connection Stalled</h4>
+            <p class="text-xs font-mono text-slate-300 mt-1 max-w-xs mx-auto">WebRTC media stream failed to establish across network NATs.</p>
+          </div>
+          <div class="flex items-center gap-3 pt-2">
+            <button onclick="retryCallConnection()" class="px-5 py-2.5 rounded-full bg-cyan-600 hover:bg-cyan-500 text-white font-mono font-bold text-xs shadow-lg transition">
+              🔄 Retry Call
+            </button>
+            <button onclick="endActiveCall()" class="px-5 py-2.5 rounded-full bg-rose-600 hover:bg-rose-700 text-white font-mono font-bold text-xs shadow-lg transition">
+              🔴 End Call
+            </button>
           </div>
         </div>
 
-        <!-- REMOTE PEER VIDEO CARD (PEER) -->
-        <div id="remoteVideoCard" class="relative w-full h-full rounded-2xl overflow-hidden bg-slate-900 border border-white/10 flex items-center justify-center min-h-[160px]">
-          <video id="remoteVideo" autoplay playsinline class="w-full h-full object-cover bg-slate-900"></video>
-          <img id="remoteVideoFallback" src="" class="hidden w-full h-full object-cover bg-slate-900" />
-          <div class="absolute top-2 left-2.5 font-mono text-xs font-extrabold px-2.5 py-1 rounded-full bg-black/75 text-cyan-400 border border-white/20 flex items-center gap-1.5 shadow-md z-10">
-            <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
-            <span id="remoteVideoCardTag">PEER (REMOTE STREAM)</span>
-          </div>
+        <div id="remotePeerNameBadge" class="absolute top-3 left-3 font-mono text-[11px] font-extrabold px-3 py-1 rounded-full bg-black/70 backdrop-blur-md text-cyan-300 border border-white/20 flex items-center gap-2 shadow-lg z-10">
+          <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+          <span id="remoteVideoCardTag">PEER (REMOTE STREAM)</span>
         </div>
-
       </div>
 
-      <!-- Voice Call Equalizer Fallback Card (When Video Stream Disabled) -->
-      <div id="voiceEqualizerCard" class="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 p-6 space-y-4 hidden">
-        <div id="callAvatarContainer" class="w-24 h-24 sm:w-32 sm:h-32 rounded-3xl bg-[#111827] text-white flex items-center justify-center font-bold text-4xl border-2 border-white/20 shadow-2xl overflow-hidden">
+      <!-- LOCAL VIDEO FLOATING DRAGGABLE PIP TILE -->
+      <div 
+        id="localVideoCard" 
+        class="absolute top-3 right-3 z-30 w-32 h-44 sm:w-44 sm:h-60 rounded-2xl border-2 border-white/40 shadow-2xl overflow-hidden bg-slate-950 cursor-grab active:cursor-grabbing transition-shadow hover:border-cyan-400"
+        title="Local Camera Preview (Drag to reposition)"
+      >
+        <video id="localVideo" autoplay playsinline muted class="w-full h-full object-cover bg-slate-900" style="transform: scaleX(-1);"></video>
+        <div class="absolute top-1.5 left-2 font-mono text-[9px] font-extrabold px-2 py-0.5 rounded-full bg-black/80 text-[#f0ff7a] border border-white/20 flex items-center gap-1 shadow-md z-10 pointer-events-none">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span>YOU</span>
+        </div>
+        <div class="absolute bottom-1 right-1 font-mono text-[8px] text-white/60 bg-black/60 px-1.5 py-0.5 rounded pointer-events-none">⋮ drag</div>
+      </div>
+
+      <!-- Voice Call / Video Off Equalizer Card -->
+      <div id="voiceEqualizerCard" class="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 p-6 space-y-5 z-15 hidden">
+        <div id="callAvatarContainer" class="w-28 h-28 sm:w-36 sm:h-36 rounded-3xl bg-slate-900 text-white flex items-center justify-center font-bold text-5xl border-2 border-cyan-400/50 shadow-2xl overflow-hidden relative">
           <span>⚡</span>
         </div>
-        <div class="flex items-center gap-1.5 h-8">
+        <!-- Animated Audio Waveform -->
+        <div class="flex items-center gap-1.5 h-10">
           <span class="w-1.5 h-6 bg-emerald-400 rounded-full animate-bounce" style="animation-delay: 0.1s"></span>
-          <span class="w-1.5 h-8 bg-[#f0ff7a] rounded-full animate-bounce" style="animation-delay: 0.2s"></span>
-          <span class="w-1.5 h-10 bg-cyan-400 rounded-full animate-bounce" style="animation-delay: 0.3s"></span>
-          <span class="w-1.5 h-7 bg-purple-400 rounded-full animate-bounce" style="animation-delay: 0.4s"></span>
-          <span class="w-1.5 h-5 bg-rose-400 rounded-full animate-bounce" style="animation-delay: 0.5s"></span>
+          <span class="w-1.5 h-9 bg-[#f0ff7a] rounded-full animate-bounce" style="animation-delay: 0.25s"></span>
+          <span class="w-1.5 h-12 bg-cyan-400 rounded-full animate-bounce" style="animation-delay: 0.4s"></span>
+          <span class="w-1.5 h-8 bg-purple-400 rounded-full animate-bounce" style="animation-delay: 0.15s"></span>
+          <span class="w-1.5 h-5 bg-rose-400 rounded-full animate-bounce" style="animation-delay: 0.3s"></span>
         </div>
-        <div class="text-xs font-mono font-bold text-slate-300">VOICE FREQUENCY ENCRYPTED & STREAMING</div>
+        <div class="text-xs font-mono font-extrabold text-cyan-300 tracking-wider">P2P AUDIO STREAM ENCRYPTED & ACTIVE</div>
       </div>
+
     </div>
 
     <!-- Bottom Controls Dock Bar -->
-    <div class="w-full max-w-lg mx-auto flex items-center justify-around gap-2 sm:gap-4 bg-black/85 backdrop-blur-md p-3 sm:p-4 rounded-full border-2 border-white/20 z-20 shadow-2xl shrink-0 safe-area-pb">
+    <div class="w-full max-w-xl mx-auto flex items-center justify-around gap-2 sm:gap-3 bg-black/85 backdrop-blur-xl p-2.5 sm:p-3.5 rounded-full border-2 border-white/20 z-30 shadow-2xl shrink-0">
+      
       <!-- Mute Mic Button -->
       <button 
         id="callMuteMicBtn"
         onclick="toggleCallMic()" 
         class="flex flex-col items-center justify-center gap-1 group cursor-pointer"
         title="Mute or Unmute Microphone"
-        aria-label="Mute or unmute microphone"
       >
-        <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white/15 hover:bg-white/25 text-white flex items-center justify-center transition shadow-md border border-white/20 group-active:scale-95">
-          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z"/></svg>
+        <div id="callMuteMicIconBox" class="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white/15 hover:bg-white/25 text-white flex items-center justify-center transition shadow-md border border-white/20 group-active:scale-95">
+          <!-- Mic On Icon -->
+          <svg id="callMuteMicIconOn" class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z"/></svg>
+          <!-- Mic Off Icon -->
+          <svg id="callMuteMicIconOff" class="w-6 h-6 text-rose-300 hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/><path stroke-linecap="round" stroke-linejoin="round" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"/></svg>
         </div>
-        <span class="text-[9px] font-mono text-slate-300 font-bold uppercase">Mute</span>
+        <span id="callMuteMicLabel" class="text-[9px] font-mono text-slate-300 font-bold uppercase">Mute</span>
       </button>
 
       <!-- Toggle Camera Button -->
@@ -2229,12 +2292,27 @@
         onclick="toggleCallCamera()" 
         class="flex flex-col items-center justify-center gap-1 group cursor-pointer"
         title="Turn Camera On or Off"
-        aria-label="Turn camera on or off"
+      >
+        <div id="callToggleCamIconBox" class="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white/15 hover:bg-white/25 text-white flex items-center justify-center transition shadow-md border border-white/20 group-active:scale-95">
+          <!-- Cam On Icon -->
+          <svg id="callToggleCamIconOn" class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+          <!-- Cam Off Icon -->
+          <svg id="callToggleCamIconOff" class="w-6 h-6 text-amber-300 hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+        </div>
+        <span id="callToggleCamLabel" class="text-[9px] font-mono text-slate-300 font-bold uppercase">Camera</span>
+      </button>
+
+      <!-- Flip Front/Back Camera (Mobile) Button -->
+      <button 
+        id="callFlipCamBtn"
+        onclick="flipCallCamera()" 
+        class="flex flex-col items-center justify-center gap-1 group cursor-pointer"
+        title="Flip Front/Back Camera"
       >
         <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white/15 hover:bg-white/25 text-white flex items-center justify-center transition shadow-md border border-white/20 group-active:scale-95">
-          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
         </div>
-        <span class="text-[9px] font-mono text-slate-300 font-bold uppercase">Camera</span>
+        <span class="text-[9px] font-mono text-slate-300 font-bold uppercase">Flip</span>
       </button>
 
       <!-- Share Screen Button -->
@@ -2242,26 +2320,24 @@
         id="callScreenShareBtn"
         onclick="toggleCallScreenShare()" 
         class="flex flex-col items-center justify-center gap-1 group cursor-pointer"
-        title="Share Desktop or Mobile Screen"
-        aria-label="Share desktop or mobile screen"
+        title="Share Screen"
       >
-        <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white/15 hover:bg-white/25 text-white flex items-center justify-center transition shadow-md border border-white/20 group-active:scale-95">
+        <div id="callScreenShareIconBox" class="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white/15 hover:bg-white/25 text-white flex items-center justify-center transition shadow-md border border-white/20 group-active:scale-95">
           <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
         </div>
-        <span class="text-[9px] font-mono text-slate-300 font-bold uppercase">Screen</span>
+        <span id="callScreenShareLabel" class="text-[9px] font-mono text-slate-300 font-bold uppercase">Screen</span>
       </button>
 
       <!-- CUT / END CALL BUTTON -->
       <button 
         onclick="endActiveCall()" 
         class="flex flex-col items-center justify-center gap-1 group cursor-pointer"
-        title="Cut / End Call & Disconnect"
-        aria-label="Cut / End Call & Disconnect"
+        title="End Call & Disconnect"
       >
-        <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-rose-600 hover:bg-rose-700 text-white flex items-center justify-center transition shadow-2xl border-2 border-rose-400 group-active:scale-95">
+        <div class="w-13 h-13 sm:w-16 sm:h-16 rounded-full bg-rose-600 hover:bg-rose-700 text-white flex items-center justify-center transition shadow-2xl border-2 border-rose-400 group-active:scale-95">
           <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 8l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M5 3a2 2 0 00-2 2v1c0 8.284 6.716 15 15 15h1a2 2 0 002-2v-3.28a1 1 0 00-.684-.948l-4.493-1.498a1 1 0 00-1.21.502l-1.13 2.257a11.042 11.042 0 01-5.516-5.516l2.257-1.13a1 1 0 00.502-1.21L9.22 4.684A1 1 0 008.27 4H5z"/></svg>
         </div>
-        <span class="text-[10px] font-mono text-rose-400 font-extrabold uppercase">CUT / HANG UP</span>
+        <span class="text-[10px] font-mono text-rose-400 font-extrabold uppercase">END CALL</span>
       </button>
     </div>
   </div>
