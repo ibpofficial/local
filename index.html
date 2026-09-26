@@ -97,18 +97,18 @@
       padding: 0;
     }
 
-    /* Uiverse Design Inspired Systems */
+    /* Solid Depth Card Architecture (Little Square, Little Round Corners) */
     .uiverse-card {
       background-color: #ffffff;
-      border: 1px solid #d0d0ce;
-      border-radius: 1.25rem;
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+      border: 1.5px solid #111827;
+      border-radius: 0.75rem;
+      box-shadow: 0 4px 0 #111827, 0 8px 20px rgba(0, 0, 0, 0.06);
       overflow: hidden;
-      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .uiverse-card:hover {
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.09);
-      border-color: #94a3b8;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 0 #111827, 0 12px 25px rgba(0, 0, 0, 0.1);
     }
 
     .uiverse-nav {
@@ -133,22 +133,23 @@
       align-items: center;
       justify-content: center;
       gap: 0.5rem;
-      padding: 0.65rem 1.75rem;
-      background-color: rgba(17, 24, 39, 0.95);
+      padding: 0.5rem 1.25rem;
+      background-color: rgba(0, 0, 0, 0.85);
       color: #f1f1f1;
-      border-radius: 1.5rem;
+      border-radius: 9999px;
       font-weight: 600;
       font-family: 'Plus Jakarta Sans', sans-serif;
       font-size: 0.825rem;
-      border: 1px solid rgba(0, 0, 0, 0.8);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-      transition: all 0.2s ease-in-out;
+      border: 1px solid rgba(0, 0, 0, 0.9);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
       user-select: none;
+      white-space: nowrap;
     }
     .uiverse-btn:hover {
-      background-color: rgba(0, 0, 0, 1);
+      background-color: rgba(0, 0, 0, 0.72);
       transform: translateY(-1px);
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
     }
     .uiverse-btn:active {
       transform: scale(0.96);
@@ -157,14 +158,14 @@
       position: absolute;
       opacity: 0;
       pointer-events: none;
-      bottom: -2.25rem;
+      bottom: -2rem;
       left: 50%;
       transform: translateX(-50%);
-      padding: 0.25rem 0.6rem;
-      background-color: rgba(0, 0, 0, 0.85);
+      padding: 0.25rem 0.65rem;
+      background-color: rgba(0, 0, 0, 0.8);
       color: #ffffff;
-      font-size: 0.65rem;
-      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6875rem;
+      font-family: 'Plus Jakarta Sans', sans-serif;
       border-radius: 0.375rem;
       white-space: nowrap;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
@@ -580,9 +581,10 @@
         <div class="text-[10px] font-mono font-bold text-[#6b7280] uppercase tracking-wider">Account & Safety</div>
         <div class="flex items-center justify-between bg-[#e9eeea] p-2.5 rounded-xl border border-[#d0d0ce] text-xs font-mono">
           <span class="text-[#6b7280] font-bold">NAME:</span>
-          <span id="drawerPersonaDisplay" class="text-[#111827] font-bold">SPECTRE-00</span>
-          <button onclick="regenerateIdentity()" class="text-[#6b7280] hover:text-[#111827]" title="Generate New Name">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          <span id="drawerPersonaDisplay" onclick="openChangeNameModal()" class="text-[#111827] font-bold cursor-pointer hover:underline" title="Click to Change Name (Max 2/day)">SPECTRE-00</span>
+          <button onclick="openChangeNameModal()" class="text-[#6b7280] hover:text-[#111827] flex items-center gap-1 text-[10px] font-bold underline" title="Change Codename (Max 2/day)">
+            <span>EDIT</span>
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
           </button>
         </div>
         
@@ -628,76 +630,78 @@
     
     <!-- Left Status & Room Indicator -->
     <div class="flex items-center gap-2 min-w-0">
-      <div class="w-8 h-8 shrink-0 rounded-xl bg-gradient-to-tr from-[#111827] to-[#374151] border border-black/20 flex items-center justify-center text-[#f0ff7a] shadow-sm font-bold text-sm">
-        ⚡
+      <span id="activeRoomCodeLabel" class="font-sans text-xs font-bold text-[#111827] tracking-wide truncate max-w-[120px] sm:max-w-none">ROOM: NOT CONNECTED</span>
+      <span class="hidden sm:inline text-gray-300">&bull;</span>
+      
+      <!-- DYNAMIC ONLINE MEMBERS COUNTER (No box, green dot + count number) -->
+      <div id="onlineMembersBadge" class="flex items-center gap-1.5 shrink-0 font-mono text-xs font-bold text-emerald-700">
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+        <span id="onlineCountText">1</span>
       </div>
-      <div class="flex items-center gap-2 min-w-0">
-        <span id="activeRoomCodeLabel" class="font-sans text-xs font-bold text-[#111827] tracking-wide truncate max-w-[120px] sm:max-w-none">ROOM: NOT CONNECTED</span>
-        <span class="hidden sm:inline text-gray-300">&bull;</span>
-        
-        <!-- DYNAMIC ONLINE MEMBERS COUNTER BADGE -->
-        <span id="onlineMembersBadge" class="text-[11px] font-mono font-bold px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-800 border border-emerald-500/30 flex items-center gap-1.5 shrink-0 shadow-xs">
-          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span id="onlineCountText">1 Member Online</span>
-        </span>
 
-        <span id="meshPeersCountLabel" class="hidden md:inline text-[11px] font-mono text-gray-500">0 Peers in Mesh</span>
-      </div>
+      <span id="meshPeersCountLabel" class="hidden md:inline text-[11px] font-mono text-gray-500">0 Peers in Mesh</span>
     </div>
 
     <!-- Right Controls: sahilxkhadka Inspired Action Buttons with Hover Tooltips -->
     <div class="flex items-center gap-2 shrink-0">
       
-      <!-- PIN / SAVE ROOM TOGGLE BUTTON -->
+      <!-- PIN / SAVE ROOM TOGGLE BUTTON (sahilxkhadka style) -->
       <button 
         id="pinRoomHeaderBtn" 
         onclick="togglePinCurrentRoom()" 
-        class="uiverse-btn group relative flex items-center gap-1.5" 
-        style="padding: 0.45rem 0.95rem; font-size: 0.75rem;" 
+        class="cursor-pointer group relative flex items-center gap-1.5 px-3.5 py-1.5 sm:px-4 sm:py-2 bg-black/80 hover:bg-black/70 text-[#f1f1f1] rounded-3xl transition font-semibold shadow-md text-xs sm:text-sm shrink-0" 
         title="Save Room"
       >
         <span id="pinRoomBtnIcon" class="flex items-center justify-center">
-          <svg class="w-3.5 h-3.5 text-yellow-400 fill-current" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <svg class="w-4 h-4 text-yellow-400 fill-current" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
         </span>
-        <span id="pinRoomBtnLabel" class="font-bold hidden xs:inline">SAVE ROOM</span>
-        <div class="uiverse-tooltip">Save Room for Notifications</div>
+        <span id="pinRoomBtnLabel" class="font-semibold hidden xs:inline">Save Room</span>
+        <div class="absolute opacity-0 -bottom-8 rounded-md py-1 px-2.5 bg-black/80 text-white text-[11px] left-1/2 -translate-x-1/2 group-hover:opacity-100 transition-opacity shadow-lg whitespace-nowrap pointer-events-none z-50">
+          Save Room
+        </div>
       </button>
 
-      <!-- PWA INSTALL QUICK BUTTON (sahilxkhadka style with SVG download icon) -->
+      <!-- DOWNLOAD / PWA INSTALL BUTTON (sahilxkhadka Uiverse design) -->
       <button 
         id="pwaInstallBtnHeader" 
         onclick="triggerPwaInstallation()" 
-        class="hidden uiverse-btn group relative flex items-center gap-1.5" 
-        style="background: linear-gradient(135deg, #f0ff7a 0%, #eab308 100%); color: #000000; border-color: #000000; padding: 0.45rem 0.95rem; font-size: 0.75rem;" 
-        title="Install Ghost App"
+        class="cursor-pointer group relative flex items-center gap-1.5 px-3.5 py-1.5 sm:px-4 sm:py-2 bg-black/80 hover:bg-black/70 text-[#f1f1f1] rounded-3xl transition font-semibold shadow-md text-xs sm:text-sm shrink-0"
+        title="Download / Install App"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" height="14px" width="14px" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 21H18M12 3V17M12 17L17 12M12 17L7 12"/></svg>
-        <span class="font-bold">INSTALL</span>
-        <div class="uiverse-tooltip">Install App on Phone</div>
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" height="18px" width="18px"><g stroke-width="0" id="SVGRepo_bgCarrier"></g><g stroke-linejoin="round" stroke-linecap="round" id="SVGRepo_tracerCarrier"></g><g id="SVGRepo_iconCarrier"> <g id="Interface / Download"> <path stroke-linejoin="round" stroke-linecap="round" stroke-width="2" stroke="#f1f1f1" d="M6 21H18M12 3V17M12 17L17 12M12 17L7 12" id="Vector"></path> </g> </g></svg>
+        <span>Download</span>
+        <div class="absolute opacity-0 -bottom-8 rounded-md py-1 px-2.5 bg-black/80 text-white text-[11px] left-1/2 -translate-x-1/2 group-hover:opacity-100 transition-opacity shadow-lg whitespace-nowrap pointer-events-none z-50">
+          Download
+        </div>
       </button>
 
-      <!-- ROOM HUB Quick Pill Button -->
+      <!-- ROOM HUB Quick Pill Button (sahilxkhadka style) -->
       <button 
         onclick="openModal('roomModal')" 
-        class="uiverse-btn group relative flex items-center gap-1.5" 
-        style="padding: 0.45rem 0.95rem; font-size: 0.75rem;" 
+        class="cursor-pointer group relative flex items-center gap-1.5 px-3.5 py-1.5 sm:px-4 sm:py-2 bg-black/80 hover:bg-black/70 text-[#f1f1f1] rounded-3xl transition font-semibold shadow-md text-xs sm:text-sm shrink-0" 
         title="Browse Rooms"
       >
-        <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z"/></svg>
-        <span class="font-bold hidden sm:inline">ROOMS</span>
-        <div class="uiverse-tooltip">Join or Create Room</div>
+        <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z"/></svg>
+        <span class="font-semibold hidden sm:inline">Rooms</span>
+        <div class="absolute opacity-0 -bottom-8 rounded-md py-1 px-2.5 bg-black/80 text-white text-[11px] left-1/2 -translate-x-1/2 group-hover:opacity-100 transition-opacity shadow-lg whitespace-nowrap pointer-events-none z-50">
+          Join / Create Room
+        </div>
       </button>
 
-      <!-- 3-DOTS NAVIGATION TRIGGER BUTTON (Opens Side Drawer) -->
+      <!-- 3-DOTS NAVIGATION TRIGGER BUTTON (sahilxkhadka style) -->
       <button 
         type="button" 
         onclick="toggleMobileSideNav()" 
-        class="w-9 h-9 rounded-full border border-gray-300 bg-white hover:bg-gray-100 text-[#111827] flex items-center justify-center font-bold text-lg shadow-sm transition hover:scale-105 active:scale-95"
+        class="cursor-pointer group relative flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 bg-black/80 hover:bg-black/70 text-[#f1f1f1] rounded-3xl transition font-semibold shadow-md text-xs sm:text-sm shrink-0"
         title="Open Navigation Drawer"
       >
-        <svg class="w-5 h-5 text-[#111827]" fill="currentColor" viewBox="0 0 24 24">
+        <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
           <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
         </svg>
+        <span class="font-semibold hidden md:inline">Menu</span>
+        <div class="absolute opacity-0 -bottom-8 rounded-md py-1 px-2.5 bg-black/80 text-white text-[11px] left-1/2 -translate-x-1/2 group-hover:opacity-100 transition-opacity shadow-lg whitespace-nowrap pointer-events-none z-50">
+          Navigation Menu
+        </div>
       </button>
 
     </div>
@@ -718,7 +722,7 @@
       </button>
       <button id="nav-tab-roster" onclick="switchTab('roster')" class="flex-1 py-1.5 px-3 rounded-full flex items-center justify-center gap-1.5 font-semibold text-gray-600 hover:text-gray-900 transition-all duration-200 ease-in-out hover:scale-105 active:scale-95">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-        <span>PEERS</span>
+        <span>FRIENDS</span>
       </button>
       <button id="nav-tab-vault" onclick="switchTab('vault')" class="flex-1 py-1.5 px-3 rounded-full flex items-center justify-center gap-1.5 font-semibold text-gray-600 hover:text-gray-900 transition-all duration-200 ease-in-out hover:scale-105 active:scale-95">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
@@ -736,201 +740,246 @@
     <!-- FULL CANVAS DISPLAY -->
     <div class="flex-1 relative bg-[#ffffff] flex flex-col min-h-0 overflow-hidden">
       
-      <!-- VIEW 0: HOME DASHBOARD & PINNED ROOMS HUB (PRIMARY DEFAULT VIEW) -->
-      <div id="view-home" class="relative z-10 flex-1 flex flex-col min-h-0 p-3 sm:p-6 overflow-y-auto custom-scroll space-y-4 sm:space-y-5 hidden">
+      <!-- VIEW 0: HOME DASHBOARD & PINNED ROOMS HUB (PREMIUM SOLID DEPTH DASHBOARD) -->
+      <div id="view-home" class="relative z-10 flex-1 flex flex-col min-h-0 p-3 sm:p-6 overflow-y-auto custom-scroll space-y-4 sm:space-y-6">
         
-        <!-- Welcome & User Identity Card (100% Visible Profile Picture & Direct Quick Join) -->
-        <div class="uiverse-card p-4 sm:p-6 flex flex-col gap-4 bg-gradient-to-br from-white via-[#fcfdfe] to-[#f4f7f4] border border-[#d0d0ce] shadow-md">
+        <!-- HERO IDENTITY & FREQUENCY JOIN CARD (Solid Depth Box) -->
+        <div class="uiverse-card p-4 sm:p-6 flex flex-col gap-4">
           <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            
+            <!-- Avatar & Codename Info -->
             <div class="flex items-center gap-4 min-w-0 w-full sm:w-auto">
-              <!-- Custom User Avatar (Large 100% Visible Profile Picture with Live Edit Badge) -->
-              <div onclick="openModal('avatarModal')" class="relative cursor-pointer group hover:scale-105 transition-all duration-200 shrink-0" title="Click to Change Profile Picture / Avatar">
-                <div id="homeUserAvatarContainer" class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-[#111827] border-2 border-[#000000] text-white flex items-center justify-center font-bold text-xl sm:text-2xl shadow-lg overflow-hidden shrink-0">
+              <div onclick="openModal('avatarModal')" class="relative cursor-pointer group shrink-0" title="Click to Change Profile Picture / Avatar">
+                <div id="homeUserAvatarContainer" class="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-[#111827] border-2 border-black text-white flex items-center justify-center font-bold text-xl sm:text-2xl shadow-[0_4px_0_#000] overflow-hidden shrink-0">
                   <span id="homeUserAvatarInitial">G</span>
                 </div>
-                <div class="absolute -bottom-1 -right-1 w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-[#f0ff7a] border-2 border-[#000000] text-[#000000] flex items-center justify-center text-xs font-bold shadow-md group-hover:bg-white transition-colors">
-                  ✏️
+                <div class="absolute -bottom-1 -right-1 w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-[#f0ff7a] border-2 border-black text-black flex items-center justify-center text-xs shadow-sm">
+                  <svg class="w-3.5 h-3.5 text-black" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                 </div>
               </div>
 
               <div class="flex flex-col min-w-0 flex-1">
                 <div class="flex items-center gap-2 flex-wrap">
-                  <span id="homeUserCodename" class="font-funny text-base sm:text-lg font-bold text-[#111827] truncate max-w-[180px] sm:max-w-none">GUEST-USER</span>
-                  <span id="homeUserGeoBadge" class="text-[9px] sm:text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 shrink-0 shadow-xs">
-                    🇮🇳 INDIA VERIFIED
+                  <span id="homeUserCodename" onclick="openChangeNameModal()" class="font-sans text-base sm:text-xl font-extrabold text-[#111827] tracking-tight truncate max-w-[180px] sm:max-w-none cursor-pointer hover:underline" title="Click to Change Codename (Max 2/day)">GUEST-USER</span>
+                  <button onclick="openChangeNameModal()" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-lg bg-black text-[#f0ff7a] border border-black hover:bg-gray-800 transition" title="Change Codename (Max 2 changes/day)">
+                    ✏️ Change Name (2/day)
+                  </button>
+                  <span id="homeUserGeoBadge" class="text-[10px] font-mono font-extrabold px-2.5 py-0.5 rounded-lg bg-emerald-500/15 text-emerald-800 border border-emerald-600/40 shrink-0 flex items-center gap-1 shadow-2xs">
+                    <svg class="w-3 h-3 text-emerald-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    <span>INDIA VERIFIED</span>
                   </span>
                 </div>
-                <div class="flex items-center gap-2 text-xs font-sans text-gray-500 mt-1 flex-wrap">
-                  <span class="flex items-center gap-1 font-semibold text-emerald-700">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> P2P Mesh Active
+
+                <div class="flex items-center gap-2.5 text-xs font-sans text-gray-600 mt-1 flex-wrap">
+                  <span class="flex items-center gap-1.5 font-bold text-emerald-700">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span> P2P Mesh Active
                   </span>
-                  <span>&bull;</span>
-                  <button onclick="openModal('avatarModal')" class="text-cyan-700 hover:text-cyan-900 font-bold hover:underline">
-                    Edit Profile Pic
+                  <span class="text-gray-300">&bull;</span>
+                  <button onclick="openModal('avatarModal')" class="uiverse-btn" style="padding: 0.25rem 0.75rem; font-size: 0.7rem;">
+                    <svg class="w-3 h-3 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    <span>Edit Profile</span>
                   </button>
-                  <span>&bull;</span>
-                  <button onclick="openModal('identityModal')" class="text-gray-600 hover:text-gray-900 font-semibold">
-                    Security Lock &rarr;
+                  <button onclick="openModal('identityModal')" class="uiverse-btn" style="padding: 0.25rem 0.75rem; font-size: 0.7rem;">
+                    <svg class="w-3 h-3 text-yellow-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                    <span>Security Lock</span>
                   </button>
                 </div>
               </div>
             </div>
 
+            <!-- Top Right Hub Shortcut Button -->
             <div class="flex items-center gap-2 w-full sm:w-auto shrink-0">
-              <button onclick="openModal('roomModal')" class="uiverse-btn w-full sm:w-auto group relative flex items-center justify-center gap-2" style="background: #111827; color: #ffffff; padding: 0.65rem 1.25rem;">
-                <svg class="w-4 h-4 text-yellow-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                <span class="font-bold">ROOM HUB</span>
-                <div class="uiverse-tooltip">Browse & Create Rooms</div>
+              <button onclick="openModal('roomModal')" class="uiverse-btn w-full sm:w-auto" style="padding: 0.6rem 1.25rem;">
+                <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z"/></svg>
+                <span class="font-bold">Browse Rooms Hub</span>
+                <div class="uiverse-tooltip">Join or Create Room</div>
               </button>
             </div>
           </div>
 
-          <!-- DIRECT QUICK ROOM FREQUENCY JOIN INPUT BAR -->
-          <div class="pt-3 border-t border-[#d0d0ce]/70 flex flex-col sm:flex-row items-center gap-2">
+          <!-- Quick Room Join Input Bar -->
+          <div class="pt-3.5 border-t border-[#d0d0ce]/80 flex flex-col sm:flex-row items-center gap-2.5">
             <div class="flex-1 w-full relative">
               <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 font-mono text-sm font-bold">#</span>
               <input 
                 type="text" 
                 id="homeRoomInput" 
-                placeholder="Enter Room Code (e.g. 111)" 
+                placeholder="Enter Room Code (e.g. 749215)" 
                 onkeydown="if(event.key === 'Enter'){ connectToMeshRoom(this.value); }"
-                class="w-full h-11 bg-white border border-[#d0d0ce] rounded-xl pl-8 pr-4 font-mono text-sm font-bold text-[#111827] placeholder-[#9ca3af] focus:outline-none focus:border-[#000000] focus:ring-2 focus:ring-[#000000]/10 shadow-inner"
+                class="w-full h-11 bg-[#f8faf9] border-1.5 border-[#111827] rounded-xl pl-8 pr-4 font-mono text-sm font-bold text-[#111827] placeholder-[#9ca3af] focus:outline-none focus:bg-white shadow-[0_2px_0_#111827]"
               />
             </div>
             <button 
               type="button"
               onclick="connectToMeshRoom(document.getElementById('homeRoomInput').value)" 
-              class="w-full sm:w-auto h-11 date-selector justify-center transition-all hover:scale-[1.02] active:scale-95" 
-              style="background-color: #f0ff7a; color: #000000; border-color: #000000; font-weight: 700; padding: 0 1.5rem; font-size: 0.875rem;"
+              class="uiverse-btn w-full sm:w-auto h-11"
+              style="background: #f0ff7a; color: #000000; border-color: #000000; font-weight: 800; padding: 0 1.75rem; font-size: 0.85rem;"
             >
-              <span>⚡ JOIN FREQUENCY</span>
+              <svg class="w-4 h-4 text-black" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+              <span>JOIN FREQUENCY</span>
             </button>
           </div>
         </div>
 
-        <!-- PINNED ROOMS & CUSTOM GROUPS DASHBOARD SECTION -->
-        <div class="space-y-2.5 sm:space-y-3">
-          <div class="flex items-center justify-between border-b border-[#d0d0ce] pb-2 font-mono text-xs">
-            <div class="flex items-center gap-2 text-[#111827] uppercase tracking-wider font-bold">
-              <span>⭐ SAVED ROOMS & GROUPS</span>
-              <span id="homePinnedCountBadge" class="text-[10px] px-2 py-0.5 rounded-full bg-white border border-[#d0d0ce] font-bold">0 Saved</span>
-            </div>
-            <button onclick="openModal('roomModal'); switchRoomModalTab('custom');" class="text-cyan-600 hover:underline font-bold text-xs flex items-center gap-1 font-sans">
-              <span>+ Create Group</span>
-            </button>
-          </div>
-
-          <!-- Pinned Rooms Grid -->
-          <div id="homePinnedRoomsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-3.5">
-            <!-- Dynamically populated pinned room cards -->
-          </div>
-        </div>
-
-        <!-- QUICK SYSTEM METRICS & SHORTCUTS (Manish-Tamang Uiverse Inspired Cards) -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-3.5 font-sans">
+        <!-- QUICK SYSTEM METRICS CARDS (3 Solid Depth Boxes with Custom SVG Icons) -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 font-sans">
           
           <!-- Widget 1: Current Room -->
           <div class="uiverse-card">
-            <div class="flex justify-between items-center px-3.5 py-2.5 sm:px-4 sm:py-3 border-b border-[#e5e7eb]">
+            <div class="flex justify-between items-center px-4 py-3 border-b border-[#111827]/15">
               <div class="flex items-center min-w-0">
-                <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-600 flex items-center justify-center font-bold text-xs sm:text-sm shrink-0">
-                  🌐
+                <div class="w-8 h-8 rounded-lg bg-cyan-500/15 border border-cyan-500/30 text-cyan-600 flex items-center justify-center font-bold text-sm shrink-0">
+                  <svg class="w-4 h-4 text-cyan-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m6 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
                 </div>
-                <div class="mx-2 min-w-0">
-                  <h4 class="text-[11px] sm:text-xs font-bold text-gray-800 uppercase">CURRENT ROOM</h4>
-                  <p id="homeCurrentRoomDisplay" class="text-[10px] sm:text-[11px] font-mono text-gray-600 font-bold truncate max-w-[120px] sm:max-w-[140px]">ROOM: NOT CONNECTED</p>
+                <div class="mx-2.5 min-w-0">
+                  <h4 class="text-[11px] font-bold text-gray-800 uppercase tracking-wide">CURRENT CHANNEL</h4>
+                  <p id="homeCurrentRoomDisplay" class="text-xs font-mono text-gray-900 font-extrabold truncate max-w-[130px]">ROOM: NOT CONNECTED</p>
                 </div>
               </div>
-              <div class="flex items-center gap-1 shrink-0">
-                <svg class="h-4 w-4 text-red-500 fill-current" viewBox="0 0 24 24"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
-                <svg class="h-4 w-4 text-yellow-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-              </div>
+              <span class="w-2.5 h-2.5 rounded-full bg-cyan-500 animate-ping"></span>
             </div>
-            <div class="px-4 py-2.5 bg-zinc-50/60">
+            <div class="px-4 py-2.5 bg-zinc-50/70">
               <div class="flex items-center gap-2">
-                <svg class="h-3.5 w-3.5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/></svg>
+                <svg class="h-3.5 w-3.5 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                 <div class="w-full">
-                  <div class="relative h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                    <div class="absolute left-0 top-0 h-full bg-cyan-500 w-full rounded-full"></div>
+                  <div class="relative h-2 bg-gray-200 rounded-lg overflow-hidden border border-gray-300">
+                    <div class="absolute left-0 top-0 h-full bg-cyan-500 w-full rounded-lg"></div>
                   </div>
                 </div>
-                <span class="text-[10px] font-mono font-bold text-cyan-600">100%</span>
+                <span class="text-[10px] font-mono font-bold text-cyan-700">100%</span>
               </div>
-              <div class="flex justify-between text-[10px] font-mono text-gray-400 mt-1.5">
+              <div class="flex justify-between text-[10px] font-mono text-gray-500 mt-1.5">
                 <span>00:00</span>
-                <span class="font-bold text-emerald-600">ZERO SERVERS</span>
+                <span class="font-bold text-emerald-700">ZERO SERVERS</span>
               </div>
             </div>
           </div>
 
           <!-- Widget 2: Friends Connected -->
           <div class="uiverse-card">
-            <div class="flex justify-between items-center px-4 py-3 border-b border-[#e5e7eb]">
-              <div class="flex items-center">
-                <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 flex items-center justify-center font-bold text-sm">
-                  👥
+            <div class="flex justify-between items-center px-4 py-3 border-b border-[#111827]/15">
+              <div class="flex items-center min-w-0">
+                <div class="w-8 h-8 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-600 flex items-center justify-center font-bold text-sm shrink-0">
+                  <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                 </div>
-                <div class="mx-2.5">
-                  <h4 class="text-xs font-bold text-gray-800 uppercase">ONLINE FRIENDS</h4>
-                  <p id="homePeersCountDisplay" class="text-[11px] font-mono text-gray-600 font-bold truncate max-w-[130px]">1 Friend Online</p>
+                <div class="mx-2.5 min-w-0">
+                  <h4 class="text-[11px] font-bold text-gray-800 uppercase tracking-wide">CONNECTED NODES</h4>
+                  <p id="homePeersCountDisplay" class="text-xs font-mono text-gray-900 font-extrabold truncate max-w-[130px]">1 Node Connected</p>
                 </div>
               </div>
-              <div class="flex items-center gap-1">
-                <svg class="h-4 w-4 text-red-500 fill-current" viewBox="0 0 24 24"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
-                <svg class="h-4 w-4 text-yellow-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-              </div>
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
             </div>
-            <div class="px-4 py-2.5 bg-zinc-50/60">
+            <div class="px-4 py-2.5 bg-zinc-50/70">
               <div class="flex items-center gap-2">
-                <svg class="h-3.5 w-3.5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/></svg>
+                <svg class="h-3.5 w-3.5 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 <div class="w-full">
-                  <div class="relative h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                    <div class="absolute left-0 top-0 h-full bg-emerald-500 w-3/4 rounded-full"></div>
+                  <div class="relative h-2 bg-gray-200 rounded-lg overflow-hidden border border-gray-300">
+                    <div class="absolute left-0 top-0 h-full bg-emerald-500 w-3/4 rounded-lg"></div>
                   </div>
                 </div>
-                <span class="text-[10px] font-mono font-bold text-emerald-600">LIVE</span>
+                <span class="text-[10px] font-mono font-bold text-emerald-700">LIVE</span>
               </div>
-              <div class="flex justify-between text-[10px] font-mono text-gray-400 mt-1.5">
-                <span>00:03</span>
-                <span class="font-bold text-cyan-600">DIRECT ENCRYPTED</span>
+              <div class="flex justify-between text-[10px] font-mono text-gray-500 mt-1.5">
+                <span>P2P</span>
+                <span class="font-bold text-cyan-700">DIRECT ENCRYPTED</span>
               </div>
             </div>
           </div>
 
           <!-- Widget 3: Privacy Status -->
           <div class="uiverse-card">
-            <div class="flex justify-between items-center px-4 py-3 border-b border-[#e5e7eb]">
-              <div class="flex items-center">
-                <div class="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-600 flex items-center justify-center font-bold text-sm">
-                  🛡️
+            <div class="flex justify-between items-center px-4 py-3 border-b border-[#111827]/15">
+              <div class="flex items-center min-w-0">
+                <div class="w-8 h-8 rounded-lg bg-purple-500/15 border border-purple-500/30 text-purple-600 flex items-center justify-center font-bold text-sm shrink-0">
+                  <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
                 </div>
-                <div class="mx-2.5">
-                  <h4 class="text-xs font-bold text-gray-800 uppercase">PRIVACY STATUS</h4>
-                  <p id="homeSecurityDisplay" class="text-[11px] font-mono text-gray-600 font-bold truncate max-w-[130px]">100% Private</p>
+                <div class="mx-2.5 min-w-0">
+                  <h4 class="text-[11px] font-bold text-gray-800 uppercase tracking-wide">PRIVACY RATING</h4>
+                  <p id="homeSecurityDisplay" class="text-xs font-mono text-gray-900 font-extrabold truncate max-w-[130px]">100% Ephemeral</p>
                 </div>
               </div>
-              <div class="flex items-center gap-1">
-                <svg class="h-4 w-4 text-red-500 fill-current" viewBox="0 0 24 24"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
-                <svg class="h-4 w-4 text-yellow-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-              </div>
+              <span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span>
             </div>
-            <div class="px-4 py-2.5 bg-zinc-50/60">
+            <div class="px-4 py-2.5 bg-zinc-50/70">
               <div class="flex items-center gap-2">
-                <svg class="h-3.5 w-3.5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/></svg>
+                <svg class="h-3.5 w-3.5 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
                 <div class="w-full">
-                  <div class="relative h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                    <div class="absolute left-0 top-0 h-full bg-purple-500 w-full rounded-full"></div>
+                  <div class="relative h-2 bg-gray-200 rounded-lg overflow-hidden border border-gray-300">
+                    <div class="absolute left-0 top-0 h-full bg-purple-500 w-full rounded-lg"></div>
                   </div>
                 </div>
-                <span class="text-[10px] font-mono font-bold text-purple-600">RAM ONLY</span>
+                <span class="text-[10px] font-mono font-bold text-purple-700">RAM ONLY</span>
               </div>
-              <div class="flex justify-between text-[10px] font-mono text-gray-400 mt-1.5">
-                <span>00:00</span>
-                <span class="font-bold text-rose-600">NO DATABASE</span>
+              <div class="flex justify-between text-[10px] font-mono text-gray-500 mt-1.5">
+                <span>0 LOGS</span>
+                <span class="font-bold text-rose-700">NO DATABASE</span>
               </div>
             </div>
           </div>
 
+        </div>
+
+        <!-- SAVED ROOMS & GROUPS SECTION (Solid Depth Box Layout) -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between border-b-2 border-[#111827] pb-2 font-mono text-xs">
+            <div class="flex items-center gap-2 text-[#111827] uppercase tracking-wider font-extrabold">
+              <svg class="w-4 h-4 text-yellow-500 fill-current" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              <span>SAVED ROOMS & GROUPS</span>
+              <span id="homePinnedCountBadge" class="text-[10px] px-2.5 py-0.5 rounded-lg bg-[#111827] text-white font-bold">0 Saved</span>
+            </div>
+            <button onclick="openModal('roomModal'); switchRoomModalTab('custom');" class="uiverse-btn" style="padding: 0.35rem 0.85rem; font-size: 0.725rem;">
+              <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+              <span>Create Group</span>
+            </button>
+          </div>
+
+          <!-- Pinned Rooms Grid -->
+          <div id="homePinnedRoomsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+            <!-- Dynamically populated pinned room cards -->
+          </div>
+        </div>
+
+        <!-- QUICK ACTIONS MATRIX (sahilxkhadka Pill Buttons Deck) -->
+        <div class="space-y-2.5">
+          <div class="text-xs font-mono font-extrabold text-[#111827] uppercase tracking-wider border-b-2 border-[#111827] pb-1.5 flex items-center gap-2">
+            <svg class="w-4 h-4 text-[#111827]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+            <span>QUICK CONTROL MATRIX</span>
+          </div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            <button onclick="openModal('roomModal')" class="uiverse-btn justify-center" style="padding: 0.65rem 1rem;">
+              <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z"/></svg>
+              <span>Browse Rooms</span>
+            </button>
+            <button onclick="copy1ClickRoomUrl()" class="uiverse-btn justify-center" style="padding: 0.65rem 1rem;">
+              <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+              <span>Share Invite Link</span>
+            </button>
+            <button onclick="renderQrViewForCurrentRoom()" class="uiverse-btn justify-center" style="padding: 0.65rem 1rem;">
+              <svg class="w-4 h-4 text-yellow-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
+              <span>Room QR Code</span>
+            </button>
+            <button onclick="toggleGhostShield()" class="uiverse-btn justify-center" style="padding: 0.65rem 1rem;">
+              <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+              <span>Privacy Shield</span>
+            </button>
+            <button onclick="openModal('identityModal')" class="uiverse-btn justify-center" style="padding: 0.65rem 1rem;">
+              <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+              <span>Device Lock</span>
+            </button>
+            <button onclick="openModal('systemManualModal')" class="uiverse-btn justify-center" style="padding: 0.65rem 1rem;">
+              <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              <span>App Manual</span>
+            </button>
+            <button onclick="executeEmergencyPurge()" class="uiverse-btn justify-center" style="background: #991b1b; border-color: #7f1d1d; color: #ffffff; padding: 0.65rem 1rem;">
+              <svg class="w-4 h-4 text-rose-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              <span>Purge Memory</span>
+            </button>
+            <button onclick="triggerPwaInstallation()" class="uiverse-btn justify-center" style="padding: 0.65rem 1rem;">
+              <svg class="w-4 h-4 text-yellow-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+              <span>Install App</span>
+            </button>
+          </div>
         </div>
 
       </div>
@@ -1565,6 +1614,57 @@
     </div>
   </div>
 
+  <!-- CUSTOM CODENAME CHANGE MODAL (Strict 2 Changes Per Day Limit) -->
+  <div id="changeNameModal" class="fixed inset-0 z-50 bg-black/65 backdrop-blur-sm flex items-center justify-center p-4 hidden select-none">
+    <div class="uiverse-card w-full max-w-sm p-5 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-[#111827]/15 pb-3">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-xl bg-[#111827] text-[#f0ff7a] flex items-center justify-center font-bold text-sm">
+            ✏️
+          </div>
+          <div class="flex flex-col">
+            <h3 class="font-sans text-sm font-extrabold text-[#111827]">Change Codename</h3>
+            <span class="text-[10px] font-mono text-[#6b7280]">Limit: Max 2 Changes / Day</span>
+          </div>
+        </div>
+        <button onclick="closeModal('changeNameModal')" class="w-7 h-7 rounded-full border border-[#d0d0ce] bg-white hover:bg-[#dededd] flex items-center justify-center font-bold text-xs">
+          &times;
+        </button>
+      </div>
+
+      <div class="space-y-3">
+        <div class="flex items-center justify-between text-xs font-mono">
+          <span class="text-gray-600 font-bold">DAILY QUOTA:</span>
+          <span id="nameChangeQuotaBadge" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+            0 / 2 Used Today
+          </span>
+        </div>
+
+        <div>
+          <label class="block text-xs font-mono font-bold text-[#111827] mb-1">YOUR DESIRED NAME:</label>
+          <input 
+            type="text" 
+            id="customNameInput" 
+            maxlength="20" 
+            placeholder="Enter name (e.g. CYBER_PUNK_99)" 
+            class="w-full px-3.5 py-2.5 rounded-xl border border-[#111827] bg-[#ffffff] font-mono text-sm font-bold text-[#111827] focus:outline-none focus:ring-2 focus:ring-black uppercase shadow-inner"
+            onkeydown="if(event.key==='Enter') submitCustomCodename(event)"
+          />
+          <p class="text-[10px] font-mono text-gray-500 mt-1">Letters, numbers, underscores and hyphens allowed (max 20 chars).</p>
+        </div>
+
+        <div id="nameChangeNotice" class="hidden text-xs font-mono text-rose-700 bg-rose-50 border border-rose-200 p-2.5 rounded-xl"></div>
+
+        <div class="pt-2 flex gap-2">
+          <button type="button" onclick="closeModal('changeNameModal')" class="flex-1 date-selector justify-center">Cancel</button>
+          <button type="button" id="submitNameChangeBtn" onclick="submitCustomCodename(event)" class="flex-1 date-selector justify-center" style="background-color: #f0ff7a; color: #000; border-color: #000; font-weight: 700;">
+            Save Name
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL 8: INDIAN ORIGIN GEO-VERIFICATION & WEBAUTHN PASSKEY SHIELD -->
   <div id="identityModal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-3 hidden select-none">
     <div class="w-full max-w-md bg-[#ffffff] border border-[#d0d0ce] rounded-[2rem] p-5 shadow-2xl space-y-4 text-[#111827] max-h-[90vh] overflow-y-auto custom-scroll">
@@ -1713,6 +1813,84 @@
     </div>
   </div>
 
+  <!-- MODAL 10: REAL PWA APP INSTALLATION MODAL -->
+  <div id="pwaInstallModal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-3 hidden select-none">
+    <div class="w-full max-w-md bg-[#ffffff] border border-[#d0d0ce] rounded-[2rem] p-5 shadow-2xl space-y-4 text-[#111827] max-h-[90vh] overflow-y-auto custom-scroll">
+      
+      <div class="flex items-center justify-between border-b border-[#d0d0ce] pb-3">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-2xl bg-gradient-to-tr from-[#111827] to-[#374151] text-[#f0ff7a] flex items-center justify-center font-bold text-base shadow-sm">
+            📱
+          </div>
+          <div>
+            <h3 class="font-mono text-xs font-bold uppercase text-[#111827]">INSTALL GHOST APP</h3>
+            <p class="text-[10px] font-mono text-[#6b7280]">Install Web App directly on Mobile & PC</p>
+          </div>
+        </div>
+        <button onclick="closeModal('pwaInstallModal')" class="w-7 h-7 rounded-full border border-[#d0d0ce] bg-[#e9eeea] hover:bg-[#dededd] text-[#111827] flex items-center justify-center font-bold text-xs transition">
+          &times;
+        </button>
+      </div>
+
+      <div class="space-y-3.5">
+        <!-- Direct Install Action Card (If prompt available) -->
+        <div id="pwaDirectPromptCard" class="p-4 bg-[#f0ff7a] border border-black rounded-2xl space-y-2 text-center shadow-sm">
+          <div class="text-xs font-mono font-bold text-black uppercase">⚡ Native 1-Click Installation</div>
+          <p class="text-xs text-[#333333] font-sans">Click below to launch official app installation on your device.</p>
+          <button onclick="executePwaPromptTrigger()" class="w-full date-selector justify-center" style="background-color: #111827; color: #ffffff; font-weight: 700; height: 42px; font-size: 0.9rem;">
+            📱 INSTALL APP NOW
+          </button>
+        </div>
+
+        <!-- Android & Chrome Device Steps -->
+        <div class="p-3.5 bg-[#f8faf9] border border-[#d0d0ce] rounded-2xl space-y-2">
+          <div class="flex items-center gap-2 text-xs font-mono font-bold text-[#111827]">
+            <span class="text-base">🤖</span>
+            <span>Android / Chrome Installation</span>
+          </div>
+          <ol class="list-decimal list-inside text-xs text-[#4b5563] space-y-1 font-sans pl-1">
+            <li>Tap the <strong>Menu (⋮)</strong> icon in top right corner.</li>
+            <li>Tap <strong>Install app</strong> or <strong>Add to Home screen</strong>.</li>
+            <li>Confirm installation to launch standalone app icon on your screen!</li>
+          </ol>
+        </div>
+
+        <!-- iOS Safari Device Steps -->
+        <div class="p-3.5 bg-[#f8faf9] border border-[#d0d0ce] rounded-2xl space-y-2">
+          <div class="flex items-center gap-2 text-xs font-mono font-bold text-[#111827]">
+            <span class="text-base">🍎</span>
+            <span>iOS Safari (iPhone / iPad) Installation</span>
+          </div>
+          <ol class="list-decimal list-inside text-xs text-[#4b5563] space-y-1 font-sans pl-1">
+            <li>Tap the <strong>Share</strong> button (Square with up arrow) in Safari toolbar.</li>
+            <li>Scroll down and tap <strong>Add to Home Screen 📱</strong>.</li>
+            <li>Tap <strong>Add</strong> in top right to finish!</li>
+          </ol>
+        </div>
+
+        <!-- PC / Desktop Chrome & Edge Device Steps -->
+        <div class="p-3.5 bg-[#f8faf9] border border-[#d0d0ce] rounded-2xl space-y-2">
+          <div class="flex items-center gap-2 text-xs font-mono font-bold text-[#111827]">
+            <span class="text-base">💻</span>
+            <span>PC & Mac Desktop Installation</span>
+          </div>
+          <ol class="list-decimal list-inside text-xs text-[#4b5563] space-y-1 font-sans pl-1">
+            <li>Look at your browser's address bar (top right).</li>
+            <li>Click the <strong>Install Icon (⊕ or 💻)</strong> next to bookmark star.</li>
+            <li>Click <strong>Install</strong> to add desktop shortcut app window!</li>
+          </ol>
+        </div>
+
+        <div class="pt-1 flex justify-end">
+          <button onclick="closeModal('pwaInstallModal')" class="date-selector" style="padding: 0.4rem 1rem;">
+            Close Guide
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
   <!-- Toast Notification Feedback -->
   <div id="toastNotification" class="fixed bottom-14 sm:bottom-4 right-4 z-50 transform translate-y-16 opacity-0 pointer-events-none transition-all duration-200 border border-[#d0d0ce] bg-[#ffffff] px-4 py-2.5 rounded-full shadow-2xl flex items-center gap-2 text-xs font-mono text-[#111827]">
     <div id="toastDot" class="w-2 h-2 rounded-full bg-stealth-emerald"></div>
@@ -1721,10 +1899,7 @@
 
 
   <!-- Application Core Script with WebRTC Mesh & Ephemeral Engine -->
-  <script type="module">
-    import { joinRoom as joinMqttRoom } from 'https://esm.sh/trystero@0.20.0/mqtt';
-    import { joinRoom as joinTorrentRoom } from 'https://esm.sh/trystero@0.20.0/torrent';
-    import { joinRoom as joinNostrRoom } from 'https://esm.sh/trystero@0.20.0/nostr';
+  <script>
 
     /* =========================================================================
        ZERO PERSISTENT STORAGE ARCHITECTURE (STRICT RAM ONLY)
@@ -1846,12 +2021,41 @@
         deferredPwaPrompt.prompt();
         deferredPwaPrompt.userChoice.then(choiceResult => {
           if (choiceResult.outcome === 'accepted') {
-            showToast('Ghost Frequency App Installed!', 'success');
+            showToast('Ghost Frequency App Installed Successfully!', 'success');
+            SoundFx.chime();
           }
           deferredPwaPrompt = null;
         });
       } else {
-        showToast('To install app: Tap browser menu (...) -> Add to Home Screen', 'info');
+        openPwaInstallModal();
+      }
+    };
+
+    window.openPwaInstallModal = function() {
+      openModal('pwaInstallModal');
+      const directCard = document.getElementById('pwaDirectPromptCard');
+      if (directCard) {
+        if (deferredPwaPrompt) {
+          directCard.classList.remove('hidden');
+        } else {
+          directCard.classList.add('hidden');
+        }
+      }
+    };
+
+    window.executePwaPromptTrigger = function() {
+      if (deferredPwaPrompt) {
+        deferredPwaPrompt.prompt();
+        deferredPwaPrompt.userChoice.then(choiceResult => {
+          if (choiceResult.outcome === 'accepted') {
+            showToast('Ghost Frequency App Installed Successfully!', 'success');
+            SoundFx.chime();
+            closeModal('pwaInstallModal');
+          }
+          deferredPwaPrompt = null;
+        });
+      } else {
+        showToast('Please follow device steps below to add app to your home screen', 'info');
       }
     };
 
@@ -2295,9 +2499,10 @@
           renderInlineImage(payload.dataUri, payload.name, senderPersona, 'peer');
           triggerOSNotification(`🖼️ Image from ${senderPersona.name}`, `${payload.name} received`, `file-${peerId}`);
         } else {
+          renderGenericFileCard(payload, senderPersona, 'peer');
           registerVaultCatalogItem(payload, payload.dataUri, false);
           incrementVaultCount();
-          showToast(`Received ${payload.name} from ${senderPersona.name}`, 'success');
+          showToast(`Received ${payload.name} (${(payload.size / 1024).toFixed(1)} KB) from ${senderPersona.name}`, 'success');
           triggerOSNotification(`📁 File from ${senderPersona.name}`, `${payload.name} received`, `file-${peerId}`);
         }
         SoundFx.chime();
@@ -2572,7 +2777,7 @@
       const rosterLbl = document.getElementById('rosterSubCount');
       if (rosterLbl) rosterLbl.innerText = `${totalOnline} Connected Node${totalOnline === 1 ? '' : 's'} (Including You)`;
       const onlineTxt = document.getElementById('onlineCountText');
-      if (onlineTxt) onlineTxt.innerText = `${totalOnline} Member${totalOnline === 1 ? '' : 's'} Online`;
+      if (onlineTxt) onlineTxt.innerText = `${totalOnline}`;
 
       const homeRoom = document.getElementById('homeCurrentRoomDisplay');
       if (homeRoom) homeRoom.innerText = currentRoomCode ? `ROOM: #${currentRoomCode}` : 'ROOM: NOT CONNECTED';
@@ -2594,9 +2799,11 @@
       if (pinned.length === 0) {
         container.innerHTML = `
           <div class="col-span-full uiverse-card p-6 text-center text-xs font-mono text-[#6b7280] space-y-2">
-            <div class="text-2xl">📌</div>
-            <div class="font-bold text-[#111827] text-sm font-funny">No Saved Rooms or Groups Yet</div>
-            <div>Join any room and click "SAVE ROOM", or click "+ Create Group" to save channels here!</div>
+            <div class="w-10 h-10 mx-auto rounded-lg bg-black text-yellow-400 flex items-center justify-center">
+              <svg class="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </div>
+            <div class="font-bold text-[#111827] text-sm font-sans">No Saved Rooms or Groups Yet</div>
+            <div>Join any room and click "Save Room", or click "+ Create Group" to save channels here!</div>
           </div>
         `;
         return;
@@ -2606,7 +2813,7 @@
       pinned.forEach(room => {
         const isCurrent = room.code === currentRoomCode;
         const card = document.createElement('div');
-        card.className = `uiverse-card transition-all cursor-pointer group ${isCurrent ? 'ring-2 ring-[#000000]' : ''}`;
+        card.className = `uiverse-card transition-all cursor-pointer group ${isCurrent ? 'ring-2 ring-black' : ''}`;
         card.onclick = (e) => {
           if (e.target.closest('.unpin-btn')) return;
           connectToMeshRoom(room.code);
@@ -2614,39 +2821,38 @@
         };
 
         card.innerHTML = `
-          <div class="flex justify-between items-center px-4 py-3 border-b border-[#e5e7eb]">
-            <div class="flex items-center">
-              <div class="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500 flex items-center justify-center text-base font-bold group-hover:scale-110 transition-transform">
-                ${room.emoji || '⚡'}
+          <div class="flex justify-between items-center px-4 py-3 border-b border-[#111827]/15">
+            <div class="flex items-center min-w-0">
+              <div class="w-9 h-9 rounded-lg bg-[#111827] text-[#f0ff7a] border border-black flex items-center justify-center text-base font-bold group-hover:scale-105 transition-transform shrink-0">
+                <svg class="w-4 h-4 text-[#f0ff7a]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
               </div>
-              <div class="mx-2.5">
-                <h3 class="text-xs font-bold font-sans text-gray-800 truncate max-w-[120px] flex items-center gap-1">
+              <div class="mx-2.5 truncate">
+                <h3 class="text-xs font-extrabold font-sans text-gray-900 truncate flex items-center gap-1.5">
                   ${escapeHtml(room.name)}
-                  ${isCurrent ? '<span class="text-[9px] px-1.5 py-0.2 rounded-full bg-[#f0ff7a] text-black font-bold">ACTIVE</span>' : ''}
+                  ${isCurrent ? '<span class="text-[9px] px-1.5 py-0.2 rounded-md bg-[#f0ff7a] text-black font-extrabold border border-black">ACTIVE</span>' : ''}
                 </h3>
-                <p class="text-[10px] font-mono text-gray-500">CODE: #${room.code}</p>
+                <p class="text-[10px] font-mono text-gray-500 font-bold">CODE: #${room.code}</p>
               </div>
             </div>
-            <div class="flex items-center gap-1.5">
-              <button onclick="deletePinnedRoom('${room.code}')" class="unpin-btn text-red-500 hover:scale-125 transition-transform p-1" title="Unpin/Delete Room">
+            <div class="flex items-center gap-1.5 shrink-0">
+              <button onclick="deletePinnedRoom('${room.code}')" class="unpin-btn text-rose-600 hover:scale-110 transition-transform p-1" title="Unpin/Delete Room">
                 <svg class="h-4 w-4 fill-current" viewBox="0 0 24 24"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
               </button>
-              <svg class="h-4 w-4 text-yellow-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
             </div>
           </div>
-          <div class="px-4 py-2.5 bg-zinc-50/60">
+          <div class="px-4 py-2.5 bg-zinc-50/80">
             <div class="flex items-center gap-2">
-              <svg class="h-3.5 w-3.5 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/></svg>
+              <svg class="h-3.5 w-3.5 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
               <div class="w-full">
-                <div class="relative h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                  <div class="absolute left-0 top-0 h-full ${isCurrent ? 'bg-emerald-500 w-full animate-pulse' : 'bg-yellow-500 w-2/3'} rounded-full"></div>
+                <div class="relative h-2 bg-gray-200 rounded-lg overflow-hidden border border-gray-300">
+                  <div class="absolute left-0 top-0 h-full ${isCurrent ? 'bg-emerald-500 w-full animate-pulse' : 'bg-yellow-500 w-2/3'} rounded-lg"></div>
                 </div>
               </div>
-              <span class="text-[10px] font-mono font-bold ${isCurrent ? 'text-emerald-600' : 'text-gray-500'}">${isCurrent ? '100%' : 'READY'}</span>
+              <span class="text-[10px] font-mono font-bold ${isCurrent ? 'text-emerald-700' : 'text-gray-600'}">${isCurrent ? '100%' : 'READY'}</span>
             </div>
-            <div class="flex justify-between text-[10px] font-mono text-gray-400 mt-1.5">
-              <span>00:01</span>
-              <span class="font-bold ${isCurrent ? 'text-emerald-600' : 'text-cyan-600'}">${isCurrent ? 'LIVE MESH CONNECTED' : 'JOIN CHANNEL &rarr;'}</span>
+            <div class="flex justify-between text-[10px] font-mono text-gray-500 mt-1.5">
+              <span>P2P</span>
+              <span class="font-extrabold ${isCurrent ? 'text-emerald-700' : 'text-cyan-700'}">${isCurrent ? 'LIVE MESH CONNECTED' : 'JOIN CHANNEL &rarr;'}</span>
             </div>
           </div>
         `;
@@ -2770,11 +2976,11 @@
         }
       } else {
         if (icon) icon.innerText = '📌';
-        if (label) label.innerText = 'PIN ROOM';
+        if (label) label.innerText = 'Save Room';
         if (btn) {
-          btn.style.backgroundColor = '#ffffff';
-          btn.style.color = '#111827';
-          btn.style.borderColor = '#d0d0ce';
+          btn.style.backgroundColor = '';
+          btn.style.color = '#f1f1f1';
+          btn.style.borderColor = '';
         }
       }
     }
@@ -2923,18 +3129,110 @@
     };
 
     /* =========================================================================
+       CUSTOM CODENAME MANAGER (STRICT 2 CHANGES PER DAY LIMIT)
+       ========================================================================= */
+    let nameChangeState = {
+      countToday: 0,
+      lastDate: new Date().toISOString().split('T')[0]
+    };
+
+    function checkAndResetDailyNameQuota() {
+      const today = new Date().toISOString().split('T')[0];
+      if (nameChangeState.lastDate !== today) {
+        nameChangeState.lastDate = today;
+        nameChangeState.countToday = 0;
+      }
+    }
+
+    window.openChangeNameModal = function() {
+      checkAndResetDailyNameQuota();
+      const input = document.getElementById('customNameInput');
+      const badge = document.getElementById('nameChangeQuotaBadge');
+      const btn = document.getElementById('submitNameChangeBtn');
+      const notice = document.getElementById('nameChangeNotice');
+      
+      if (input) input.value = myPersona.name;
+      
+      const remaining = Math.max(0, 2 - nameChangeState.countToday);
+      if (badge) {
+        badge.innerText = `${nameChangeState.countToday} / 2 Used Today (${remaining} Remaining)`;
+        badge.className = nameChangeState.countToday >= 2
+          ? 'text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 border border-rose-300'
+          : 'text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300';
+      }
+
+      if (nameChangeState.countToday >= 2) {
+        if (btn) {
+          btn.disabled = true;
+          btn.className = 'w-full date-selector justify-center opacity-50 cursor-not-allowed';
+          btn.innerText = '🔒 Limit Reached Today (2/2 Used)';
+        }
+        if (notice) {
+          notice.classList.remove('hidden');
+          notice.innerText = '⚠️ You have already changed your name twice today. Daily limit resets tomorrow!';
+        }
+      } else {
+        if (btn) {
+          btn.disabled = false;
+          btn.className = 'w-full date-selector justify-center';
+          btn.style.backgroundColor = '#f0ff7a';
+          btn.style.color = '#000';
+          btn.style.borderColor = '#000';
+          btn.style.fontWeight = '700';
+          btn.innerText = `Save New Name (${remaining} left today)`;
+        }
+        if (notice) notice.classList.add('hidden');
+      }
+
+      openModal('changeNameModal');
+    };
+
+    window.submitCustomCodename = function(e) {
+      if (e) e.preventDefault();
+      checkAndResetDailyNameQuota();
+
+      if (nameChangeState.countToday >= 2) {
+        showToast('⚠️ Daily name change limit reached (2/2 used today)!', 'error');
+        return;
+      }
+
+      const input = document.getElementById('customNameInput');
+      const newName = (input ? input.value : '').trim().toUpperCase().replace(/[^A-Z0-9_-]/g, '').substring(0, 20);
+
+      if (!newName || newName.length < 2) {
+        showToast('Name must be at least 2 characters (letters, numbers, _ or -)', 'error');
+        return;
+      }
+
+      myPersona.name = newName;
+      nameChangeState.countToday++;
+
+      updateUserAvatarUI();
+      dispatchRoomAction('presence', { persona: myPersona });
+      if (localBroadcastChannel) {
+        localBroadcastChannel.postMessage({ action: 'presence', data: { persona: myPersona }, senderId: myPersona.id });
+      }
+      renderPeersRoster();
+
+      closeModal('changeNameModal');
+      SoundFx.chime();
+      showToast(`🎉 Codename changed to ${newName}! (${nameChangeState.countToday}/2 changes used today)`, 'success');
+    };
+
+    /* =========================================================================
        EMOJI & GIF PICKER ENGINE
        ========================================================================= */
     const EMOJI_COLLECTION = {
-      cyber: ['⚡', '🤖', '💀', '👻', '🛰️', '🔒', '🔑', '🛡️', '🕹️', '💾', '🌐', '👾', '🔥', '💥', '✨', '🎯'],
-      smileys: ['😊', '😂', '😎', '🤣', '😍', '🤔', '🙄', '🥳', '😴', '😇', '🤓', '😈', '🤯', '😜', '😭', '🤩'],
-      hands: ['👍', '👎', '👏', '🙌', '🤝', '👊', '✌️', '🤘', '🤙', '🖐️', '✍️', '🙏', '💪', '👈', '👉', '🖐️'],
-      animals: ['🐶', '🐱', '🦊', '🐻', '🐼', '🦁', '🐯', '🦄', '🦅', '🦉', '🦈', '🐉', '🐍', '🐝', '🐙', '🐺'],
-      food: ['🍕', '🍔', '🍟', '🌭', '🍿', '🍩', '🍪', '☕', '🍺', '🥤', '🌮', '🍣', '🍦', '🍎', '🥑', '🥞'],
-      symbols: ['❤️', '🖤', '💯', '⚠️', '⛔', '✅', '❌', '⭐', '🌟', '💎', '💡', '💬', '🔔', '🚀', '🏁', '🎉']
+      popular: ['🔥', '😂', '💀', '🗿', '😎', '🎉', '💯', '✨', '⚡', '👀', '🚀', '❤️', '🤩', '🥳', '🙌'],
+      funny: ['🤡', '🤣', '😭', '🤯', '💩', '🫠', '🤪', '☠️', '🙈', '🤖', '👾', '🤮', '👺', '👹', '👻'],
+      memes: ['🗿', '🍷', '🍌', '🐸', '🤓', '💅', '🍿', '🫡', '🤏', '🧠', '👑', '🐐', '🕶️', '🦆', '🦖'],
+      reactions: ['👍', '👎', '❤️', '🔥', '🙌', '👏', '🤝', '🙏', '💡', '⚠️', '✅', '❌', '💯', '⭐', '⚡'],
+      gaming: ['🎮', '👾', '🕹️', '🏆', '🎯', '🎲', '🧩', '💣', '⚔️', '🛡️', '⚡', '💥', '🥇', '👑', '🚀'],
+      moods: ['😍', '🥳', '😴', '🧐', '😡', '🥶', '🥵', '🥺', '😈', '👻', '👽', '💀', '🥰', '🤐', '🥱'],
+      food: ['🍕', '🍔', '🍟', '🌭', '🍿', '🍩', '🍪', '☕', '🍺', '🥤', '🌮', '🍣', '🍦', '🍎', '🥑']
     };
 
-    let currentEmojiCategory = 'all';
+    let currentEmojiCategory = 'popular';
 
     window.toggleEmojiGifPicker = function(forceState) {
       const panel = document.getElementById('emojiGifPickerPanel');
@@ -3014,38 +3312,38 @@
     };
 
     const CURATED_GIFS = {
-      Matrix: [
+      Funny: [
+        'https://media.giphy.com/media/10yXFibl978FqE/giphy.gif',
+        'https://media.giphy.com/media/I4Jm998s2UxTW/giphy.gif',
+        'https://media.giphy.com/media/xT0xeJpnrWC4XWblEk/giphy.gif',
+        'https://media.giphy.com/media/26ufdipQqU2lhNA4g/giphy.gif'
+      ],
+      Reactions: [
+        'https://media.giphy.com/media/l3q2K5jinAlChoCLS/giphy.gif',
         'https://media.giphy.com/media/A06UFEx8jxEwU/giphy.gif',
-        'https://media.giphy.com/media/V2aklmz97gSpG/giphy.gif',
-        'https://media.giphy.com/media/eIm6324ee3pG0/giphy.gif'
+        'https://media.giphy.com/media/g9582DNuQppxC/giphy.gif',
+        'https://media.giphy.com/media/d31w24psGYeekCXY/giphy.gif'
       ],
       Hacking: [
         'https://media.giphy.com/media/YQitE4YNQNahy/giphy.gif',
         'https://media.giphy.com/media/u01ioCe6G8URG/giphy.gif',
-        'https://media.giphy.com/media/26tn33aiTi1jkl6H6/giphy.gif'
+        'https://media.giphy.com/media/26tn33aiTi1jkl6H6/giphy.gif',
+        'https://media.giphy.com/media/V2aklmz97gSpG/giphy.gif'
       ],
-      Cyberpunk: [
-        'https://media.giphy.com/media/Xw3pnKSKhcH7ozPozR/giphy.gif',
-        'https://media.giphy.com/media/fBEMsUeGHZpsfXeEIY/giphy.gif'
-      ],
-      Laughing: [
-        'https://media.giphy.com/media/10yXFibl978FqE/giphy.gif',
-        'https://media.giphy.com/media/I4Jm998s2UxTW/giphy.gif'
-      ],
-      Cat: [
+      Memes: [
         'https://media.giphy.com/media/BzyTuYCmvSORqs1ABM/giphy.gif',
-        'https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif'
-      ],
-      Fire: [
+        'https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif',
         'https://media.giphy.com/media/Lopx9eUi34rbq/giphy.gif',
         'https://media.giphy.com/media/P7JmDW7IkB7Ww/giphy.gif'
       ],
-      'Mind Blown': [
-        'https://media.giphy.com/media/26ufdipQqU2lhNA4g/giphy.gif',
-        'https://media.giphy.com/media/xT0xeJpnrWC4XWblEk/giphy.gif'
+      AnimeStickers: [
+        'https://media.giphy.com/media/h4Z6RfuQycdiM/giphy.gif',
+        'https://media.giphy.com/media/du3J3yomfTYS4/giphy.gif',
+        'https://media.giphy.com/media/NUiP8XepXg5b19uH2u/giphy.gif'
       ]
     };
 
+    let gifSearchDebounce = null;
     window.quickGifSearch = function(term) {
       const input = document.getElementById('gifSearchInput');
       if (input) input.value = term;
@@ -3053,27 +3351,41 @@
     };
 
     window.searchGifs = function(query) {
-      renderGifResults(query);
+      clearTimeout(gifSearchDebounce);
+      gifSearchDebounce = setTimeout(() => renderGifResults(query), 300);
     };
 
-    function renderGifResults(query) {
+    async function renderGifResults(query) {
       const grid = document.getElementById('gifGrid');
       if (!grid) return;
-      grid.innerHTML = '';
-      const q = (query || 'Hacking').trim().toLowerCase();
+      grid.innerHTML = '<div class="col-span-full text-center py-4 font-mono text-xs text-gray-500">Searching animated GIFs...</div>';
+      const q = (query || 'Funny').trim().toLowerCase();
 
-      let matches = [];
-      Object.keys(CURATED_GIFS).forEach(key => {
-        if (key.toLowerCase().includes(q) || q.includes(key.toLowerCase())) {
-          matches = matches.concat(CURATED_GIFS[key]);
+      let gifList = [];
+
+      try {
+        const res = await fetch(`https://api.giphy.com/v1/gifs/search?api_key=cw9L3728hDchTXYW1j17qTG3jT5hP0C0&q=${encodeURIComponent(q)}&limit=12&rating=g`);
+        if (res.ok) {
+          const json = await res.json();
+          if (json.data && json.data.length > 0) {
+            gifList = json.data.map(g => g.images.downsized_medium.url || g.images.original.url);
+          }
         }
-      });
+      } catch(e) {}
 
-      if (matches.length === 0) {
-        Object.values(CURATED_GIFS).forEach(arr => matches = matches.concat(arr));
+      if (gifList.length === 0) {
+        Object.keys(CURATED_GIFS).forEach(key => {
+          if (key.toLowerCase().includes(q) || q.includes(key.toLowerCase())) {
+            gifList = gifList.concat(CURATED_GIFS[key]);
+          }
+        });
+        if (gifList.length === 0) {
+          Object.values(CURATED_GIFS).forEach(arr => gifList = gifList.concat(arr));
+        }
       }
 
-      matches.forEach((gifUrl) => {
+      grid.innerHTML = '';
+      gifList.forEach((gifUrl) => {
         const img = document.createElement('img');
         img.src = gifUrl;
         img.className = 'w-full h-24 object-cover rounded-xl border border-[#d0d0ce] cursor-pointer hover:opacity-85 hover:scale-105 transition shadow-sm bg-black';
@@ -3243,6 +3555,125 @@
       return `<span class="mr-1.5 inline-block align-middle text-sm">${str || '⚡'}</span>`;
     }
 
+    function processMessageTextWithLinkPreviews(text, isMe) {
+      if (!text) return { formattedText: '', previewCardsHtml: '' };
+      
+      const urlRegex = /(https?:\/\/[^\s<]+|www\.[^\s<]+)/gi;
+      const matches = text.match(urlRegex);
+
+      let formattedText = escapeHtml(text);
+      let previewCardsHtml = '';
+
+      if (matches && matches.length > 0) {
+        matches.forEach(rawUrl => {
+          let href = rawUrl;
+          if (!href.startsWith('http://') && !href.startsWith('https://')) {
+            href = 'https://' + href;
+          }
+          const escapedRaw = escapeHtml(rawUrl);
+          const linkClass = isMe 
+            ? 'text-[#f0ff7a] underline hover:text-white font-mono break-all font-semibold' 
+            : 'text-[#06b6d4] underline hover:text-[#0b0d14] font-mono break-all font-semibold';
+          
+          formattedText = formattedText.replace(escapedRaw, `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer" class="${linkClass}">${escapedRaw}</a>`);
+        });
+
+        const primaryUrlRaw = matches[0];
+        let primaryHref = primaryUrlRaw;
+        if (!primaryHref.startsWith('http://') && !primaryHref.startsWith('https://')) {
+          primaryHref = 'https://' + primaryHref;
+        }
+
+        try {
+          const urlObj = new URL(primaryHref);
+          const hostname = urlObj.hostname.replace(/^www\./, '');
+          const faviconUrl = `https://www.google.com/s2/favicons?domain=${encodeURIComponent(hostname)}&sz=64`;
+          const cardId = 'link-card-' + Math.random().toString(36).substr(2, 9);
+          const isImg = /\.(png|jpe?g|gif|webp|svg)(\?.*)?$/i.test(urlObj.pathname);
+
+          let ytVideoId = null;
+          if (hostname.includes('youtube.com') && urlObj.searchParams.has('v')) {
+            ytVideoId = urlObj.searchParams.get('v');
+          } else if (hostname.includes('youtu.be')) {
+            ytVideoId = urlObj.pathname.substring(1);
+          }
+
+          if (isImg) {
+            previewCardsHtml = `
+              <div class="mt-2.5 rounded-xl border ${isMe ? 'border-gray-700 bg-black/40' : 'border-[#d0d0ce] bg-white'} p-2 overflow-hidden shadow-sm">
+                <div class="flex items-center gap-1.5 mb-1.5 px-1 font-mono text-[10px] ${isMe ? 'text-gray-300' : 'text-gray-600'}">
+                  <img src="${faviconUrl}" class="w-3.5 h-3.5 rounded-sm" onerror="this.style.display='none'" />
+                  <span class="font-bold truncate">${escapeHtml(hostname)}</span>
+                  <span class="text-[9px] px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-700 border border-cyan-500/30">IMAGE LINK</span>
+                </div>
+                <img src="${escapeHtml(primaryHref)}" class="w-full max-h-48 object-cover rounded-lg border border-black/10 cursor-pointer hover:opacity-90 transition" onclick="openLightbox('${escapeHtml(primaryHref)}', '${escapeHtml(hostname)}')" onerror="this.style.display='none'" />
+              </div>
+            `;
+          } else if (ytVideoId) {
+            const ytThumb = `https://img.youtube.com/vi/${ytVideoId}/hqdefault.jpg`;
+            previewCardsHtml = `
+              <div class="mt-2.5 rounded-xl border ${isMe ? 'border-gray-700 bg-black/50' : 'border-[#d0d0ce] bg-white'} p-2.5 space-y-2 shadow-sm">
+                <div class="flex items-center justify-between font-mono text-[10px] ${isMe ? 'text-gray-300' : 'text-gray-600'}">
+                  <div class="flex items-center gap-1.5">
+                    <img src="${faviconUrl}" class="w-4 h-4 rounded-sm" />
+                    <span class="font-bold text-red-500">YouTube Video</span>
+                  </div>
+                  <span class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-red-500/15 text-red-600 border border-red-500/30">MEDIA</span>
+                </div>
+                <div class="relative rounded-lg overflow-hidden border border-black/20 group cursor-pointer" onclick="window.open('${escapeHtml(primaryHref)}', '_blank')">
+                  <img src="${ytThumb}" class="w-full h-36 object-cover group-hover:scale-105 transition-transform duration-300" />
+                  <div class="absolute inset-0 bg-black/30 flex items-center justify-center">
+                    <div class="w-10 h-10 rounded-full bg-red-600 text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                      <svg class="w-5 h-5 ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    </div>
+                  </div>
+                </div>
+                <div class="font-mono text-[11px] font-bold truncate ${isMe ? 'text-white' : 'text-gray-900'}">${escapeHtml(primaryHref)}</div>
+              </div>
+            `;
+          } else {
+            previewCardsHtml = `
+              <div id="${cardId}" class="mt-2.5 rounded-xl border ${isMe ? 'border-gray-700 bg-black/50 text-white' : 'border-[#d0d0ce] bg-white text-gray-900'} p-2.5 space-y-1.5 shadow-sm transition-all">
+                <div class="flex items-center justify-between font-mono text-[10px] ${isMe ? 'text-gray-400' : 'text-gray-500'}">
+                  <div class="flex items-center gap-1.5 min-w-0">
+                    <img src="${faviconUrl}" class="w-3.5 h-3.5 rounded-sm shrink-0" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌐</text></svg>'" />
+                    <span class="font-bold text-xs truncate ${isMe ? 'text-gray-200' : 'text-gray-800'}">${escapeHtml(hostname)}</span>
+                  </div>
+                  <a href="${escapeHtml(primaryHref)}" target="_blank" rel="noopener noreferrer" class="date-selector py-0.5 px-2 text-[9px] shrink-0" style="padding: 0.15rem 0.5rem;">
+                    Open ↗
+                  </a>
+                </div>
+                <div id="${cardId}-title" class="font-sans text-xs font-extrabold line-clamp-1 ${isMe ? 'text-gray-100' : 'text-gray-900'}">
+                  ${escapeHtml(hostname)}${escapeHtml(urlObj.pathname.length > 1 ? urlObj.pathname : '')}
+                </div>
+                <div id="${cardId}-desc" class="font-sans text-[11px] line-clamp-2 ${isMe ? 'text-gray-400' : 'text-gray-600'} font-normal">
+                  Click to navigate to ${escapeHtml(hostname)}
+                </div>
+              </div>
+            `;
+
+            setTimeout(async () => {
+              try {
+                const res = await fetch(`https://api.microlink.io?url=${encodeURIComponent(primaryHref)}`);
+                if (res.ok) {
+                  const json = await res.json();
+                  if (json.status === 'success' && json.data) {
+                    const data = json.data;
+                    const titleEl = document.getElementById(`${cardId}-title`);
+                    const descEl = document.getElementById(`${cardId}-desc`);
+                    if (titleEl && data.title) titleEl.innerText = data.title;
+                    if (descEl && data.description) descEl.innerText = data.description;
+                  }
+                }
+              } catch(e) {}
+            }, 100);
+          }
+        } catch(err) {}
+      }
+
+      return { formattedText, previewCardsHtml };
+    }
+
     function renderMessageCard(text, senderPersona, side, replyTo = null) {
       document.getElementById('emptyNotice')?.classList.add('hidden');
       const container = document.getElementById('messagesContainer');
@@ -3269,8 +3700,8 @@
         `;
       }
 
-      const escapedText = escapeHtml(text);
-      card.innerHTML = `${replyHtml}<div>${escapedText}</div>`;
+      const { formattedText, previewCardsHtml } = processMessageTextWithLinkPreviews(text, isMe);
+      card.innerHTML = `${replyHtml}<div>${formattedText}</div>${previewCardsHtml}`;
 
       // Avatar Icon (Handles SVG strings, image URLs, and emojis without broken img icons)
       const avatarIcon = getAvatarHtml(senderPersona.avatar);
@@ -3381,9 +3812,19 @@
       }
     });
 
+    const MAX_ALLOWED_FILE_SIZE = 5 * 1024 * 1024; // Strict 5 MB Limit
+
     window.handleDirectFileSelect = function(e, isClassified = false) {
       const file = e.target.files[0];
       if (!file) return;
+
+      if (file.size > MAX_ALLOWED_FILE_SIZE) {
+        const sizeMb = (file.size / (1024 * 1024)).toFixed(2);
+        showToast(`⚠️ File exceeds maximum 5MB size limit (${sizeMb} MB). Please select a file under 5MB.`, 'error');
+        SoundFx.alert();
+        e.target.value = '';
+        return;
+      }
 
       if (file.type.startsWith('image/')) {
         stageImageFile(file, isClassified);
@@ -3394,6 +3835,13 @@
     };
 
     function stageImageFile(file, isClassified) {
+      if (file.size > MAX_ALLOWED_FILE_SIZE) {
+        const sizeMb = (file.size / (1024 * 1024)).toFixed(2);
+        showToast(`⚠️ Image exceeds maximum 5MB size limit (${sizeMb} MB). Please select an image under 5MB.`, 'error');
+        SoundFx.alert();
+        return;
+      }
+
       const reader = new FileReader();
       reader.onload = (e) => {
         stagedFileData = {
@@ -3471,6 +3919,14 @@
         showToast('Connect to a room to broadcast files', 'error');
         return;
       }
+
+      if (file.size > MAX_ALLOWED_FILE_SIZE) {
+        const sizeMb = (file.size / (1024 * 1024)).toFixed(2);
+        showToast(`⚠️ File exceeds maximum 5MB size limit (${sizeMb} MB)`, 'error');
+        SoundFx.alert();
+        return;
+      }
+
       const reader = new FileReader();
       reader.onload = (e) => {
         const packet = {
@@ -3485,12 +3941,62 @@
         };
 
         dispatchRoomAction('file', packet);
+        renderGenericFileCard(packet, myPersona, 'me');
         registerVaultCatalogItem(packet, e.target.result, false);
         incrementVaultCount();
         SoundFx.chime();
-        showToast(`Dispatched ${file.name} to mesh`, 'success');
+        showToast(`📁 File "${file.name}" (${(file.size / 1024).toFixed(1)} KB) broadcasted across mesh!`, 'success');
       };
       reader.readAsDataURL(file);
+    }
+
+    function renderGenericFileCard(payload, senderPersona, side) {
+      document.getElementById('emptyNotice')?.classList.add('hidden');
+      const container = document.getElementById('messagesContainer');
+      const isMe = side === 'me';
+
+      const wrapper = document.createElement('div');
+      wrapper.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'} space-y-1 animate-msg-in group relative select-none`;
+
+      const card = document.createElement('div');
+      card.className = `max-w-[88%] sm:max-w-md px-4 py-3 rounded-2xl border text-xs sm:text-sm font-sans shadow-sm ${
+        isMe 
+          ? 'bg-[#111827] border-[#000000] text-[#ffffff]' 
+          : 'bg-[#e9eeea] border-[#d0d0ce] text-[#111827]'
+      }`;
+
+      const sizeStr = payload.size >= 1024 * 1024 
+        ? `${(payload.size / (1024 * 1024)).toFixed(2)} MB` 
+        : `${(payload.size / 1024).toFixed(1)} KB`;
+
+      const avatarIcon = getAvatarHtml(senderPersona.avatar);
+
+      card.innerHTML = `
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl ${isMe ? 'bg-gray-800 text-[#f0ff7a] border border-gray-700' : 'bg-white text-cyan-600 border border-[#d0d0ce]'} flex items-center justify-center font-bold text-lg shrink-0">
+            📁
+          </div>
+          <div class="flex flex-col min-w-0 flex-1">
+            <div class="font-mono text-xs font-bold truncate ${isMe ? 'text-white' : 'text-gray-900'}">${escapeHtml(payload.name)}</div>
+            <div class="text-[10px] font-mono ${isMe ? 'text-gray-400' : 'text-gray-600'}">${sizeStr} • Online Peer Stream</div>
+          </div>
+        </div>
+        <div class="mt-2.5 pt-2 border-t ${isMe ? 'border-gray-800' : 'border-[#d0d0ce]'} flex items-center justify-between gap-2">
+          <span class="text-[9px] font-mono uppercase font-bold ${isMe ? 'text-emerald-400' : 'text-emerald-700'}">ONLINE 5MB MESH STREAM</span>
+          <a href="${payload.dataUri}" download="${escapeHtml(payload.name)}" class="date-selector text-xs py-1 px-3" style="background-color: #f0ff7a; color: #000; border-color: #000; font-weight: 700;">
+            Download ⬇
+          </a>
+        </div>
+      `;
+
+      const meta = document.createElement('div');
+      meta.className = 'text-[9px] font-mono text-[#6b7280] px-1 flex items-center gap-2';
+      meta.innerHTML = `<span class="inline-flex items-center">${avatarIcon}${isMe ? 'YOU' : escapeHtml(senderPersona.name)} • ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>`;
+
+      wrapper.appendChild(card);
+      wrapper.appendChild(meta);
+      container.appendChild(wrapper);
+      container.scrollTop = container.scrollHeight;
     }
 
     function renderInlineImage(dataUri, name, senderPersona, side) {
@@ -4164,9 +4670,13 @@
 
       const urlParams = new URLSearchParams(window.location.search);
       const roomParam = urlParams.get('room');
+      const targetRoom = roomParam || '111';
+      
+      const roomInput = document.getElementById('roomIdentifierInput');
+      if (roomInput) roomInput.value = targetRoom;
+      connectToMeshRoom(targetRoom);
+
       if (roomParam) {
-        document.getElementById('roomIdentifierInput').value = roomParam;
-        connectToMeshRoom(roomParam);
         switchTab('chat');
       } else {
         switchTab('home');
